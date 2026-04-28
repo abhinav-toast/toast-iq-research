@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P04 — Multi-Location Operator, FSR · Ops Agent Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:80px}
+a{color:inherit;text-decoration:none}
+.topbar{position:sticky;top:0;z-index:100;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-back{color:rgba(255,255,255,0.55);font-size:12px;display:flex;align-items:center;gap:5px;transition:color .15s}
+.topbar-back:hover{color:#f97316}
+.topbar-sep{color:rgba(255,255,255,0.2);font-size:12px}
+.topbar-brand{color:#f97316;font-size:11px;font-weight:800;margin-left:auto}
+.p-nav{max-width:860px;margin:20px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center}
+.p-nav-label{font-size:11px;color:#aaa;margin-right:4px}
+.p-chip{display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid #ddd;color:#888;background:white;transition:all .15s;cursor:pointer}
+.p-chip:hover{border-color:#f97316;color:#f97316}
+.p-chip.active{background:#f97316;border-color:#f97316;color:white}
+.container{max-width:860px;margin:0 auto;padding:24px 24px 0}
+.hero{background:white;border:1px solid #ede8e0;border-radius:12px;padding:24px 28px;margin-bottom:20px;display:flex;gap:28px;align-items:flex-start}
+.hero-id{font-size:56px;font-weight:900;color:#f97316;line-height:1;font-family:Georgia,serif;flex-shrink:0}
+.hero-content{flex:1}
+.hero-role{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.hero-type{font-size:13px;color:#666;margin-bottom:14px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hero-rec{display:flex;align-items:center;gap:8px}
+.hero-rec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888}
+.rec-dots{display:flex;gap:4px}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:#e0e0e0}
+.rec-dot.filled{background:#f97316}
+.rec-text{font-size:13px;font-weight:700;color:#f97316}
+.hero-method-wrap{margin-top:14px;padding:10px 14px;background:#faf8f5;border-radius:6px;border:1px solid #ede8e0}
+.hero-method-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:3px}
+.hero-method-val{font-size:13px;color:#555;font-style:italic}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:10px;margin-top:28px}
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dim-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.dim-card:hover{border-color:#f97316}
+.dim-card.open{border-color:#f97316}
+.dim-header{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.dim-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.dim-icon.blue{background:#dbeafe;color:#1d6db5}
+.dim-icon.orange{background:#fff7ed;color:#ea580c}
+.dim-icon.red{background:#fff5f5;color:#c0390b}
+.dim-icon.green{background:#f0fdf4;color:#16a34a}
+.dim-icon.purple{background:#f5f3ff;color:#7c3aed}
+.dim-icon.teal{background:#f0fdfa;color:#0d9488}
+.dim-icon.indigo{background:#eef2ff;color:#4338ca}
+.dim-icon.amber{background:#fffbeb;color:#d97706}
+.dim-text{flex:1;min-width:0}
+.dim-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:2px}
+.dim-hook{font-size:12px;color:#333;line-height:1.4}
+.dim-chevron{font-size:11px;color:#ccc;flex-shrink:0;margin-top:5px;transition:transform .2s}
+.dim-card.open .dim-chevron{transform:rotate(90deg)}
+.dim-body{display:none;padding:0 14px 14px 52px;font-size:12px;color:#555;line-height:1.6;border-top:1px solid #f5f0ea}
+.dim-card.open .dim-body{display:block}
+.theme-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.theme-card:hover{border-color:#f97316}
+.theme-card.open{border-color:#f97316}
+.theme-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.theme-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.theme-dot.red{background:#c0390b}
+.theme-dot.orange{background:#f97316}
+.theme-dot.green{background:#16a34a}
+.theme-dot.blue{background:#1d6db5}
+.theme-dot.purple{background:#7c3aed}
+.theme-title{font-size:13px;font-weight:700;color:#1a1a1a;flex:1}
+.theme-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.theme-badge.new{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.theme-badge.recurring{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.theme-chevron{font-size:11px;color:#ccc;flex-shrink:0;transition:transform .2s}
+.theme-card.open .theme-chevron{transform:rotate(90deg)}
+.theme-body{display:none;padding:0 16px 16px;border-top:1px solid #f5f0ea}
+.theme-card.open .theme-body{display:block}
+.theme-what{font-size:12px;color:#555;line-height:1.6;margin-top:12px}
+.theme-why{margin-top:10px;padding:10px 12px;background:#faf8f5;border-radius:6px;border-left:3px solid #f97316}
+.theme-why-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#f97316;margin-bottom:3px}
+.theme-why-text{font-size:12px;color:#555;line-height:1.6}
+.theme-quote{margin-top:10px;padding:10px 14px;background:#f9f7f4;border-left:3px solid #ddd6ca;font-style:italic;font-size:12px;color:#666;line-height:1.6;border-radius:0 6px 6px 0}
+.verbatim-list{display:flex;flex-direction:column;gap:10px}
+.verbatim{background:white;border:1px solid #ede8e0;border-radius:8px;padding:16px 18px}
+.verbatim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:6px}
+.verbatim-quote{font-size:14px;color:#2d2d2d;line-height:1.7;font-style:italic;border-left:3px solid #f97316;padding-left:14px}
+.standout{background:#1e1e1e;border-radius:10px;padding:22px 24px;margin-top:10px}
+.standout-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:8px}
+.standout-text{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7}
+.standout-quote{margin-top:14px;font-style:italic;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-back">← Research Report</a>
+  <span class="topbar-sep">|</span>
+  <a href="combined.html" class="topbar-back">Combined Summary</a>
+  <span class="topbar-brand">Toast IQ Research</span>
+</div>
+
+<div class="p-nav">
+  <span class="p-nav-label">Participants:</span>
+  <a href="p01.html" class="p-chip">P01</a>
+  <a href="p02.html" class="p-chip">P02</a>
+  <a href="p03.html" class="p-chip">P03</a>
+  <span class="p-chip active">P04</span>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-id">P04</div>
+    <div class="hero-content">
+      <div class="hero-role">Multi-Location Operator</div>
+      <div class="hero-type">FSR · 4 Locations · Burger/Bar Concept · Full Toast suite user</div>
+      <div class="hero-meta">
+        <div class="hero-rec">
+          <span class="hero-rec-label">Receptivity</span>
+          <div class="rec-dots">
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot"></div>
+          </div>
+          <span class="rec-text">4 / 5 — Receptive</span>
+        </div>
+      </div>
+      <div class="hero-method-wrap">
+        <div class="hero-method-label">Current method</div>
+        <div class="hero-method-val">Manual menu changes via Toast web + occasional Toast IQ Q&A; all pricing decisions go through owners</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Key Dimensions</div>
+  <div class="dim-grid">
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon blue">⟳</div>
+        <div class="dim-text">
+          <div class="dim-name">E2E Flow</div>
+          <div class="dim-hook">Needs location selector; modifier cascades are an unaddressed hidden risk</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Wants a location selector at the approve-and-publish step. Deeply concerned that modifier/add-on/substitution cascades are not captured when a base item price is changed — a price change on one item can silently break pricing logic across modifiers, add-ons, and substitutions. Shared a real incident where modifier arbitrage cost the business revenue.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon green">✦</div>
+        <div class="dim-text">
+          <div class="dim-name">Onboarding &amp; First Impression</div>
+          <div class="dim-hook">Wants gradual UI transition; full switch risks non-adoption among GMs and staff</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Prefers a gradual UI transition: start with familiar menus-page clickable suggestions, then transition to a chat-like interface before landing in the full IQ agent view. A dramatic UI shift risks non-adoption among less tech-savvy GMs and staff who manage day-to-day operations.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon red">$</div>
+        <div class="dim-text">
+          <div class="dim-name">Monetization</div>
+          <div class="dim-hook">Immediate unprompted resistance — would not buy credits; would investigate manually instead</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Immediate friction — "right off the bat, don't like it." Would not purchase additional credits beyond a bundled monthly allotment. Tolerates a free/included credit model but considers pay-to-use credits an unnecessary add-on given their existing Toast spend. Most stark resistance of all 4 participants.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon blue">★</div>
+        <div class="dim-text">
+          <div class="dim-name">Trust</div>
+          <div class="dim-hook">Comfortable following recommendations; auto-apply is categorically off the table</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Comfortable following recommendations but all pricing and menu changes require sitting down with the owners before publishing. Would never use auto-apply under any circumstances. The agent needs to support a persistent draft/review state that can wait for owner sign-off before committing.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon purple">≡</div>
+        <div class="dim-text">
+          <div class="dim-name">Attribution</div>
+          <div class="dim-hook">N/A — no specific attribution feedback recorded</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">No specific feedback on the attribution or projection figures was recorded for P04 in this session. Focus was concentrated on monetization, modifier cascades, and downstream coordination.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon orange">↓</div>
+        <div class="dim-text">
+          <div class="dim-name">Downstream Consequences</div>
+          <div class="dim-hook">Wants deep-link redirects to staff, website, and social media tools post-publish</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Proactively flagged staff notifications, website updates, and social media as downstream actions. Wants clickable redirects within the publish flow that deep-link to team announcements and social media posting tools. This is the most actionable downstream vision of all 4 participants.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon teal">↗</div>
+        <div class="dim-text">
+          <div class="dim-name">Recommendation Relevance</div>
+          <div class="dim-hook">Underperforming items already known; bundle/combo recs are genuinely new and interesting</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Underperforming item alerts are "already known" for experienced operators (e.g., chili is expected to be the low performer). Bundle/combo opportunities and pricing optimization are genuinely new and interesting — P04 has been debating a combo meal internally for months.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon indigo">⊕</div>
+        <div class="dim-text">
+          <div class="dim-name">Cost Fidelity</div>
+          <div class="dim-hook">Accepts general market alerts even if imperfect; wants source clearly labeled</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Source of cost data matters: wants clarity on whether data comes from an integrated system (ExtraChef, Restaurant365) vs. general market data. Accepts general market alerts as useful even when not perfectly targeted — "maybe 50% of that is not useful to me, but if I see something..." The bar is: label the source, don't hide it.</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Emerging Themes</div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Credits / Monetization Friction</div>
+      <span class="theme-badge recurring">Recurring · 4/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P04 expressed immediate, unprompted resistance to the credits model, framing it as an unnecessary add-on given their existing Toast bill. They would not purchase additional credits once a free allotment was exhausted — they would simply investigate manually instead.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">This is a direct signal that the credits unlock mechanism may suppress usage among high-value, fully-integrated Toast customers who already feel the platform is expensive. The most telling signal: they would abandon the workflow and investigate manually rather than pay — meaning the model could suppress usage among exactly the customers who would use it most.</div>
+      </div>
+      <div class="theme-quote">"I just think it, toast, it makes a lot of money just off of us already with a regular account. I don't know if I would, you know, if I went beyond my 50 credits, I definitely wouldn't purchase it. If it came down to wanting to know this thing, I would just go, okay, I'll just investigate it myself."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Modifier/Add-On Cascade as a Hidden Pricing Risk</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P04 described a real-world incident where a base price change exposed unintended modifier arbitrage — customers were ordering a cheap dog patty as a workaround to avoid paying for a double burger. They want the agent to explicitly surface which modifiers, add-ons, and substitutions are affected by a pricing recommendation.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">The prototype currently treats price changes as item-level actions. P04's real incident demonstrates that modifier cascades are a material revenue and operational risk that the agent should surface proactively — "is it just that dish or is it anything that correlates with it?"</div>
+      </div>
+      <div class="theme-quote">"I think that's the one thing I know when doing price changes, that you think it's a simple thing, okay, everything goes up a dollar, but then you get into different things like modifiers and add-ons and substitutions. That affects it and, you know, it's a little, it goes a little bit more deeper than that. So how far does this go is what I would be wanting to know."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Owner Sign-Off as a Gate on Any Pricing Change</div>
+      <span class="theme-badge recurring">Recurring · 2/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P04 stated unambiguously that pricing or menu changes always require sitting down with the owners before publishing — auto-apply is categorically off the table.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">For multi-location, owner-operated restaurants, the approval workflow needs to accommodate a stakeholder who is not always the person interacting with Toast IQ. The agent must support draft/review states that persist until an owner can weigh in — the current prototype doesn't have this concept.</div>
+      </div>
+      <div class="theme-quote">"anything, anything, pricing or menu changes are always. Myself and the owners sitting down and discussing. And then making a decision and then, yeah, publish, publishing it from there or whatever."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot blue"></div>
+      <div class="theme-title">Notification Channel — "Daily News Brief" Mental Model</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P04 prefers email for recommendations but also articulated a specific mental model for the Toast Now app: a morning pop-up "news brief" that bundles forecasts, recommendations, and notifications in one dismissible card.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Operators want AI recommendations bundled into an existing daily check-in habit rather than surfaced as a separate, always-on notification stream. This is a pattern worth testing in the notification design — bundle into the morning routine, not a standalone alert.</div>
+      </div>
+      <div class="theme-quote">"I think having your daily forecasts or your daily overview or, news brief, if you will, that would be, you know, kind of an all-in, here's your news brief for the day, you know, click here for what were your forecasts, click here for a couple of recommendations, and then if you're not interested, you can just close it."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot green"></div>
+      <div class="theme-title">Downstream Action Deep-Links</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">After approving a change, P04 wanted the "things to consider" section to include clickable redirects — one for pushing a team announcement to staff, one for updating the website, and one for creating a social media post.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Operators don't just need to approve a change — they need to coordinate the downstream communication. Deep-links into existing Toast tools (announcements, marketing) could meaningfully reduce the post-publish workload and make the approve flow feel complete rather than a half-finished action.</div>
+      </div>
+      <div class="theme-quote">"I just, I think, like, a redirect on that would be good for any of that, you know. Even, social media. You know. Create a social media post. Or whatever, where you can say, hey, not that you want to advertise price increases, but I think those kind of things are helpful when you have those, those ease of use."</div>
+    </div>
+  </div>
+
+  <div class="section-title">Magnetic Verbatims</div>
+  <div class="verbatim-list">
+
+    <div class="verbatim">
+      <div class="verbatim-label">Credits friction — deal-breaker on pay-to-use</div>
+      <div class="verbatim-quote">"I just think it, toast, it makes a lot of money just off of us already with a regular account. I don't know if I would, you know, if I went beyond my 50 credits, I definitely wouldn't purchase it. If it came down to wanting to know this thing, I would just go, okay, I'll just investigate it myself. It will take a little bit longer maybe, but I'm not purchasing the credits for how it much money, you know."</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Modifier cascade complexity — real-world incident</div>
+      <div class="verbatim-quote">"I think that's the one thing I know when doing price changes, that you think it's a simple thing, okay, everything goes up a dollar, but then you get into different things like modifiers and add-ons and substitutions. That affects it and, you know, it's a little, it goes a little bit more deeper than that. So how far does this go is what I would be wanting to know. Is it just that dish or is it anything that correlates with it?"</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Owner sign-off — auto-apply rejection</div>
+      <div class="verbatim-quote">"anything, anything, pricing or menu changes are always. Myself and the owners sitting down and discussing. And then making a decision and then, yeah, publish, publishing it from there or whatever."</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Standout Insight</div>
+  <div class="standout">
+    <div class="standout-label">Key Takeaway</div>
+    <div class="standout-text">P04 is a power user and Toast advocate, yet the credits model triggered immediate resistance without any prompting. The most telling signal: they would abandon the workflow and investigate manually rather than pay for additional credits — meaning the monetization model could suppress usage among exactly the customers who would use it most.</div>
+    <div class="standout-quote">"I just think it, toast, it makes a lot of money just off of us already with a regular account. I don't know if I would, you know, if I went beyond my 50 credits, I definitely wouldn't purchase it. If it came down to wanting to know this thing, I would just go, okay, I'll just investigate it myself. It will take a little bit longer maybe, but I'm not purchasing the credits for how it much money, you know."</div>
+  </div>
+
+</div>
+</body>
+</html>

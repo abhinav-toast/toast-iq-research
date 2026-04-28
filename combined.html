@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combined Summary — Toast IQ Ops Agent</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #faf8f5; --border: #e4ddd4; --card: #fff; --text: #1e1e1e;
+    --muted: #888; --light: #bbb; --accent: #f97316;
+    --critical: #c0390b; --critical-bg: #fff4f2; --critical-border: #fcd9d2;
+    --high: #b45309; --high-bg: #fffbf0; --high-border: #fce9c0;
+    --opp: #16a34a; --opp-bg: #f0fdf4; --opp-border: #bbf7d0;
+    --blue: #1d6db5; --blue-bg: #eff6ff; --blue-border: #bfdbfe;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+  /* topbar */
+  .topbar { background: #111; padding: 0 28px; height: 48px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { color: var(--accent); font-weight: 800; font-size: 15px; }
+  .topbar-sep { color: #444; }
+  .topbar-title { color: rgba(255,255,255,.55); font-size: 13px; }
+  .topbar-back { color: rgba(255,255,255,.4); font-size: 12px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: color .15s; }
+  .topbar-back:hover { color: var(--accent); }
+
+  /* page hero */
+  .hero { padding: 40px 48px 32px; border-bottom: 1px solid var(--border); background: white; }
+  .hero h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .hero p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .hero-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hstat { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; }
+  .hstat .n { font-size: 26px; font-weight: 800; line-height: 1; }
+  .hstat .l { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .4px; font-weight: 600; }
+  .hstat.blue .n { color: var(--blue); }
+  .hstat.green .n { color: var(--opp); }
+  .hstat.red .n { color: var(--critical); }
+  .hstat.orange .n { color: var(--high); }
+
+  /* participant chips */
+  .p-chips { display: flex; gap: 10px; padding: 20px 48px; border-bottom: 1px solid var(--border); background: white; flex-wrap: wrap; }
+  .p-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text); background: var(--bg); transition: all .15s; font-size: 12px; }
+  .p-chip:hover { border-color: var(--accent); background: white; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+  .p-chip .chip-id { width: 28px; height: 28px; border-radius: 50%; background: var(--critical-bg); border: 2px solid var(--critical-border); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10px; color: var(--critical); flex-shrink: 0; }
+  .p-chip .chip-info { display: flex; flex-direction: column; gap: 1px; }
+  .p-chip .chip-name { font-weight: 700; font-size: 12px; }
+  .p-chip .chip-role { font-size: 10px; color: var(--muted); }
+  .p-chip .chip-arrow { color: var(--light); font-size: 14px; margin-left: 4px; }
+  .p-chip:hover .chip-arrow { color: var(--accent); }
+
+  /* content */
+  .content { max-width: 860px; margin: 0 auto; padding: 36px 48px 80px; }
+
+  .section { margin-bottom: 52px; }
+  .section-head { margin-bottom: 18px; }
+  .section-head h2 { font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+  .section-head p { font-size: 12px; color: var(--muted); }
+  .section-rule { border: none; border-top: 1px solid var(--border); margin-bottom: 18px; }
+  .sdivider { height: 1px; background: var(--border); margin: 44px 0; }
+
+  /* finding cards */
+  .xcard { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 10px; transition: box-shadow .15s; }
+  .xcard:hover { box-shadow: 0 2px 14px rgba(0,0,0,.07); }
+  .xcard.open { box-shadow: 0 4px 20px rgba(0,0,0,.10); border-color: #c9c0b5; }
+  .xcard-head { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; cursor: pointer; user-select: none; }
+  .xcard-head:hover .xcard-arrow { color: var(--accent); }
+  .xcard-pill { flex-shrink: 0; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 3px 8px; border-radius: 4px; margin-top: 1px; white-space: nowrap; }
+  .xcard-pill.critical { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+  .xcard-pill.high { background: var(--high-bg); color: var(--high); border: 1px solid var(--high-border); }
+  .xcard-pill.opp { background: var(--opp-bg); color: var(--opp); border: 1px solid var(--opp-border); }
+  .xcard-pill.blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .xcard-pill.neutral { background: #f4f4f4; color: #555; border: 1px solid #e0e0e0; }
+  .xcard-summary { flex: 1; }
+  .xcard-summary h4 { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; line-height: 1.35; }
+  .xcard-hook { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .xcard-arrow { flex-shrink: 0; font-size: 16px; color: var(--light); transition: transform .2s, color .15s; align-self: center; }
+  .xcard.open .xcard-arrow { transform: rotate(90deg); color: var(--accent); }
+  .xcard-body { display: none; border-top: 1px solid var(--border); padding: 16px 18px; background: #fdfcfb; }
+  .xcard.open .xcard-body { display: block; }
+
+  .xb-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--light); margin-bottom: 7px; }
+  .xb-text { font-size: 12px; color: #444; line-height: 1.65; margin-bottom: 14px; }
+  .xb-text:last-child { margin-bottom: 0; }
+
+  .impl { background: var(--high-bg); border-left: 2px solid var(--high); border-radius: 0 6px 6px 0; padding: 8px 12px; font-size: 12px; color: #4a3000; line-height: 1.6; margin-bottom: 14px; }
+  .impl strong { color: var(--high); }
+
+  .p-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .p-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: #f4efe8; color: #666; border: 1px solid var(--border); }
+  .p-tag.lit { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
+
+  /* quote */
+  .qblock { background: #fff8f3; border-left: 3px solid var(--accent); border-radius: 0 7px 7px 0; padding: 10px 14px; margin-bottom: 14px; }
+  .qblock blockquote { font-style: italic; font-size: 12px; color: #333; line-height: 1.65; }
+  .qblock blockquote::before { content: '\201C'; color: var(--accent); font-size: 16px; vertical-align: -3px; }
+  .qblock blockquote::after { content: '\201D'; color: var(--accent); font-size: 16px; vertical-align: -3px; }
+  .qblock .q-attr { font-size: 10px; color: var(--muted); margin-top: 5px; font-weight: 600; }
+
+  /* callout */
+  .callout { background: var(--opp-bg); border: 1px solid var(--opp-border); border-radius: 8px; padding: 11px 15px; display: flex; gap: 9px; font-size: 12px; color: #144d2a; line-height: 1.6; margin-bottom: 18px; }
+  .callout .ci { flex-shrink: 0; }
+
+  /* themes table */
+  .theme-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .theme-table thead th { text-align: left; padding: 8px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; border-bottom: 2px solid var(--border); }
+  .theme-table tbody tr { border-bottom: 1px solid var(--border); }
+  .theme-table td { padding: 10px 12px; vertical-align: middle; }
+  .theme-table td:first-child { font-weight: 600; color: #111; }
+  .dot-row { display: flex; gap: 4px; align-items: center; }
+  .tdot { width: 9px; height: 9px; border-radius: 50%; }
+  .tdot.on { background: var(--critical); }
+  .tdot.off { background: var(--border); }
+  .rec-pill { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: var(--opp-bg); color: var(--opp); border: 1px solid var(--opp-border); }
+
+  /* grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media(max-width:640px) { .grid2 { grid-template-columns: 1fr; } .hero, .content, .p-chips { padding-left: 20px; padding-right: 20px; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">Toast IQ</span>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">Combined Research Summary</span>
+  </div>
+  <a class="topbar-back" href="index.html">← Back to report</a>
+</header>
+
+<div class="hero">
+  <h1>Toast IQ Ops Agent — Combined Research Summary</h1>
+  <p>Cross-interview synthesis across 4 operators · April 2026 · All receptive, no concept rejection</p>
+  <div class="hero-stats">
+    <div class="hstat blue"><div class="n">4.25</div><div class="l">Avg Receptivity</div></div>
+    <div class="hstat green"><div class="n">4/4</div><div class="l">Concept Accepted</div></div>
+    <div class="hstat red"><div class="n">3</div><div class="l">Must Fix</div></div>
+    <div class="hstat orange"><div class="n">2</div><div class="l">Opportunities</div></div>
+    <div class="hstat blue"><div class="n">5</div><div class="l">Themes to Elevate</div></div>
+  </div>
+</div>
+
+<div class="p-chips">
+  <span style="font-size:11px;font-weight:700;color:var(--muted);align-self:center;margin-right:4px;">Dig deeper →</span>
+  <a class="p-chip" href="p01.html">
+    <div class="chip-id">P01</div>
+    <div class="chip-info"><div class="chip-name">Owner / Operator · FSR</div><div class="chip-role">Independent · 1 location · 5/5 Enthusiastic</div></div>
+    <span class="chip-arrow">›</span>
+  </a>
+  <a class="p-chip" href="p02.html">
+    <div class="chip-id">P02</div>
+    <div class="chip-info"><div class="chip-name">Menu &amp; Ops Manager · QSR</div><div class="chip-role">4-location chain · 4/5 Receptive</div></div>
+    <span class="chip-arrow">›</span>
+  </a>
+  <a class="p-chip" href="p03.html">
+    <div class="chip-id">P03</div>
+    <div class="chip-info"><div class="chip-name">Owner / Operator · Multi-Concept FSR</div><div class="chip-role">Multiple locations · 4/5 Receptive</div></div>
+    <span class="chip-arrow">›</span>
+  </a>
+  <a class="p-chip" href="p04.html">
+    <div class="chip-id">P04</div>
+    <div class="chip-info"><div class="chip-name">Multi-Location Operator · FSR</div><div class="chip-role">4-location burger/bar · 4/5 Receptive</div></div>
+    <span class="chip-arrow">›</span>
+  </a>
+</div>
+
+<div class="content">
+
+  <section class="section">
+    <div class="section-head"><h2>Cross-Interview Findings</h2><p>Patterns that appeared across multiple participants — the strongest signal in the data.</p></div>
+    <hr class="section-rule">
+
+    <div class="xcard" onclick="toggleCard(this)">
+      <div class="xcard-head">
+        <span class="xcard-pill critical">Critical · 4/4</span>
+        <div class="xcard-summary"><h4>Credits / Monetization — Universal Friction</h4><div class="xcard-hook">Every participant flagged unprompted. Reactions ranged from conditional acceptance to hard veto.</div><div class="p-tags" style="margin-top:6px;"><span class="p-tag lit">P01</span><span class="p-tag lit">P02</span><span class="p-tag lit">P03</span><span class="p-tag lit">P04</span></div></div>
+        <span class="xcard-arrow">›</span>
+      </div>
+      <div class="xcard-body">
+        <div class="xb-lbl">Finding</div>
+        <div class="xb-text">Every participant noticed the credits model unprompted. Reactions ranged from conditional acceptance (P01, P02, P03) to hard veto (P04). The common thread: operators already feel Toast is expensive, and a pay-to-use gate at the moment of highest intent is the wrong place for a paywall. P04's signal is the most telling — they'd abandon the workflow and do the research manually rather than spend credits. No one asked for a feature change; they asked for transparency (what does a credit cost in dollars?) and proof of ROI before first spend.</div>
+        <div class="xb-lbl">Design implication</div>
+        <div class="impl"><strong>Show per-credit dollar value + projected revenue recovery</strong> before the confirm gate. Consider a free first-use or bundled-usage model.</div>
+      </div>
+    </div>
+
+    <div class="xcard" onclick="toggleCard(this)">
+      <div class="xcard-head">
+        <span class="xcard-pill high">High · 3/4</span>
+        <div class="xcard-summary"><h4>Owner Sign-Off Gate — Hard Requirement</h4><div class="xcard-hook">P02, P03, and P04 all rejected auto-apply. Framing varied; the pattern did not.</div><div class="p-tags" style="margin-top:6px;"><span class="p-tag">P02</span><span class="p-tag">P03</span><span class="p-tag">P04</span></div></div>
+        <span class="xcard-arrow">›</span>
+      </div>
+      <div class="xcard-body">
+        <div class="xb-lbl">Finding</div>
+        <div class="xb-text">P02 cited organizational process, P03 cited deliberateness and control after a bad Uber Eats experience with auto-publishing descriptions without permission, P04 cited owner hierarchy. The pattern is the same regardless of framing: pricing changes are high-stakes decisions that cannot be unilaterally triggered by an AI.</div>
+        <div class="xb-lbl">Design implication</div>
+        <div class="impl"><strong>The agent must support a persistent draft/review state</strong> that survives until an owner or designated approver acts on it. Auto-apply should not exist, even as an opt-in, until significant trust is established.</div>
+      </div>
+    </div>
+
+    <div class="xcard" onclick="toggleCard(this)">
+      <div class="xcard-head">
+        <span class="xcard-pill blue">Recurring · 2/4</span>
+        <div class="xcard-summary"><h4>Post-Publish Staff Communication — Recurring Need</h4><div class="xcard-hook">P01 wants auto staff notification. P04 wants deep-link redirects. Underlying need is consistent across both.</div><div class="p-tags" style="margin-top:6px;"><span class="p-tag">P01</span><span class="p-tag">P04</span></div></div>
+        <span class="xcard-arrow">›</span>
+      </div>
+      <div class="xcard-body">
+        <div class="xb-lbl">Finding</div>
+        <div class="xb-text">P01 wants an automated internal staff note generated on publish. P04 wants deep-link redirects to team announcements, website updates, and social media tools. P03 accepted a static checklist without friction. The delivery mechanism varies but the underlying need is consistent: approving a price change is not the last step — operators need to coordinate downstream communication.</div>
+        <div class="xb-lbl">Design implication</div>
+        <div class="impl">Post-publish "things to consider" should offer at minimum a static checklist, and ideally <strong>one-click deep-links</strong> into Toast's announcement and marketing tools for operators who want them.</div>
+      </div>
+    </div>
+
+    <div class="xcard" onclick="toggleCard(this)">
+      <div class="xcard-head">
+        <span class="xcard-pill high">Deal-breaker · 2/4</span>
+        <div class="xcard-summary"><h4>Multi-Location Publish Scope — Deal-Breaker for Multi-Location Operators</h4><div class="xcard-hook">P04 wants a location selector. P02 requires Menu Masters integration. Without either, the workflow is net-negative.</div><div class="p-tags" style="margin-top:6px;"><span class="p-tag">P02</span><span class="p-tag">P04</span></div></div>
+        <span class="xcard-arrow">›</span>
+      </div>
+      <div class="xcard-body">
+        <div class="xb-lbl">Finding</div>
+        <div class="xb-text">P04 wants a location selector at the approve step. P02 requires Menu Masters integration — without it, the workflow must be repeated per store, making it net-negative. Both operate 4 locations with shared menus.</div>
+        <div class="xb-lbl">Design implication</div>
+        <div class="impl"><strong>Publish scope (single location vs. all vs. select) must be a first-class control at the confirm step,</strong> with integrations for tools like Menu Masters for chains running identical menus.</div>
+      </div>
+    </div>
+
+    <div class="xcard" onclick="toggleCard(this)">
+      <div class="xcard-head">
+        <span class="xcard-pill blue">Independent · 2/4</span>
+        <div class="xcard-summary"><h4>Competitive Benchmarking — Independently Surfaced</h4><div class="xcard-hook">P02 asked for regional pricing context as a promotional input. P03 does this manually today.</div><div class="p-tags" style="margin-top:6px;"><span class="p-tag">P02</span><span class="p-tag">P03</span></div></div>
+        <span class="xcard-arrow">›</span>
+      </div>
+      <div class="xcard-body">
+        <div class="xb-lbl">Finding</div>
+        <div class="xb-text">P02 asked for regional competitive pricing context as a promotional strategy input. P03 described manually doing this today and framed automation as a genuine upgrade. Neither was prompted. Neither framed it as a nice-to-have.</div>
+        <div class="xb-lbl">Design implication</div>
+        <div class="impl">Competitive benchmarking is a <strong>distinct value proposition beyond internal cost analysis</strong> — worth exploring as a separate signal or module.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sdivider"></div>
+
+  <section class="section">
+    <div class="section-head"><h2>Operator-Specific Standout Findings</h2><p>The most differentiated insight from each participant — not covered elsewhere.</p></div>
+    <hr class="section-rule">
+    <div class="grid2">
+
+      <div class="xcard" onclick="toggleCard(this)">
+        <div class="xcard-head">
+          <span class="xcard-pill opp">P01</span>
+          <div class="xcard-summary"><h4>"Protect my margins, don't just raise my prices"</h4><div class="xcard-hook">The magic wand request: find a cheaper supplier instead of recommending a price hike.</div></div>
+          <span class="xcard-arrow">›</span>
+        </div>
+        <div class="xcard-body">
+          <div class="xb-text">When ingredient costs spike, the prototype has one response: raise your price. P01's preferred response: find me a cheaper supplier at the original price. This reframes the agent's cost-spike response from "raise your price" to "here is another way to protect your margin" — a meaningfully different and potentially stickier value proposition that the current prototype does not address.</div>
+          <div class="qblock"><blockquote>I would do the thing where I can reference product lists from all the suppliers around me, and instead of raising the price of this dish, it would give me somewhere else to buy the cheese that we're losing money on here.</blockquote><div class="q-attr">P01 — Owner/Operator, FSR</div></div>
+          <a href="p01.html" style="font-size:12px;color:var(--accent);font-weight:700;text-decoration:none;">View full P01 profile →</a>
+        </div>
+      </div>
+
+      <div class="xcard" onclick="toggleCard(this)">
+        <div class="xcard-head">
+          <span class="xcard-pill opp">P02</span>
+          <div class="xcard-summary"><h4>The agentic shift lands — unprompted</h4><div class="xcard-hook">Immediately articulated "you're asking it to do something for you instead of just asking a question."</div></div>
+          <span class="xcard-arrow">›</span>
+        </div>
+        <div class="xcard-body">
+          <div class="xb-text">P02 immediately and unpromptedly articulated the shift from Q&A to action-taking and reacted positively. This is the clearest validation that the core concept is legible to operators. Blocked only by operational gaps (delivery tier pricing, Menu Masters).</div>
+          <div class="qblock"><blockquote>I can see that you're asking it to do something for you instead of just asking a question — and that would be nice.</blockquote><div class="q-attr">P02 — Menu &amp; Ops Manager, QSR</div></div>
+          <a href="p02.html" style="font-size:12px;color:var(--accent);font-weight:700;text-decoration:none;">View full P02 profile →</a>
+        </div>
+      </div>
+
+      <div class="xcard" onclick="toggleCard(this)">
+        <div class="xcard-head">
+          <span class="xcard-pill high">P03</span>
+          <div class="xcard-summary"><h4>Data provenance is a prerequisite for trust</h4><div class="xcard-hook">Asked "where does this data come from?" multiple times. Unanchored projections erode trust.</div></div>
+          <span class="xcard-arrow">›</span>
+        </div>
+        <div class="xcard-body">
+          <div class="xb-text">Asked "where does this data come from?" multiple times for both cost spike and benchmark data. Also raised that unanchored projections (e.g., "$847 monthly recovery") erode trust — needs projections tied to a unit sales assumption so the math can be independently verified. Operates two concepts at different price tiers and flagged that geographic benchmarking alone will generate wrong recommendations for multi-concept operators.</div>
+          <div class="qblock"><blockquote>Even just one number — if you sold a hundred items this month, this is what your increase would be.</blockquote><div class="q-attr">P03 — Owner/Operator, Multi-Concept FSR</div></div>
+          <a href="p03.html" style="font-size:12px;color:var(--accent);font-weight:700;text-decoration:none;">View full P03 profile →</a>
+        </div>
+      </div>
+
+      <div class="xcard" onclick="toggleCard(this)">
+        <div class="xcard-head">
+          <span class="xcard-pill critical">P04</span>
+          <div class="xcard-summary"><h4>Modifier cascades are a real, hidden risk</h4><div class="xcard-hook">Shared a live incident where a base price change created modifier arbitrage that cost the business revenue.</div></div>
+          <span class="xcard-arrow">›</span>
+        </div>
+        <div class="xcard-body">
+          <div class="xb-text">Shared a live incident where a base price change created modifier arbitrage that cost the business revenue. The agent must surface which modifiers, substitutions, and add-ons are affected by any pricing change — not just the base item. Also surfaced the clearest monetization warning: a power user who would abandon the tool rather than buy more credits.</div>
+          <div class="qblock"><blockquote>You think it's a simple thing — everything goes up a dollar — but then you get into modifiers and add-ons. How far does this go is what I would want to know.</blockquote><div class="q-attr">P04 — Multi-Location Operator, FSR</div></div>
+          <a href="p04.html" style="font-size:12px;color:var(--accent);font-weight:700;text-decoration:none;">View full P04 profile →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="sdivider"></div>
+
+  <section class="section">
+    <div class="section-head"><h2>Themes Worth Elevating to Permanent Dimensions</h2><p>Five themes that should become standard questions in all future Ops Agent research.</p></div>
+    <hr class="section-rule">
+    <table class="theme-table">
+      <thead><tr><th>Theme</th><th>Participants</th><th>Signal strength</th><th>Recommendation</th></tr></thead>
+      <tbody>
+        <tr><td>Credits / Monetization Friction</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><span style="font-size:11px;color:#888;margin-left:4px;">4/4</span></div></td><td><span style="font-size:11px;color:var(--critical);font-weight:700;">Universal</span></td><td><span class="rec-pill">Promote to permanent dimension</span></td></tr>
+        <tr><td>Owner Sign-Off Gate</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">3/4</span></div></td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Structural req.</span></td><td><span class="rec-pill">Promote to permanent dimension</span></td></tr>
+        <tr><td>Multi-Location Publish Scope</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Deal-breaker</span></td><td><span class="rec-pill">Promote to permanent dimension</span></td></tr>
+        <tr><td>Competitive Benchmarking</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--blue);font-weight:700;">Independently surfaced</span></td><td><span class="rec-pill">Promote to permanent dimension</span></td></tr>
+        <tr><td>Downstream Action Deep-Links</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--blue);font-weight:700;">Consistent need</span></td><td><span class="rec-pill">Promote to permanent dimension</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<script>
+  function toggleCard(el) { el.classList.toggle('open'); }
+</script>
+</body>
+</html>

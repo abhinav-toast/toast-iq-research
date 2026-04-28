@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P02 — Menu &amp; Ops Manager, QSR · Ops Agent Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:80px}
+a{color:inherit;text-decoration:none}
+.topbar{position:sticky;top:0;z-index:100;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-back{color:rgba(255,255,255,0.55);font-size:12px;display:flex;align-items:center;gap:5px;transition:color .15s}
+.topbar-back:hover{color:#f97316}
+.topbar-sep{color:rgba(255,255,255,0.2);font-size:12px}
+.topbar-brand{color:#f97316;font-size:11px;font-weight:800;margin-left:auto}
+.p-nav{max-width:860px;margin:20px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center}
+.p-nav-label{font-size:11px;color:#aaa;margin-right:4px}
+.p-chip{display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid #ddd;color:#888;background:white;transition:all .15s;cursor:pointer}
+.p-chip:hover{border-color:#f97316;color:#f97316}
+.p-chip.active{background:#f97316;border-color:#f97316;color:white}
+.container{max-width:860px;margin:0 auto;padding:24px 24px 0}
+.hero{background:white;border:1px solid #ede8e0;border-radius:12px;padding:24px 28px;margin-bottom:20px;display:flex;gap:28px;align-items:flex-start}
+.hero-id{font-size:56px;font-weight:900;color:#f97316;line-height:1;font-family:Georgia,serif;flex-shrink:0}
+.hero-content{flex:1}
+.hero-role{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.hero-type{font-size:13px;color:#666;margin-bottom:14px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hero-rec{display:flex;align-items:center;gap:8px}
+.hero-rec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888}
+.rec-dots{display:flex;gap:4px}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:#e0e0e0}
+.rec-dot.filled{background:#f97316}
+.rec-text{font-size:13px;font-weight:700;color:#f97316}
+.hero-method-wrap{margin-top:14px;padding:10px 14px;background:#faf8f5;border-radius:6px;border:1px solid #ede8e0}
+.hero-method-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:3px}
+.hero-method-val{font-size:13px;color:#555;font-style:italic}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:10px;margin-top:28px}
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dim-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.dim-card:hover{border-color:#f97316}
+.dim-card.open{border-color:#f97316}
+.dim-header{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.dim-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.dim-icon.blue{background:#dbeafe;color:#1d6db5}
+.dim-icon.orange{background:#fff7ed;color:#ea580c}
+.dim-icon.red{background:#fff5f5;color:#c0390b}
+.dim-icon.green{background:#f0fdf4;color:#16a34a}
+.dim-icon.purple{background:#f5f3ff;color:#7c3aed}
+.dim-icon.teal{background:#f0fdfa;color:#0d9488}
+.dim-icon.indigo{background:#eef2ff;color:#4338ca}
+.dim-icon.amber{background:#fffbeb;color:#d97706}
+.dim-text{flex:1;min-width:0}
+.dim-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:2px}
+.dim-hook{font-size:12px;color:#333;line-height:1.4}
+.dim-chevron{font-size:11px;color:#ccc;flex-shrink:0;margin-top:5px;transition:transform .2s}
+.dim-card.open .dim-chevron{transform:rotate(90deg)}
+.dim-body{display:none;padding:0 14px 14px 52px;font-size:12px;color:#555;line-height:1.6;border-top:1px solid #f5f0ea}
+.dim-card.open .dim-body{display:block}
+.theme-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.theme-card:hover{border-color:#f97316}
+.theme-card.open{border-color:#f97316}
+.theme-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.theme-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.theme-dot.red{background:#c0390b}
+.theme-dot.orange{background:#f97316}
+.theme-dot.green{background:#16a34a}
+.theme-dot.blue{background:#1d6db5}
+.theme-dot.purple{background:#7c3aed}
+.theme-title{font-size:13px;font-weight:700;color:#1a1a1a;flex:1}
+.theme-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.theme-badge.new{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.theme-badge.recurring{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.theme-chevron{font-size:11px;color:#ccc;flex-shrink:0;transition:transform .2s}
+.theme-card.open .theme-chevron{transform:rotate(90deg)}
+.theme-body{display:none;padding:0 16px 16px;border-top:1px solid #f5f0ea}
+.theme-card.open .theme-body{display:block}
+.theme-what{font-size:12px;color:#555;line-height:1.6;margin-top:12px}
+.theme-why{margin-top:10px;padding:10px 12px;background:#faf8f5;border-radius:6px;border-left:3px solid #f97316}
+.theme-why-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#f97316;margin-bottom:3px}
+.theme-why-text{font-size:12px;color:#555;line-height:1.6}
+.theme-quote{margin-top:10px;padding:10px 14px;background:#f9f7f4;border-left:3px solid #ddd6ca;font-style:italic;font-size:12px;color:#666;line-height:1.6;border-radius:0 6px 6px 0}
+.verbatim-list{display:flex;flex-direction:column;gap:10px}
+.verbatim{background:white;border:1px solid #ede8e0;border-radius:8px;padding:16px 18px}
+.verbatim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:6px}
+.verbatim-quote{font-size:14px;color:#2d2d2d;line-height:1.7;font-style:italic;border-left:3px solid #f97316;padding-left:14px}
+.standout{background:#1e1e1e;border-radius:10px;padding:22px 24px;margin-top:10px}
+.standout-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:8px}
+.standout-text{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7}
+.standout-quote{margin-top:14px;font-style:italic;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-back">← Research Report</a>
+  <span class="topbar-sep">|</span>
+  <a href="combined.html" class="topbar-back">Combined Summary</a>
+  <span class="topbar-brand">Toast IQ Research</span>
+</div>
+
+<div class="p-nav">
+  <span class="p-nav-label">Participants:</span>
+  <a href="p01.html" class="p-chip">P01</a>
+  <span class="p-chip active">P02</span>
+  <a href="p03.html" class="p-chip">P03</a>
+  <a href="p04.html" class="p-chip">P04</a>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-id">P02</div>
+    <div class="hero-content">
+      <div class="hero-role">Menu &amp; Operations Manager</div>
+      <div class="hero-type">QSR · 4-Location Fried Chicken Chain · Floor ops, menu programming, item routing</div>
+      <div class="hero-meta">
+        <div class="hero-rec">
+          <span class="hero-rec-label">Receptivity</span>
+          <div class="rec-dots">
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot"></div>
+          </div>
+          <span class="rec-text">4 / 5 — Receptive</span>
+        </div>
+      </div>
+      <div class="hero-method-wrap">
+        <div class="hero-method-label">Current method</div>
+        <div class="hero-method-val">Toast IQ daily for lookups; manual menu edits via Toast + Menu Masters for cross-location sync</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Key Dimensions</div>
+  <div class="dim-grid">
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon blue">⟳</div>
+        <div class="dim-text">
+          <div class="dim-name">E2E Flow</div>
+          <div class="dim-hook">Delivery tiers unaddressed; Menu Masters integration is a hard dependency</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Two critical gaps: (1) Delivery price tiers (DoorDash/Uber Eats menus) are not addressed by the current approve-and-publish flow. (2) Menu Masters integration is a hard dependency — without it, multi-location operators must repeat the workflow per store, making it net-negative for this operator.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon green">✦</div>
+        <div class="dim-text">
+          <div class="dim-name">Onboarding &amp; First Impression</div>
+          <div class="dim-hook">Immediately recognized the agentic shift unprompted — "asking it to do something"</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Immediately and unprompted recognized the agentic shift: "you're asking it to do something for you instead of just asking a question." Reaction was positive — framed it as a desirable upgrade over the current Q&A model. No hand-holding needed to understand the concept.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon amber">$</div>
+        <div class="dim-text">
+          <div class="dim-name">Monetization</div>
+          <div class="dim-hook">Softer friction — needs ROI examples before first spend; asked about non-monetary earning</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Paused but not a hard veto. Asked how credits are earned, what the dollar equivalent is, and whether there are non-monetary ways to earn them (e.g., participating in research). Would need to see ROI examples from other restaurants before spending credits for the first time.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon blue">★</div>
+        <div class="dim-text">
+          <div class="dim-name">Trust</div>
+          <div class="dim-hook">Habitual verify-and-match; appreciated confidence scores + explicit reasoning</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Habitual verify-and-match approach: P02 cross-checks AI outputs against their own data to build confidence before trusting a new question type. Not anti-AI — trusts Toast IQ daily — but maintains personal validation as a backstop. Confidence scores and reasoning in the UI were appreciated as trust-building signals.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon purple">≡</div>
+        <div class="dim-text">
+          <div class="dim-name">Attribution</div>
+          <div class="dim-hook">Wants % change shown alongside final price in post-publish summary</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Monthly dollar impact estimate noted positively. Requested that the post-publish summary show percentage change, not just the final price, so the magnitude of the change is visible to the operator.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon red">↓</div>
+        <div class="dim-text">
+          <div class="dim-name">Downstream Consequences</div>
+          <div class="dim-hook">Reminder checklist appreciated; prefers to own the actions themselves</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Downstream reminder checklist was appreciated ("sometimes I'm like, oh, I forgot to do that"). Prefers to handle downstream actions themselves rather than having Toast automate them — "the reminder is enough, honestly." Menu Masters sync is the hard dependency across all 4 locations.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon teal">↗</div>
+        <div class="dim-text">
+          <div class="dim-name">Recommendation Relevance</div>
+          <div class="dim-hook">Bundle opportunity and underperforming item felt actionable; cost spike is dead (no data loaded)</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Bundle opportunity and underperforming item alert felt immediately actionable. Cost spike alert is non-functional for this participant because food costs are not loaded in Toast. Competitive pricing context — what other restaurants in the region are charging — was proactively called out as a missing but wanted signal.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon indigo">⊕</div>
+        <div class="dim-text">
+          <div class="dim-name">Cost Fidelity</div>
+          <div class="dim-hook">Food costs not loaded; would act on market-data recommendations if confidence shown</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Does not have food costs in Toast; cost spike alert is dead on arrival. Willing to act on pricing recommendations based on market data and confidence scores shown in the UI. Would still independently verify before committing to a price change.</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Emerging Themes</div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot orange"></div>
+      <div class="theme-title">Pricing Cadence Mismatch</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P02 stated that their restaurant changes prices quarterly or semi-annually at most, because customers notice and react negatively to frequent price changes. The prototype's "effective tomorrow" framing landed as misaligned with how they actually operate.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">If the agent's urgency framing ("act now," "effective tomorrow") is calibrated for farm-to-table or high-volatility cost environments, it will feel irrelevant or even alarming to QSR operators with stable menus — potentially eroding trust in the recommendation engine overall.</div>
+      </div>
+      <div class="theme-quote">"We're not gonna change our prices weekly or even monthly. It's more of, like, a quarterly maybe, maybe half a year kind of thing, because people will notice that you're changing prices up and down and they don't like that."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot blue"></div>
+      <div class="theme-title">Competitive Benchmarking as a Distinct Want</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P02 unprompted asked for regional competitive context — what other restaurants in their state or area are doing for specials and pricing. This was entirely unprompted and distinct from the cost-based recommendations already in the prototype.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">This is a distinct signal beyond the pricing optimization use case — operators want peer benchmarking as a trust anchor and a discovery tool for promotional strategy, not just cost-based pricing guidance. The agent's value proposition extends into market intelligence.</div>
+      </div>
+      <div class="theme-quote">"What other stores are doing as well, what other restaurants across, like, your same state or region, kind of, like, what they're doing for their specials."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Multi-Location Publish Scope</div>
+      <span class="theme-badge recurring">Recurring · 2/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P02 flagged that because all four locations share the same menu via Menu Masters, any price change must apply across all locations simultaneously. Approving a change per-store is not viable.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Recurring theme — seen in P02 and P04. The publish/approve step is currently designed as a single-location action. Multi-location operators need a scope selector or integration with menu sync tools before this workflow is usable.</div>
+      </div>
+      <div class="theme-quote">"To make this work, it would have to, like, immediately be part of menu masters for us to want to do this, because we don't want to have to go through it four times."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot amber"></div>
+      <div class="theme-title">Credits / Monetization Friction</div>
+      <span class="theme-badge recurring">Recurring · 4/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P02 paused on the credits gate and asked how credits are acquired, what they cost, and whether there are non-monetary ways to earn them. Would need ROI examples before spending credits the first time.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">P04 had harder resistance (would not pay beyond free allotment); P02 is softer but still needs a clear value-exchange story and proof before committing. The credits model creates friction at the moment of highest intent — just before a recommendation is acted on.</div>
+      </div>
+      <div class="theme-quote">"I would probably need examples before pressing it the first time to know if it was going to be worth it or not. Because you want to weigh out, because if something else also costs credits, you want to weigh out what you want to learn more about, what's more valuable."</div>
+    </div>
+  </div>
+
+  <div class="section-title">Magnetic Verbatims</div>
+  <div class="verbatim-list">
+
+    <div class="verbatim">
+      <div class="verbatim-label">Agentic shift recognition — killer framing</div>
+      <div class="verbatim-quote">"I can see that you're asking it to do something for you instead of just asking a question, and that would be nice. It nice to say, like, can you increase everything by 5% or can you change the delivery price on something, or, I mean, that would be nice to be able to do that."</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Pricing cadence mismatch — deal-breaker framing</div>
+      <div class="verbatim-quote">"We're not gonna change our prices weekly or even monthly. It's more of, like, a quarterly maybe, maybe half a year kind of thing, because people will notice that you're changing prices up and down and they don't like that."</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Credits gate — ROI-first before spending</div>
+      <div class="verbatim-quote">"I would probably need examples before pressing it the first time to know if it was going to be worth it or not. Because you want to weigh out, because if something else also costs credits, you want to weigh out what you want to learn more about, what's more valuable."</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Standout Insight</div>
+  <div class="standout">
+    <div class="standout-label">Key Takeaway</div>
+    <div class="standout-text">P02 wants competitive benchmarking — what other restaurants in their region are doing for specials and pricing — as a distinct input separate from cost-based recommendations. This was entirely unprompted and suggests the agent's value proposition extends beyond internal data analysis into market intelligence.</div>
+    <div class="standout-quote">"I can see that you're asking it to do something for you instead of just asking a question, and that would be nice. It nice to say, like, can you increase everything by 5% or can you change the delivery price on something, or, I mean, that would be nice to be able to do that."</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P03 — Multi-Location Owner, FSR · Ops Agent Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:80px}
+a{color:inherit;text-decoration:none}
+.topbar{position:sticky;top:0;z-index:100;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-back{color:rgba(255,255,255,0.55);font-size:12px;display:flex;align-items:center;gap:5px;transition:color .15s}
+.topbar-back:hover{color:#f97316}
+.topbar-sep{color:rgba(255,255,255,0.2);font-size:12px}
+.topbar-brand{color:#f97316;font-size:11px;font-weight:800;margin-left:auto}
+.p-nav{max-width:860px;margin:20px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center}
+.p-nav-label{font-size:11px;color:#aaa;margin-right:4px}
+.p-chip{display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;font-size:12px;font-weight:700;border:1.5px solid #ddd;color:#888;background:white;transition:all .15s;cursor:pointer}
+.p-chip:hover{border-color:#f97316;color:#f97316}
+.p-chip.active{background:#f97316;border-color:#f97316;color:white}
+.container{max-width:860px;margin:0 auto;padding:24px 24px 0}
+.hero{background:white;border:1px solid #ede8e0;border-radius:12px;padding:24px 28px;margin-bottom:20px;display:flex;gap:28px;align-items:flex-start}
+.hero-id{font-size:56px;font-weight:900;color:#f97316;line-height:1;font-family:Georgia,serif;flex-shrink:0}
+.hero-content{flex:1}
+.hero-role{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.hero-type{font-size:13px;color:#666;margin-bottom:14px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hero-rec{display:flex;align-items:center;gap:8px}
+.hero-rec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888}
+.rec-dots{display:flex;gap:4px}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:#e0e0e0}
+.rec-dot.filled{background:#f97316}
+.rec-text{font-size:13px;font-weight:700;color:#f97316}
+.hero-method-wrap{margin-top:14px;padding:10px 14px;background:#faf8f5;border-radius:6px;border:1px solid #ede8e0}
+.hero-method-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:3px}
+.hero-method-val{font-size:13px;color:#555;font-style:italic}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin-bottom:10px;margin-top:28px}
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dim-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.dim-card:hover{border-color:#f97316}
+.dim-card.open{border-color:#f97316}
+.dim-header{padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.dim-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.dim-icon.blue{background:#dbeafe;color:#1d6db5}
+.dim-icon.orange{background:#fff7ed;color:#ea580c}
+.dim-icon.red{background:#fff5f5;color:#c0390b}
+.dim-icon.green{background:#f0fdf4;color:#16a34a}
+.dim-icon.purple{background:#f5f3ff;color:#7c3aed}
+.dim-icon.teal{background:#f0fdfa;color:#0d9488}
+.dim-icon.indigo{background:#eef2ff;color:#4338ca}
+.dim-icon.amber{background:#fffbeb;color:#d97706}
+.dim-text{flex:1;min-width:0}
+.dim-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:2px}
+.dim-hook{font-size:12px;color:#333;line-height:1.4}
+.dim-chevron{font-size:11px;color:#ccc;flex-shrink:0;margin-top:5px;transition:transform .2s}
+.dim-card.open .dim-chevron{transform:rotate(90deg)}
+.dim-body{display:none;padding:0 14px 14px 52px;font-size:12px;color:#555;line-height:1.6;border-top:1px solid #f5f0ea}
+.dim-card.open .dim-body{display:block}
+.theme-card{background:white;border:1px solid #ede8e0;border-radius:8px;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.theme-card:hover{border-color:#f97316}
+.theme-card.open{border-color:#f97316}
+.theme-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.theme-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.theme-dot.red{background:#c0390b}
+.theme-dot.orange{background:#f97316}
+.theme-dot.green{background:#16a34a}
+.theme-dot.blue{background:#1d6db5}
+.theme-dot.purple{background:#7c3aed}
+.theme-title{font-size:13px;font-weight:700;color:#1a1a1a;flex:1}
+.theme-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+.theme-badge.new{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.theme-badge.recurring{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.theme-chevron{font-size:11px;color:#ccc;flex-shrink:0;transition:transform .2s}
+.theme-card.open .theme-chevron{transform:rotate(90deg)}
+.theme-body{display:none;padding:0 16px 16px;border-top:1px solid #f5f0ea}
+.theme-card.open .theme-body{display:block}
+.theme-what{font-size:12px;color:#555;line-height:1.6;margin-top:12px}
+.theme-why{margin-top:10px;padding:10px 12px;background:#faf8f5;border-radius:6px;border-left:3px solid #f97316}
+.theme-why-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#f97316;margin-bottom:3px}
+.theme-why-text{font-size:12px;color:#555;line-height:1.6}
+.theme-quote{margin-top:10px;padding:10px 14px;background:#f9f7f4;border-left:3px solid #ddd6ca;font-style:italic;font-size:12px;color:#666;line-height:1.6;border-radius:0 6px 6px 0}
+.verbatim-list{display:flex;flex-direction:column;gap:10px}
+.verbatim{background:white;border:1px solid #ede8e0;border-radius:8px;padding:16px 18px}
+.verbatim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:6px}
+.verbatim-quote{font-size:14px;color:#2d2d2d;line-height:1.7;font-style:italic;border-left:3px solid #f97316;padding-left:14px}
+.standout{background:#1e1e1e;border-radius:10px;padding:22px 24px;margin-top:10px}
+.standout-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:8px}
+.standout-text{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7}
+.standout-quote{margin-top:14px;font-style:italic;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;border-top:1px solid rgba(255,255,255,0.1);padding-top:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-back">← Research Report</a>
+  <span class="topbar-sep">|</span>
+  <a href="combined.html" class="topbar-back">Combined Summary</a>
+  <span class="topbar-brand">Toast IQ Research</span>
+</div>
+
+<div class="p-nav">
+  <span class="p-nav-label">Participants:</span>
+  <a href="p01.html" class="p-chip">P01</a>
+  <a href="p02.html" class="p-chip">P02</a>
+  <span class="p-chip active">P03</span>
+  <a href="p04.html" class="p-chip">P04</a>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="hero-id">P03</div>
+    <div class="hero-content">
+      <div class="hero-role">Multi-Location Owner/Operator</div>
+      <div class="hero-type">FSR · Multiple concepts at different price tiers · Manual product mix review</div>
+      <div class="hero-meta">
+        <div class="hero-rec">
+          <span class="hero-rec-label">Receptivity</span>
+          <div class="rec-dots">
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot filled"></div>
+            <div class="rec-dot"></div>
+          </div>
+          <span class="rec-text">4 / 5 — Receptive</span>
+        </div>
+      </div>
+      <div class="hero-method-wrap">
+        <div class="hero-method-label">Current method</div>
+        <div class="hero-method-val">Manual product mix review + personal market research; batches pricing changes quarterly</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Key Dimensions</div>
+  <div class="dim-grid">
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon blue">⟳</div>
+        <div class="dim-text">
+          <div class="dim-name">E2E Flow</div>
+          <div class="dim-hook">Printed menus are a hard constraint; batches changes quarterly</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Printed menus are a hard constraint — can't make on-the-fly price changes mid-menu cycle. Prefers to batch recommendations to quarterly menu change rhythm. Notification touchpoint should be in the menu editor (button or banner) rather than a separate tool.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon green">✦</div>
+        <div class="dim-text">
+          <div class="dim-name">Onboarding &amp; First Impression</div>
+          <div class="dim-hook">Liked IQ on menus page; immediately interrogated data sources — a sign of engagement</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Liked IQ surfaced on the menus page. No orientation confusion. Immediately started interrogating data sources rather than the concept itself — a sign of engagement, not skepticism. This operator quickly moves past "what is this" to "can I trust this."</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon amber">$</div>
+        <div class="dim-text">
+          <div class="dim-name">Monetization</div>
+          <div class="dim-hook">Noticed immediately; conditional — willing to pay if dollar value is clear and ROI justifies it</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Noticed credits immediately without being prompted ("there's a fee"). Did not hard-reject but made acceptance conditional on knowing the dollar value per credit. Would weigh cost vs. projected revenue recovery before deciding.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon red">★</div>
+        <div class="dim-text">
+          <div class="dim-name">Trust</div>
+          <div class="dim-hook">Highly cautious — prior trauma from Uber Eats auto-writing descriptions without approval</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Highly cautious due to a prior negative experience with Uber Eats auto-writing item descriptions without approval. Requires human-in-the-loop approval before anything goes live. Would not auto-apply under any circumstances — but engagement was strong once he confirmed control was preserved.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon purple">≡</div>
+        <div class="dim-text">
+          <div class="dim-name">Attribution</div>
+          <div class="dim-hook">$847 projection confused him; wants unit-anchored numbers he can sanity-check</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Confused by the $847 monthly recovery figure — could not tell if it applied to one item or all affected items. Questioned whether the number was realistic. Wants projections anchored to a concrete unit sales quantity ("if you sold 100 items this month, this is your increase") so he can verify the math himself.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon orange">↓</div>
+        <div class="dim-text">
+          <div class="dim-name">Downstream Consequences</div>
+          <div class="dim-hook">Accepted static checklist naturally; did not push for deep-links</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Accepted the checklist presentation (reprint menus, update website, POS auto-updates, inform staff) without friction. Acknowledged the list naturally: "anything else I have to redo, gotcha." Did not push for automation or deep-links — a divergence from P04.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon teal">↗</div>
+        <div class="dim-text">
+          <div class="dim-name">Recommendation Relevance</div>
+          <div class="dim-hook">Local pricing benchmarking is genuinely new value — he does this manually today</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Pricing benchmarking ("what others are charging") felt like new and genuinely valuable signal — P03 already does this manually and sees automation as an upgrade. Underperforming items and pricing optimization were familiar territory but appreciated being surfaced proactively.</div>
+    </div>
+
+    <div class="dim-card" onclick="this.classList.toggle('open')">
+      <div class="dim-header">
+        <div class="dim-icon indigo">⊕</div>
+        <div class="dim-text">
+          <div class="dim-name">Cost Fidelity</div>
+          <div class="dim-hook">Repeatedly interrogated data provenance — for costs and benchmarks both</div>
+        </div>
+        <div class="dim-chevron">›</div>
+      </div>
+      <div class="dim-body">Asked "Where are you getting your data from?" multiple times — for both the cost spike source (industry-wide? invoicing-integrated?) and the local market pricing average (other Toast restaurants? third-party data?). Also raised ingredient quality as a variable that aggregate benchmarks can't capture (premium cream vs. half-and-half).</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Emerging Themes</div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Multi-Concept Pricing Complexity</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P03 operates multiple restaurants at different price tiers — a casual concept where an Alfredo is ~$16.49 and an upscale concept where the same dish runs mid-$20s. He asked directly: "How does it differentiate those?" when told the agent benchmarks to local market averages.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Geographic benchmarking alone is insufficient for multi-concept operators. If the agent doesn't account for concept tier or positioning, it will generate systematically wrong pricing recommendations — a gap that affects a large and lucrative segment of Toast's customer base.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot orange"></div>
+      <div class="theme-title">Projected Impact Anchoring</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">When shown an $847 monthly recovery projection, P03 found the number confusing and hard to believe at face value. He wanted the projection tethered to a realistic unit sales assumption so he could sanity-check it himself.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Unanchored dollar projections erode trust rather than build it. Operators need a calculation they can verify against known sales volumes — otherwise big numbers feel fabricated rather than credible.</div>
+      </div>
+      <div class="theme-quote">"Even just one number, if you sold a hundred items this month, this is what your increase would be."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot purple"></div>
+      <div class="theme-title">Ingredient Quality as Pricing Wildcard</div>
+      <span class="theme-badge new">New</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P03 questioned whether the agent accounts for quality differentials in ingredients when comparing his prices to competitors. He uses premium ingredients and acknowledged that aggregate benchmarks can't capture this nuance — though he ultimately accepted it as his own decision to make.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Operators who use premium ingredients may appear "overpriced" against lower-quality competitors. If the agent flags them as pricing outliers without acknowledging quality context, it could undermine credibility with quality-focused operators.</div>
+      </div>
+      <div class="theme-quote">"Some restaurants don't use heavy creams. Some use half and half...I like good products here."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot red"></div>
+      <div class="theme-title">Data Source Skepticism (Data Provenance)</div>
+      <span class="theme-badge recurring">Recurring · 2/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P03 asked "Where are you getting your data from?" multiple times throughout the session — for both the cost spike source and the local market pricing average. This was a recurring interrogation, not a one-time question.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Data provenance is a prerequisite for trust. Operators will not act on recommendations if they cannot form a plausible mental model of where the numbers came from. The agent needs to surface a brief, plain-language explanation of its data source alongside each recommendation.</div>
+      </div>
+      <div class="theme-quote">"It's telling me that I'm, I'm too cheap for a certain item and the local market average is, 10% higher. So it gives me the opportunity to change my price 10% more, possibly. Where are you getting your data from? I guess is my question."</div>
+    </div>
+  </div>
+
+  <div class="theme-card" onclick="this.classList.toggle('open')">
+    <div class="theme-header">
+      <div class="theme-dot amber"></div>
+      <div class="theme-title">Credits / Monetization Friction</div>
+      <span class="theme-badge recurring">Recurring · 4/4</span>
+      <div class="theme-chevron">›</div>
+    </div>
+    <div class="theme-body">
+      <div class="theme-what">P03 independently flagged the credits model without prompting. Unlike P04 (who rejected it more forcefully), P03 took a conditional stance: willing to use credits if the per-credit dollar value is transparent and the projected recovery justifies the cost.</div>
+      <div class="theme-why">
+        <div class="theme-why-label">Why it matters</div>
+        <div class="theme-why-text">Recurring across all 4 participants. The credits model creates friction at the moment of highest intent. P03 is the most moderate of the four — conditional acceptance — but even this is a friction point that needs resolution.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Magnetic Verbatims</div>
+  <div class="verbatim-list">
+
+    <div class="verbatim">
+      <div class="verbatim-label">Trust anchor — prior trauma with Uber Eats auto-actions</div>
+      <div class="verbatim-quote">"I almost felt like they hijacked my descriptions. To the point of, not being super accurate. And, and, it was, I was not really happy with what it was doing. So as long as I have. Have control of it and not get hijacked by, it just puts descriptions in there for me without me having able to adjust or change them is a, is a big issue."</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Projected impact needs an anchor</div>
+      <div class="verbatim-quote">"Even just one number, if you sold a hundred items this month, this is what your increase would be."</div>
+    </div>
+
+    <div class="verbatim">
+      <div class="verbatim-label">Data provenance question — pricing benchmark</div>
+      <div class="verbatim-quote">"It's telling me that I'm, I'm too cheap for a certain item and the local market average is, 10% higher. So it gives me the opportunity to change my price 10% more, possibly. Where are you getting your data from? I guess is my question."</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Standout Insight</div>
+  <div class="standout">
+    <div class="standout-label">Key Takeaway</div>
+    <div class="standout-text">P03 operates multiple concepts at different price tiers and asked directly how the agent differentiates between a casual $16 pasta and an upscale $25 version of the same dish in the same market. Geographic benchmarking alone breaks for multi-concept operators — this is a gap the prototype doesn't yet address.</div>
+    <div class="standout-quote">"I almost felt like they hijacked my descriptions. To the point of, not being super accurate. And, and, it was, I was not really happy with what it was doing. So as long as I have control of it and not get hijacked by, it just puts descriptions in there for me without me having able to adjust or change them is a, is a big issue."</div>
+  </div>
+
+</div>
+</body>
+</html>

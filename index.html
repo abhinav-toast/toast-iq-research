@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toast IQ Ops Agent — Research Report</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf8f5;
+    --border: #e4ddd4;
+    --card: #ffffff;
+    --text: #1e1e1e;
+    --muted: #888;
+    --light: #bbb;
+    --accent: #f97316;
+    --critical: #c0390b;
+    --critical-bg: #fff4f2;
+    --critical-border: #fcd9d2;
+    --high: #b45309;
+    --high-bg: #fffbf0;
+    --high-border: #fce9c0;
+    --opportunity: #16a34a;
+    --opp-bg: #f0fdf4;
+    --opp-border: #bbf7d0;
+    --blue: #1d6db5;
+    --blue-bg: #eff6ff;
+    --blue-border: #bfdbfe;
+    --topbar: 48px;
+    --sidebar: 200px;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    height: var(--topbar);
+    background: #111;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { color: var(--accent); font-weight: 800; font-size: 15px; letter-spacing: -.3px; }
+  .topbar-sep { color: #444; }
+  .topbar-title { color: rgba(255,255,255,.55); font-size: 13px; }
+  .topbar-meta { color: rgba(255,255,255,.28); font-size: 11px; }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; padding-top: var(--topbar); min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar);
+    flex-shrink: 0;
+    position: fixed;
+    top: var(--topbar); bottom: 0; left: 0;
+    background: #f4efe8;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 0 40px;
+  }
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #d4cdc4; border-radius: 2px; }
+  .s-label {
+    font-size: 9px; letter-spacing: 1.1px; text-transform: uppercase;
+    color: var(--light); font-weight: 700;
+    padding: 0 16px; margin: 16px 0 4px;
+  }
+  .s-label:first-child { margin-top: 4px; }
+  .s-item {
+    display: block; padding: 6px 16px;
+    font-size: 12px; color: #666;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all .1s;
+  }
+  .s-item:hover { background: rgba(0,0,0,.04); color: var(--text); }
+  .s-item.active { background: #fff7f0; color: var(--critical); border-left-color: var(--critical); font-weight: 600; }
+  .s-badge {
+    float: right; font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 8px; margin-top: 1px;
+  }
+  .s-badge.red { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+  .s-badge.orange { background: var(--high-bg); color: var(--high); border: 1px solid var(--high-border); }
+  .s-badge.green { background: var(--opp-bg); color: var(--opportunity); border: 1px solid var(--opp-border); }
+
+  /* ── MAIN ── */
+  .main { margin-left: var(--sidebar); flex: 1; padding: 36px 40px 80px; max-width: 960px; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 56px; }
+  .section-head { margin-bottom: 20px; }
+  .section-head h2 { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 3px; }
+  .section-head p { font-size: 12px; color: var(--muted); }
+  .section-rule { border: none; border-top: 1px solid var(--border); margin-bottom: 20px; }
+
+  /* ── STAT ROW ── */
+  .stat-row { display: flex; gap: 12px; margin-bottom: 24px; }
+  .stat {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n { font-size: 28px; font-weight: 800; line-height: 1; }
+  .stat .l { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .4px; font-weight: 600; }
+  .stat.blue .n { color: var(--blue); }
+  .stat.green .n { color: var(--opportunity); }
+  .stat.red .n { color: var(--critical); }
+  .stat.orange .n { color: var(--high); }
+
+  /* ── CARD GRID ── */
+  .card-grid { display: grid; gap: 10px; }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── EXPANDABLE CARD ── */
+  .xcard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow .15s;
+  }
+  .xcard:hover { box-shadow: 0 2px 14px rgba(0,0,0,.07); }
+  .xcard.open { box-shadow: 0 4px 20px rgba(0,0,0,.10); border-color: #c9c0b5; }
+
+  .xcard-head {
+    display: flex; align-items: flex-start;
+    gap: 12px; padding: 14px 16px;
+    cursor: pointer; user-select: none;
+  }
+  .xcard-head:hover .xcard-arrow { color: var(--accent); }
+
+  .xcard-pill {
+    flex-shrink: 0; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    padding: 3px 8px; border-radius: 4px; margin-top: 1px; white-space: nowrap;
+  }
+  .xcard-pill.critical { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical-border); }
+  .xcard-pill.high { background: var(--high-bg); color: var(--high); border: 1px solid var(--high-border); }
+  .xcard-pill.opportunity { background: var(--opp-bg); color: var(--opportunity); border: 1px solid var(--opp-border); }
+  .xcard-pill.explore { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .xcard-pill.neutral { background: #f4f4f4; color: #555; border: 1px solid #e0e0e0; }
+
+  .xcard-summary { flex: 1; }
+  .xcard-summary h4 { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; line-height: 1.35; }
+  .xcard-summary .xcard-hook { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  .p-dots { display: flex; gap: 3px; margin-top: 6px; flex-wrap: wrap; }
+  .p-dot {
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 8px;
+    background: #f4efe8; color: #666; border: 1px solid var(--border);
+  }
+  .p-dot.lit { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
+
+  .xcard-arrow {
+    flex-shrink: 0; font-size: 16px; color: var(--light);
+    transition: transform .2s, color .15s; align-self: center;
+  }
+  .xcard.open .xcard-arrow { transform: rotate(90deg); color: var(--accent); }
+
+  /* ── EXPANDED BODY ── */
+  .xcard-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 16px 18px 18px;
+    background: #fdfcfb;
+  }
+  .xcard.open .xcard-body { display: block; }
+
+  .xb-section { margin-bottom: 14px; }
+  .xb-section:last-child { margin-bottom: 0; }
+  .xb-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--light); margin-bottom: 7px;
+  }
+  .xb-text { font-size: 12px; color: #444; line-height: 1.65; }
+  .xb-text strong { color: #222; }
+
+  /* implication box */
+  .implication {
+    background: var(--high-bg); border-left: 2px solid var(--high);
+    border-radius: 0 6px 6px 0; padding: 8px 12px;
+    font-size: 12px; color: #4a3000; line-height: 1.6;
+  }
+  .implication strong { color: var(--high); }
+
+  /* do/dont */
+  .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .do-block, .dont-block { border-radius: 7px; padding: 10px 12px; }
+  .do-block { background: var(--opp-bg); border: 1px solid var(--opp-border); }
+  .dont-block { background: var(--critical-bg); border: 1px solid var(--critical-border); }
+  .dd-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+  .do-block .dd-label { color: var(--opportunity); }
+  .dont-block .dd-label { color: var(--critical); }
+  .do-block ul, .dont-block ul { list-style: none; padding: 0; }
+  .do-block li, .dont-block li { font-size: 11px; line-height: 1.5; padding: 3px 0; display: flex; gap: 6px; border-bottom: 1px solid rgba(0,0,0,.05); color: #333; }
+  .do-block li:last-child, .dont-block li:last-child { border-bottom: none; }
+  .do-block li::before { content: '✓'; color: var(--opportunity); font-weight: 700; flex-shrink: 0; }
+  .dont-block li::before { content: '✗'; color: var(--critical); font-weight: 700; flex-shrink: 0; }
+
+  /* quote */
+  .quote-block {
+    background: #fff8f3; border-left: 3px solid var(--accent);
+    border-radius: 0 7px 7px 0; padding: 10px 14px;
+  }
+  .quote-block blockquote { font-style: italic; font-size: 12px; color: #333; line-height: 1.65; }
+  .quote-block blockquote::before { content: '\201C'; color: var(--accent); font-size: 16px; vertical-align: -3px; margin-right: 1px; }
+  .quote-block blockquote::after { content: '\201D'; color: var(--accent); font-size: 16px; vertical-align: -3px; margin-left: 1px; }
+  .quote-attr { font-size: 10px; color: var(--muted); margin-top: 5px; font-weight: 600; }
+
+  /* pattern tags */
+  .ptag-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .ptag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 8px; border-radius: 4px;
+    background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border);
+  }
+  .ptag::before { content: '⬡'; font-size: 8px; }
+
+  /* standout */
+  .standout {
+    background: var(--high-bg); border: 1px solid var(--high-border);
+    border-radius: 8px; padding: 12px 16px;
+  }
+  .standout .s-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--high); margin-bottom: 5px; }
+  .standout p { font-size: 12px; color: #3a2000; line-height: 1.6; }
+
+  /* ── PARTICIPANT CARDS ── */
+  .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .p-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; transition: box-shadow .15s;
+  }
+  .p-card:hover { box-shadow: 0 2px 14px rgba(0,0,0,.07); }
+  .p-card.open { box-shadow: 0 4px 20px rgba(0,0,0,.10); border-color: #c9c0b5; }
+  .p-card-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+  }
+  .p-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: var(--critical-bg); border: 2px solid var(--critical-border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px; color: var(--critical);
+  }
+  .p-info { flex: 1; }
+  .p-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 1px; }
+  .p-info .p-role { font-size: 11px; color: var(--muted); }
+  .recep-row { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+  .rdot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); }
+  .rdot.on { background: var(--accent); }
+  .rdot.on5 { background: var(--opportunity); }
+  .recep-label { font-size: 10px; color: var(--muted); }
+  .p-card-body { display: none; border-top: 1px solid var(--border); padding: 14px 16px; background: #fdfcfb; }
+  .p-card.open .p-card-body { display: block; }
+  .p-row { margin-bottom: 8px; }
+  .p-row .p-rl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--light); margin-bottom: 4px; }
+  .p-row p { font-size: 12px; color: #444; line-height: 1.55; }
+  .tag-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .ttag { font-size: 10px; padding: 2px 7px; border-radius: 8px; background: #f4efe8; color: #666; border: 1px solid var(--border); }
+
+  /* ── THEMES TABLE ── */
+  .theme-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .theme-table thead th { text-align: left; padding: 8px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; border-bottom: 2px solid var(--border); }
+  .theme-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; cursor: pointer; }
+  .theme-table tbody tr:hover { background: rgba(0,0,0,.02); }
+  .theme-table td { padding: 10px 12px; vertical-align: middle; }
+  .theme-table td:first-child { font-weight: 600; color: #111; }
+  .dot-row { display: flex; gap: 4px; align-items: center; }
+  .tdot { width: 9px; height: 9px; border-radius: 50%; }
+  .tdot.on { background: var(--critical); }
+  .tdot.off { background: var(--border); }
+  .recommend { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: var(--opp-bg); color: var(--opportunity); border: 1px solid var(--opp-border); }
+
+  /* ── PHASE CARDS ── */
+  .phase-timeline { display: flex; gap: 0; margin-bottom: 28px; position: relative; }
+  .phase-timeline::before { content: ''; position: absolute; top: 20px; left: 20px; right: 20px; height: 2px; background: var(--border); z-index: 0; }
+  .tl-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 1; }
+  .tl-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: white; border: 3px solid var(--bg); }
+  .tl-dot.p1 { background: var(--critical); }
+  .tl-dot.p2 { background: var(--high); }
+  .tl-dot.p3 { background: var(--opportunity); }
+  .tl-title { font-size: 11px; font-weight: 700; text-align: center; }
+  .tl-title.p1 { color: var(--critical); }
+  .tl-title.p2 { color: var(--high); }
+  .tl-title.p3 { color: var(--opportunity); }
+  .tl-sub { font-size: 10px; color: var(--muted); text-align: center; line-height: 1.4; }
+
+  /* phase section label */
+  .phase-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    margin-bottom: 8px;
+  }
+  .phase-label .pl-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .phase-label.p1 { color: var(--critical); }
+  .phase-label.p1 .pl-dot { background: var(--critical); }
+  .phase-label.p2 { color: var(--high); }
+  .phase-label.p2 .pl-dot { background: var(--high); }
+  .phase-label.p3 { color: var(--opportunity); }
+  .phase-label.p3 .pl-dot { background: var(--opportunity); }
+
+  /* ── PRINCIPLE CARDS ── */
+  .principle-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .pc {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .pc .pc-n { font-size: 10px; font-weight: 700; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+  .pc h4 { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+  .pc p { font-size: 11px; color: #555; line-height: 1.6; }
+  .pc .pc-src { font-size: 10px; color: var(--light); margin-top: 8px; font-style: italic; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--opp-bg); border: 1px solid var(--opp-border); border-radius: 8px;
+    padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start;
+    font-size: 12px; color: #144d2a; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .callout .ci { font-size: 15px; flex-shrink: 0; }
+
+  /* ── MENTAL MODEL CARDS ── */
+  .mm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mm-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .mm-card .mm-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .mm-card h4 { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .mm-card p { font-size: 11px; color: #555; line-height: 1.55; }
+  .mm-pill { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 3px; background: #f4efe8; color: #666; border: 1px solid var(--border); }
+
+  /* trust row */
+  .trust-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .trust-card { border-radius: 10px; padding: 14px 16px; border: 1px solid; }
+  .trust-card.present { background: var(--opp-bg); border-color: var(--opp-border); }
+  .trust-card.gap { background: var(--critical-bg); border-color: var(--critical-border); }
+  .trust-card .tc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .trust-card.present .tc-lbl { color: var(--opportunity); }
+  .trust-card.gap .tc-lbl { color: var(--critical); }
+  .trust-card h4 { font-size: 12px; font-weight: 700; margin-bottom: 5px; }
+  .trust-card p { font-size: 11px; color: #444; line-height: 1.55; }
+
+  /* control table */
+  .ctrl-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 14px; }
+  .ctrl-table thead th { text-align: left; padding: 6px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; border-bottom: 2px solid var(--border); }
+  .ctrl-table tbody tr { border-bottom: 1px solid var(--border); }
+  .ctrl-table td { padding: 8px 10px; vertical-align: top; }
+  .ctrl-table td:first-child { font-weight: 700; }
+
+  /* readiness table */
+  .rbar { height: 6px; border-radius: 3px; background: #eee; margin-top: 3px; }
+  .rfill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--opportunity), #86efac); }
+
+  /* two-col lists */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .acc-block { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .acc-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 9px; }
+  .acc-block.pos .acc-lbl { color: var(--opportunity); }
+  .acc-block.neg .acc-lbl { color: var(--critical); }
+  .acc-block ul { list-style: none; }
+  .acc-block li { font-size: 11px; color: #444; padding: 4px 0; border-bottom: 1px solid var(--border); line-height: 1.5; display: flex; gap: 6px; }
+  .acc-block li:last-child { border-bottom: none; }
+  .acc-block.pos li::before { content: '↑'; color: var(--opportunity); font-weight: 700; flex-shrink: 0; }
+  .acc-block.neg li::before { content: '↓'; color: var(--critical); font-weight: 700; flex-shrink: 0; }
+
+  /* section divider */
+  .sdivider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* scrollspy */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px; }
+    .card-grid.cols-2, .card-grid.cols-3, .p-grid, .principle-grid, .mm-grid, .two-col { grid-template-columns: 1fr; }
+    .do-dont { grid-template-columns: 1fr; }
+    .stat-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">Toast IQ</span>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">Ops Agent — User Research</span>
+  </div>
+  <div class="topbar-meta">n=4 operators · April 2026</div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="s-label">Overview</div>
+    <a class="s-item active" href="#summary">Summary</a>
+    <a class="s-item" href="#participants">Participants</a>
+
+    <div class="s-label">Context</div>
+    <a class="s-item" href="#adoption">Agent Adoption</a>
+
+    <div class="s-label">Findings</div>
+    <a class="s-item" href="#blockers">Must Fix <span class="s-badge red">3</span></a>
+    <a class="s-item" href="#opportunities">Opportunities <span class="s-badge green">2</span></a>
+    <a class="s-item" href="#themes">All Themes <span class="s-badge orange">5</span></a>
+
+    <div class="s-label">Per Operator</div>
+    <a class="s-item" href="p01.html">P01 · Owner/Op FSR ↗</a>
+    <a class="s-item" href="p02.html">P02 · Manager QSR ↗</a>
+    <a class="s-item" href="p03.html">P03 · Owner/Op FSR ↗</a>
+    <a class="s-item" href="p04.html">P04 · Operator FSR ↗</a>
+
+    <div class="s-label">More</div>
+    <a class="s-item" href="combined.html">Combined Summary ↗</a>
+
+    <div class="s-label">Design</div>
+    <a class="s-item" href="#design">Roadmap</a>
+    <a class="s-item" href="#phase1">Phase 1 — Now</a>
+    <a class="s-item" href="#phase2">Phase 2 — Next</a>
+    <a class="s-item" href="#phase3">Phase 3 — Later</a>
+    <a class="s-item" href="#principles">Principles</a>
+
+    <div class="s-label">Voices</div>
+    <a class="s-item" href="#quotes">Key Quotes</a>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ══ SUMMARY ══ -->
+    <section class="section" id="summary">
+      <div class="section-head">
+        <h2>Summary</h2>
+        <p>4 operators, all receptive. No one rejected the concept. Friction is structural, not attitudinal.</p>
+      </div>
+      <hr class="section-rule">
+
+      <div class="stat-row">
+        <div class="stat blue"><div class="n">4.25</div><div class="l">Avg Receptivity</div></div>
+        <div class="stat green"><div class="n">4/4</div><div class="l">Concept Accepted</div></div>
+        <div class="stat red"><div class="n">3</div><div class="l">Must Fix</div></div>
+        <div class="stat orange"><div class="n">2</div><div class="l">Opportunities</div></div>
+      </div>
+
+      <div class="card-grid cols-2">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill critical">Critical · 4/4</span>
+            <div class="xcard-summary">
+              <h4>Credits model will suppress usage</h4>
+              <div class="xcard-hook">Every participant noticed unprompted. P04 would investigate manually rather than pay.</div>
+              <div class="p-dots"><span class="p-dot lit">P01</span><span class="p-dot lit">P02</span><span class="p-dot lit">P03</span><span class="p-dot lit">P04</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">Operators already feel Toast is expensive, and a pay-to-use gate at the moment of highest intent is the wrong place for a paywall. P04 — a power user — would abandon the workflow and investigate manually rather than spend credits.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Design implication</div>
+              <div class="implication"><strong>Show per-credit dollar value + projected revenue recovery</strong> before the confirm gate. Consider a free first-use or bundled-usage model.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Key quote — P04</div>
+              <div class="quote-block"><blockquote>Toast makes a lot of money just off of us already. If it came down to wanting to know this thing, I would just go investigate it myself.</blockquote></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">High · 3/4</span>
+            <div class="xcard-summary">
+              <h4>Auto-apply cannot exist</h4>
+              <div class="xcard-hook">Three rejection reasons, same behavior. Pricing is an owner decision — not an AI decision.</div>
+              <div class="p-dots"><span class="p-dot">P02</span><span class="p-dot">P03</span><span class="p-dot">P04</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">P04 cited owner hierarchy. P02 cited organizational process. P03 cited deliberateness and control after a bad Uber Eats experience. Three different reasons, same conclusion: pricing changes are high-stakes decisions that cannot be triggered by AI unilaterally.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Design implication</div>
+              <div class="implication"><strong>The agent must support a persistent draft/review state</strong> that survives until an owner or designated approver acts on it. Auto-apply should not exist even as an opt-in.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Key quote — P04</div>
+              <div class="quote-block"><blockquote>Anything, anything — pricing or menu changes are always myself and the owners sitting down and discussing, and then making a decision.</blockquote></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">High · 2/4</span>
+            <div class="xcard-summary">
+              <h4>Multi-location scope + Menu Masters</h4>
+              <div class="xcard-hook">Without it, 4-location operators repeat the workflow 4× — worse than doing it manually.</div>
+              <div class="p-dots"><span class="p-dot">P02</span><span class="p-dot">P04</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">P02 requires Menu Masters integration — without it the workflow must be repeated per store, making it net-negative. P04 wants a location selector at the approve step. Both operate 4 locations with shared menus.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Design implication</div>
+              <div class="implication"><strong>Publish scope (single / all / select) must be a first-class control at the confirm step,</strong> with Menu Masters integration for chains running identical menus.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Opportunity</span>
+            <div class="xcard-summary">
+              <h4>Supplier alternatives → protect margins</h4>
+              <div class="xcard-hook">P01's magic wand: find a cheaper supplier instead of raising prices. A different value prop entirely.</div>
+              <div class="p-dots"><span class="p-dot">P01</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">When ingredient costs spike, the current prototype has one response: raise your price. P01's preferred response: find me a cheaper supplier at the original price. This reframes the cost-spike use case from reactive (raise prices) to proactive (protect margins) — a meaningfully different and potentially stickier value proposition.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Key quote — P01</div>
+              <div class="quote-block"><blockquote>Instead of raising the price of this dish, it would give me somewhere else to buy the cheese that we're losing money on here.</blockquote></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Opportunity</span>
+            <div class="xcard-summary">
+              <h4>Modifier cascade awareness</h4>
+              <div class="xcard-hook">P04 had a live revenue incident. Base price changes silently break modifier pricing.</div>
+              <div class="p-dots"><span class="p-dot">P04</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">P04 described a real incident where a base price change created modifier arbitrage — customers ordered a cheap dog patty to avoid paying for a double burger. The prototype treats price changes as item-level. They are not. A change on one item can silently break modifiers, add-ons, and substitutions.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Key quote — P04</div>
+              <div class="quote-block"><blockquote>You think it's a simple thing — everything goes up a dollar — but then you get into modifiers and add-ons and substitutions. How far does this go is what I would want to know.</blockquote></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill neutral">Validation</span>
+            <div class="xcard-summary">
+              <h4>The core concept lands</h4>
+              <div class="xcard-hook">P02 immediately named the agentic shift — unprompted, without any priming.</div>
+              <div class="p-dots"><span class="p-dot">P02</span></div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section">
+              <div class="xb-label">Finding</div>
+              <div class="xb-text">P02 immediately and unpromptedly articulated the shift from Q&A to action-taking. This is the clearest validation that the core concept is legible to operators — they understand what an agent does differently from a chatbot, and they want it.</div>
+            </div>
+            <div class="xb-section">
+              <div class="xb-label">Key quote — P02</div>
+              <div class="quote-block"><blockquote>I can see that you're asking it to do something for you instead of just asking a question — and that would be nice.</blockquote></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ PARTICIPANTS ══ -->
+    <section class="section" id="participants">
+      <div class="section-head">
+        <h2>Participants</h2>
+        <p>4 operators across FSR and QSR. All receptive — no concept rejection.</p>
+      </div>
+      <hr class="section-rule">
+      <div class="p-grid">
+
+        <div class="p-card" onclick="toggleCard(this)">
+          <div class="p-card-head">
+            <div class="p-avatar">P01</div>
+            <div class="p-info">
+              <h4>Owner / Operator · FSR</h4>
+              <div class="p-role">Independent · 1 location · NYC</div>
+              <div class="recep-row">
+                <div class="rdot on5"></div><div class="rdot on5"></div><div class="rdot on5"></div><div class="rdot on5"></div><div class="rdot on5"></div>
+                <span class="recep-label">5 — Enthusiastic</span>
+              </div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="p-card-body">
+            <div class="p-row"><div class="p-rl">Current method</div><p>Longhand math on a notepad</p></div>
+            <div class="p-row"><div class="p-rl">Wins</div><p>Cost-spike alert and pricing optimization are new and immediately actionable. High brand trust in Toast. Rated 5/5.</p></div>
+            <div class="p-row"><div class="p-rl">Concerns</div><p>Credits noticed immediately — questioned dollar value. Recipe data may be stale and needs verification before trusting recommendations.</p></div>
+            <div class="p-row"><div class="p-rl">Wants</div><p>Supplier alternative recommendations. Sandbox/preview before live changes. Auto staff notification on publish. Video/email onboarding before first credit spend.</p></div>
+            <div class="standout" style="margin-top:10px;"><div class="s-lbl">Standout insight</div><p>P01's "magic wand" is not a better UI — it's a different product: recommend an alternative supplier instead of a price increase. Reframes cost-spike from "raise prices" to "protect margins."</p></div>
+            <div class="tag-row"><span class="ttag">Credits friction</span><span class="ttag">Staff notification</span><span class="ttag">Data staleness</span></div>
+            <div style="margin-top:10px;"><a href="p01.html" style="font-size:12px;font-weight:700;color:var(--opportunity);text-decoration:none;" onclick="event.stopPropagation()">View full P01 profile →</a></div>
+          </div>
+        </div>
+
+        <div class="p-card" onclick="toggleCard(this)">
+          <div class="p-card-head">
+            <div class="p-avatar">P02</div>
+            <div class="p-info">
+              <h4>Menu &amp; Ops Manager · QSR</h4>
+              <div class="p-role">Fried chicken chain · 4 locations</div>
+              <div class="recep-row">
+                <div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot"></div>
+                <span class="recep-label">4 — Receptive</span>
+              </div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="p-card-body">
+            <div class="p-row"><div class="p-rl">Current method</div><p>Manual edits + Menu Masters for cross-location sync</p></div>
+            <div class="p-row"><div class="p-rl">Wins</div><p>Immediately named the agentic shift unprompted. Bundle opportunity and underperforming item alert resonate. Competitive regional benchmarking called out as a wanted signal.</p></div>
+            <div class="p-row"><div class="p-rl">Concerns</div><p>Food costs not in Toast — cost spike alert non-functional. Menu Masters is a hard dependency. Delivery price tier cascade unaddressed. Credits gate needs ROI examples first.</p></div>
+            <div class="p-row"><div class="p-rl">Wants</div><p>Menu Masters integration at publish step. Delivery menu cascade. Percentage change in post-publish summary. Competitive regional benchmarking data.</p></div>
+            <div class="standout" style="margin-top:10px;"><div class="s-lbl">Standout insight</div><p>P02 wants competitive benchmarking — what other restaurants in their region are doing for specials and pricing — entirely unprompted. The agent's value prop extends beyond internal data into market intelligence.</p></div>
+            <div class="tag-row"><span class="ttag">Menu Masters</span><span class="ttag">Competitive benchmarking</span><span class="ttag">Sign-off gate</span></div>
+            <div style="margin-top:10px;"><a href="p02.html" style="font-size:12px;font-weight:700;color:var(--opportunity);text-decoration:none;" onclick="event.stopPropagation()">View full P02 profile →</a></div>
+          </div>
+        </div>
+
+        <div class="p-card" onclick="toggleCard(this)">
+          <div class="p-card-head">
+            <div class="p-avatar">P03</div>
+            <div class="p-info">
+              <h4>Owner / Operator · Multi-Concept FSR</h4>
+              <div class="p-role">Multiple concepts · Multiple locations</div>
+              <div class="recep-row">
+                <div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot"></div>
+                <span class="recep-label">4 — Receptive</span>
+              </div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="p-card-body">
+            <div class="p-row"><div class="p-rl">Current method</div><p>Manual product mix review + personal market research</p></div>
+            <div class="p-row"><div class="p-rl">Wins</div><p>Local pricing benchmarking is new and genuinely valuable — does this manually today. Underperforming item alerts appreciated. Open to monthly automation workflow.</p></div>
+            <div class="p-row"><div class="p-rl">Concerns</div><p>Credits conditional on seeing per-credit dollar value. $847 projection was confusing — couldn't verify it. Prior Uber Eats experience creates distrust of auto-apply. Multi-concept tier differentiation not addressed.</p></div>
+            <div class="p-row"><div class="p-rl">Wants</div><p>Per-credit dollar transparency. Projections tied to unit sales quantity. Data provenance label on all recommendations. Concept/tier-aware benchmarking. Human-in-loop for all changes.</p></div>
+            <div class="standout" style="margin-top:10px;"><div class="s-lbl">Standout insight</div><p>P03 operates a casual concept (~$16 pasta) and an upscale concept (~$25 same dish) in the same market. Geographic benchmarking alone will generate wrong recommendations for multi-concept operators.</p></div>
+            <div class="tag-row"><span class="ttag">Data provenance</span><span class="ttag">Projection anchoring</span><span class="ttag">Multi-concept pricing</span></div>
+            <div style="margin-top:10px;"><a href="p03.html" style="font-size:12px;font-weight:700;color:var(--opportunity);text-decoration:none;" onclick="event.stopPropagation()">View full P03 profile →</a></div>
+          </div>
+        </div>
+
+        <div class="p-card" onclick="toggleCard(this)">
+          <div class="p-card-head">
+            <div class="p-avatar">P04</div>
+            <div class="p-info">
+              <h4>Multi-Location Operator · FSR</h4>
+              <div class="p-role">Burger/bar concept · 4 locations</div>
+              <div class="recep-row">
+                <div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot on"></div><div class="rdot"></div>
+                <span class="recep-label">4 — Receptive</span>
+              </div>
+            </div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="p-card-body">
+            <div class="p-row"><div class="p-rl">Current method</div><p>Manual menu changes + occasional Toast IQ Q&A</p></div>
+            <div class="p-row"><div class="p-rl">Wins</div><p>Cost spike alerts resonate. Bundle/combo opportunities genuinely new — has been debating combos internally for months. Clickable menus page entry point praised.</p></div>
+            <div class="p-row"><div class="p-rl">Concerns</div><p>Credits — immediate hard resistance, would not pay beyond free allotment. Modifier cascades not surfaced (live incident occurred). Auto-apply categorically rejected. Dramatic UI shift risks GM non-adoption.</p></div>
+            <div class="p-row"><div class="p-rl">Wants</div><p>Location selector at publish step. Modifier cascade transparency. Persistent draft for owner sign-off. Deep-links post-publish to staff announcements + social. Gradual UI transition.</p></div>
+            <div class="standout" style="margin-top:10px;"><div class="s-lbl">Standout insight</div><p>P04 is a power user and Toast advocate — yet the credits model triggered immediate resistance. They would abandon the tool rather than pay more credits, meaning the monetization model could suppress usage among exactly the customers who'd use it most.</p></div>
+            <div class="tag-row"><span class="ttag">Modifier cascades</span><span class="ttag">Owner sign-off</span><span class="ttag">Deep-links post-publish</span></div>
+            <div style="margin-top:10px;"><a href="p04.html" style="font-size:12px;font-weight:700;color:var(--opportunity);text-decoration:none;" onclick="event.stopPropagation()">View full P04 profile →</a></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ AGENT ADOPTION ══ -->
+    <section class="section" id="adoption">
+      <div class="section-head">
+        <h2>Agent Adoption</h2>
+        <p>How operators conceptualize agents, where trust lives, and what determines readiness.</p>
+      </div>
+      <hr class="section-rule">
+
+      <div class="xb-label" style="margin-bottom:10px;">How operators conceptualize agents</div>
+      <div class="mm-grid" style="margin-bottom:20px;">
+        <div class="mm-card"><div class="mm-top"><div class="p-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">P01</div><span class="mm-pill">Agent as smarter replacement</span></div><h4>Linear problem-solver</h4><p>Does pricing on a notepad. The agent slots into that workflow and does it better. High trust, low conceptual friction.</p></div>
+        <div class="mm-card"><div class="mm-top"><div class="p-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">P02</div><span class="mm-pill">Agent as Q&A upgrade</span></div><h4>Additive action-taker</h4><p>Already uses Toast IQ daily. Shift to action-taking is additive, not disruptive. Has a clear before/after comparison frame.</p></div>
+        <div class="mm-card"><div class="mm-top"><div class="p-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">P03</div><span class="mm-pill">Agent as co-pilot</span></div><h4>Proposes, never acts</h4><p>Mental model shaped by Uber Eats trauma. Didn't reject the concept — rejected the assumption that agents should have any autonomy.</p></div>
+        <div class="mm-card"><div class="mm-top"><div class="p-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">P04</div><span class="mm-pill">Agent as daily briefing</span></div><h4>Bundled morning intelligence</h4><p>Doesn't want an always-on agent. Wants intelligence bundled into a single daily check-in that fits around how he already starts his day.</p></div>
+      </div>
+
+      <div class="xb-label" style="margin-bottom:10px;">Trust architecture</div>
+      <div class="trust-row">
+        <div class="trust-card present"><div class="tc-lbl">✓ Largely present</div><h4>Institutional Trust</h4><p>P01, P02, P04 all express high trust in Toast as a platform. P03 is the outlier — prior platform trauma makes him skeptical of any system that acts without permission, regardless of brand.</p></div>
+        <div class="trust-card gap"><div class="tc-lbl">✗ The real gap</div><h4>Data Trust</h4><p>Even high-trust participants hesitated when numbers felt opaque. P03 asked "where does this data come from?" multiple times. P01 flagged stale recipe data. P04 needed the source labeled explicitly.</p></div>
+      </div>
+      <div class="callout"><span class="ci">→</span><div>Institutional trust gets the agent in the room. Data transparency — verifiable sources, anchored projections, labeled estimates — is what earns the second and third use.</div></div>
+
+      <div class="xb-label" style="margin-bottom:10px;">Control spectrum — all 4 rejected auto-apply, for different reasons</div>
+      <table class="ctrl-table">
+        <thead><tr><th>Operator</th><th>Position</th><th>Underlying reason</th></tr></thead>
+        <tbody>
+          <tr><td>P01</td><td>Would still check with staff, bar is low</td><td style="color:#555;">Social/operational habit, not distrust of the agent</td></tr>
+          <tr><td>P02</td><td>Verify-and-match before acting</td><td style="color:#555;">"Trust but verify" approach to all AI outputs</td></tr>
+          <tr><td>P03</td><td>Human-in-loop required, always</td><td style="color:#555;">Prior trauma — Uber Eats autonomy violation</td></tr>
+          <tr><td>P04</td><td>Owner sign-off required, no exceptions</td><td style="color:#555;">Organizational hierarchy — pricing is an owner decision</td></tr>
+        </tbody>
+      </table>
+      <div class="standout" style="margin-bottom:20px;"><div class="s-lbl">Key insight</div><p>Operators don't want agents to remove them from the loop — they want agents to reduce the cognitive load before they make the final call. The agent's job is to bring them to a confident decision faster, not to make the decision for them.</p></div>
+
+      <div class="xb-label" style="margin-bottom:10px;">Adoption readiness gradient</div>
+      <table class="ctrl-table">
+        <thead><tr><th>Operator</th><th>Readiness</th><th>Blocker</th></tr></thead>
+        <tbody>
+          <tr><td>P01</td><td><span style="font-size:11px;color:var(--opportunity);font-weight:700;">Closest to adoption</span><div class="rbar"><div class="rfill" style="width:90%"></div></div></td><td style="font-size:11px;color:#555;">Blocked only by recipe data staleness</td></tr>
+          <tr><td>P02</td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Conceptually ready, operationally blocked</span><div class="rbar"><div class="rfill" style="width:60%"></div></div></td><td style="font-size:11px;color:#555;">Menu Masters + delivery tier gaps</td></tr>
+          <tr><td>P03</td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Conditional use as research input</span><div class="rbar"><div class="rfill" style="width:50%"></div></div></td><td style="font-size:11px;color:#555;">Needs data transparency before acting</td></tr>
+          <tr><td>P04</td><td><span style="font-size:11px;color:var(--critical);font-weight:700;">Engaged but monetization-blocked</span><div class="rbar"><div class="rfill" style="width:40%"></div></div></td><td style="font-size:11px;color:#555;">Hard veto on credits beyond free allotment</td></tr>
+        </tbody>
+      </table>
+      <div class="callout" style="margin-top:14px;"><span class="ci">→</span><div>None of these operators are waiting for the concept to improve. They're waiting for the execution to catch up to the concept they already understand and want.</div></div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ BLOCKERS ══ -->
+    <section class="section" id="blockers">
+      <div class="section-head"><h2>Must Fix Before Shipping</h2><p>Structural blockers that will suppress adoption regardless of recommendation quality.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid cols-1" style="display:flex;flex-direction:column;gap:10px;">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill critical">Critical · 4/4</span>
+            <div class="xcard-summary"><h4>Credits model will suppress usage</h4><div class="xcard-hook">Universal signal. Operators already feel Toast is expensive. P04 would investigate manually rather than pay.</div><div class="p-dots"><span class="p-dot lit">P01</span><span class="p-dot lit">P02</span><span class="p-dot lit">P03</span><span class="p-dot lit">P04</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Full finding</div><div class="xb-text">Every participant noticed the credits model unprompted. Reactions ranged from conditional acceptance (P01, P02, P03) to hard veto (P04). The common thread: operators already feel Toast is expensive, and a pay-to-use gate at the moment of highest intent is the wrong place for a paywall.</div></div>
+            <div class="xb-section"><div class="xb-label">Design implication</div><div class="implication"><strong>Show per-credit dollar value + projected revenue recovery before the confirm gate.</strong> Consider a free first-use or bundled-usage model. P01 wants a video walkthrough before first spend.</div></div>
+            <div class="xb-section">
+              <div class="do-dont">
+                <div class="do-block"><div class="dd-label">Do</div><ul><li>Show "$0.40 (2 credits)" — dollar translation, not abstract units</li><li>Show projected ROI before asking for payment</li><li>Offer free first use or bundled credits</li><li>Show ROI examples from comparable restaurants</li></ul></div>
+                <div class="dont-block"><div class="dd-label">Don't</div><ul><li>Show cost in abstract credit units without dollar value</li><li>Surface the paywall after operator has committed to a recommendation</li><li>Show a single projected impact number with no derivation</li></ul></div>
+              </div>
+            </div>
+            <div class="xb-section"><div class="xb-label">Key quote — P04</div><div class="quote-block"><blockquote>Toast makes a lot of money just off of us already with a regular account. If it came down to wanting to know this thing, I would just go investigate it myself.</blockquote></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">High · 3/4</span>
+            <div class="xcard-summary"><h4>Auto-apply cannot exist</h4><div class="xcard-hook">Three different reasons, same behavior. The agent needs a persistent draft/review state — not a publish button.</div><div class="p-dots"><span class="p-dot">P02</span><span class="p-dot">P03</span><span class="p-dot">P04</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Full finding</div><div class="xb-text">P02 cited organizational process. P03 cited deliberateness and control after a bad Uber Eats experience where it auto-wrote menu descriptions without permission. P04 cited owner hierarchy. The pattern is the same regardless of framing: pricing changes are high-stakes decisions that cannot be unilaterally triggered by an AI.</div></div>
+            <div class="xb-section"><div class="xb-label">Design implication</div><div class="implication"><strong>The agent must support a persistent draft/review state</strong> that survives until an owner or designated approver acts on it. Auto-apply should not exist, even as an opt-in — the framing "you could turn this on" may signal the platform doesn't understand how restaurants make decisions.</div></div>
+            <div class="xb-section">
+              <div class="do-dont">
+                <div class="do-block"><div class="dd-label">Do</div><ul><li>Default all recommendations to "Draft" — require explicit owner publish action</li><li>Persist the draft across sessions, devices, and role handoffs</li><li>Allow the approver to be different from who ran the agent</li><li>Notify the designated approver when a draft is ready</li></ul></div>
+                <div class="dont-block"><div class="dd-label">Don't</div><ul><li>Offer auto-apply even as an opt-in</li><li>Let the draft expire without surfacing it to the owner</li><li>Conflate "I ran the agent" with "I approved the change"</li></ul></div>
+              </div>
+            </div>
+            <div class="xb-section"><div class="xb-label">Key quote — P03</div><div class="quote-block"><blockquote>I almost felt like they hijacked my descriptions. As long as I have control of it and don't get hijacked — that's a big issue.</blockquote></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">High · 2/4</span>
+            <div class="xcard-summary"><h4>Multi-location publish scope + Menu Masters</h4><div class="xcard-hook">For P02, this is a hard dependency. Without it, the workflow adds burden rather than removing it.</div><div class="p-dots"><span class="p-dot">P02</span><span class="p-dot">P04</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Full finding</div><div class="xb-text">P04 wants a location selector at the approve step. P02 requires Menu Masters integration — without it, the workflow must be repeated per store, making it net-negative. Both operate 4 locations with shared menus.</div></div>
+            <div class="xb-section"><div class="xb-label">Design implication</div><div class="implication"><strong>Publish scope (single / all / select locations) must be a first-class control at the confirm step,</strong> with integrations for tools like Menu Masters for chains running identical menus.</div></div>
+            <div class="xb-section">
+              <div class="do-dont">
+                <div class="do-block"><div class="dd-label">Do</div><ul><li>Show location scope selector: "Apply to: [This location] [All 4] [Select…]"</li><li>Detect Menu Masters connections and default to synchronized publish</li><li>Preview which locations will be affected before confirm</li><li>Support concept-aware scoping for different price tiers</li></ul></div>
+                <div class="dont-block"><div class="dd-label">Don't</div><ul><li>Default to single-location publish without surfacing multi-location options</li><li>Require a separate Menu Masters sync step after publish</li><li>Apply the same recommendation uniformly across different concept tiers</li></ul></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ OPPORTUNITIES ══ -->
+    <section class="section" id="opportunities">
+      <div class="section-head"><h2>Product Opportunities</h2><p>Ideas beyond fixing blockers — potential differentiators that emerged unprompted.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid cols-2">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Opportunity</span>
+            <div class="xcard-summary"><h4>Supplier alternatives, not just price hikes</h4><div class="xcard-hook">When costs spike, find a cheaper supplier instead of recommending a price increase.</div><div class="p-dots"><span class="p-dot">P01</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Finding</div><div class="xb-text">P01's "magic wand" request: when ingredient costs spike, find a cheaper supplier instead of recommending a price hike. This reframes the entire cost-spike use case from reactive (raise prices) to proactive (protect margins) — a meaningfully different and potentially stickier value proposition that no Toast competitor currently addresses.</div></div>
+            <div class="xb-section"><div class="xb-label">Design direction</div><div class="implication">Expand the cost-spike card: primary action is "adjust price" but a secondary action surfaces "alternative suppliers" with a comparison table — supplier, price per unit, lead time. <strong>Operators choose their lever; the agent provides both options.</strong></div></div>
+            <div class="xb-section"><div class="xb-label">Key quote — P01</div><div class="quote-block"><blockquote>Instead of raising the price of this dish, it would give me somewhere else to buy the cheese that we're losing money on here.</blockquote></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Opportunity</span>
+            <div class="xcard-summary"><h4>Modifier cascade awareness</h4><div class="xcard-hook">P04 had a live revenue incident. A base price change silently broke modifier pricing.</div><div class="p-dots"><span class="p-dot">P04</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Finding</div><div class="xb-text">P04 described a real incident where a base price change created modifier arbitrage — customers ordered a cheap dog patty to avoid paying for a double burger. He's now doing cascade analysis manually before every price change. The prototype currently treats price changes as item-level actions.</div></div>
+            <div class="xb-section"><div class="xb-label">Design direction</div><div class="implication">Every pricing recommendation must include a <strong>"downstream impact" section</strong> surfacing all affected modifiers, add-ons, and substitutions before the operator approves. Allow cascade of the change to modifiers in the same confirm flow.</div></div>
+            <div class="xb-section"><div class="xb-label">Key quote — P04</div><div class="quote-block"><blockquote>You think it's a simple thing — everything goes up a dollar — but then you get into modifiers and add-ons. How far does this go is what I would want to know.</blockquote></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill explore">Explore</span>
+            <div class="xcard-summary"><h4>Competitive regional benchmarking</h4><div class="xcard-hook">Both P02 and P03 independently do this manually today. Neither was prompted.</div><div class="p-dots"><span class="p-dot">P02</span><span class="p-dot">P03</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Finding</div><div class="xb-text">P02 wants regional competitive context — what other restaurants in their state are doing for specials and pricing. P03 already researches what nearby restaurants charge for comparable dishes and sees automation as a genuine upgrade. This is untapped demand, not a hypothetical feature.</div></div>
+            <div class="xb-section"><div class="xb-label">Key nuance — P03</div><div class="implication">Geographic benchmarking alone breaks for multi-concept operators. A casual pasta at $16 and an upscale pasta at $25 are not the same product competing in the same market. <strong>The agent must be concept/tier-aware.</strong></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill explore">Explore</span>
+            <div class="xcard-summary"><h4>Post-publish coordination workflow</h4><div class="xcard-hook">Approving a price change is not the last step. Operators carry a cascade of downstream tasks in their heads.</div><div class="p-dots"><span class="p-dot">P01</span><span class="p-dot">P04</span></div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">Finding</div><div class="xb-text">P01 wants an automated internal staff note on publish. P04 wants deep-link redirects to team announcements, website, and social media tools. P03 accepted a static checklist without friction. The delivery mechanism varies but the underlying need is consistent: operators need downstream coordination after a price change goes live.</div></div>
+            <div class="xb-section"><div class="xb-label">Design direction</div><div class="implication">At minimum: a smart contextual checklist immediately after publish, auto-checking what the system handles (POS sync). Optionally: one-click deep-links for items that need manual action — staff announcement, website update, social post, reprint reminder.</div></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ THEMES ══ -->
+    <section class="section" id="themes">
+      <div class="section-head"><h2>All Themes</h2><p>Five themes worth elevating to permanent research dimensions.</p></div>
+      <hr class="section-rule">
+      <table class="theme-table">
+        <thead><tr><th>Theme</th><th>Participants</th><th>Signal</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Credits / Monetization Friction</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><span style="font-size:11px;color:#888;margin-left:4px;">4/4</span></div></td><td><span style="font-size:11px;color:var(--critical);font-weight:700;">Universal</span></td><td><span class="recommend">Promote to permanent dimension</span></td></tr>
+          <tr><td>Owner Sign-Off Gate</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">3/4</span></div></td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Structural req.</span></td><td><span class="recommend">Promote to permanent dimension</span></td></tr>
+          <tr><td>Multi-Location Publish Scope</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--high);font-weight:700;">Deal-breaker</span></td><td><span class="recommend">Promote to permanent dimension</span></td></tr>
+          <tr><td>Competitive Benchmarking</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--blue);font-weight:700;">Independently surfaced</span></td><td><span class="recommend">Promote to permanent dimension</span></td></tr>
+          <tr><td>Downstream Action Deep-Links</td><td><div class="dot-row"><div class="tdot on"></div><div class="tdot on"></div><div class="tdot off"></div><div class="tdot off"></div><span style="font-size:11px;color:#888;margin-left:4px;">2/4</span></div></td><td><span style="font-size:11px;color:var(--blue);font-weight:700;">Consistent need</span></td><td><span class="recommend">Promote to permanent dimension</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ P01-P04 (collapsed to thin rows for brevity — full detail already in Participants) ══ -->
+    <section class="section" id="p01"><div class="section-head"><h2>P01 — Owner/Operator, FSR</h2><p>Independent · 1 location · Receptivity 5/5</p></div><hr class="section-rule"><div class="callout"><span class="ci">↑</span><div>Full profile, wins, concerns, and standout insight are in the <a href="#participants" style="color:var(--opportunity);font-weight:600;">Participants</a> section above. Expand the P01 card there.</div></div></section>
+    <div class="sdivider"></div>
+    <section class="section" id="p02"><div class="section-head"><h2>P02 — Menu &amp; Ops Manager, QSR</h2><p>4-location fried chicken chain · Receptivity 4/5</p></div><hr class="section-rule"><div class="callout"><span class="ci">↑</span><div>Full profile is in the <a href="#participants" style="color:var(--opportunity);font-weight:600;">Participants</a> section above. Expand the P02 card there.</div></div></section>
+    <div class="sdivider"></div>
+    <section class="section" id="p03"><div class="section-head"><h2>P03 — Owner/Operator, Multi-Concept FSR</h2><p>Multiple concepts and locations · Receptivity 4/5</p></div><hr class="section-rule"><div class="callout"><span class="ci">↑</span><div>Full profile is in the <a href="#participants" style="color:var(--opportunity);font-weight:600;">Participants</a> section above. Expand the P03 card there.</div></div></section>
+    <div class="sdivider"></div>
+    <section class="section" id="p04"><div class="section-head"><h2>P04 — Multi-Location Operator, FSR</h2><p>4-location burger/bar concept · Receptivity 4/5</p></div><hr class="section-rule"><div class="callout"><span class="ci">↑</span><div>Full profile is in the <a href="#participants" style="color:var(--opportunity);font-weight:600;">Participants</a> section above. Expand the P04 card there.</div></div></section>
+    <div class="sdivider"></div>
+
+    <!-- ══ DESIGN OVERVIEW ══ -->
+    <section class="section" id="design">
+      <div class="section-head"><h2>Design Direction</h2><p>A phased plan for transitioning operators toward the agentic vision — grounded in what the research actually said.</p></div>
+      <hr class="section-rule">
+      <div class="phase-timeline">
+        <div class="tl-step"><div class="tl-dot p1">1</div><div class="tl-title p1">Now</div><div class="tl-sub">Remove the<br/>structural blockers</div></div>
+        <div class="tl-step"><div class="tl-dot p2">2</div><div class="tl-title p2">Next</div><div class="tl-sub">Build data trust &amp;<br/>close workflow gaps</div></div>
+        <div class="tl-step"><div class="tl-dot p3">3</div><div class="tl-title p3">Later</div><div class="tl-sub">Expand agency &amp;<br/>unlock new value</div></div>
+      </div>
+      <div class="callout"><span class="ci">→</span><div>The goal of each phase is not to add features — it's to earn the right to more autonomy. Operators are ready to hand the agent more control as soon as they trust what it already does.</div></div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ PHASE 1 ══ -->
+    <section class="section" id="phase1">
+      <div class="phase-label p1"><div class="pl-dot"></div>Phase 1 — Now</div>
+      <div class="section-head"><h2>Remove the Structural Blockers</h2><p>Fix these before anything else. These patterns are established and low-friction — no new interaction paradigms, just better execution of what's already in the prototype.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid" style="display:flex;flex-direction:column;gap:10px;">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill critical">1A</span>
+            <div class="xcard-summary"><h4>Transparent Credits — Show Value Before the Gate</h4><div class="xcard-hook">Reposition what gets shown when. Operators will pay for value they can verify. They won't pay for a black box.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Before the confirm gate, surface: cost in dollars (not abstract "credits"), projected revenue recovery from this specific action tied to unit sales, and a before/after comparison. Operators are willing to pay for value they can verify.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Show "This will cost $0.40 (2 credits)" — dollar translation</li><li>"Based on 120 monthly covers, estimated +$680/mo"</li><li>Offer free first-use or bundled model</li><li>Show ROI examples from comparable restaurants before first spend</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Show credit cost in abstract units without dollar translation</li><li>Surface the paywall after operator has committed to the recommendation</li><li>Show a single projected impact number with no derivation</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Output Verification Loop</span><span class="ptag">Milestone Escrow</span><span class="ptag">Agent-Assisted Scaffolding</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">1B</span>
+            <div class="xcard-summary"><h4>Persistent Draft/Review State — No Auto-Apply, Ever</h4><div class="xcard-hook">The draft/review state is not a UX compromise — it's the product. Every action the agent could take autonomously should instead be a proposal with a human approval step.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">A persistent "Pending Review" state that survives a browser close, a shift change, and a handoff between an operations manager and an owner. The review UI must make the proposed change fully inspectable — what changes, on which items, projected impact, who approved it.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Default all recommendations to "Draft" — require explicit owner publish action</li><li>Persist across sessions, devices, and role handoffs</li><li>Allow the approver to be different from who ran the agent</li><li>Notify the designated approver when a draft is ready</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Offer auto-apply even as an opt-in</li><li>Let the draft expire without surfacing it to the owner</li><li>Conflate "I ran the agent" with "I approved the change"</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Human-in-the-Loop Approval</span><span class="ptag">Plan-Then-Execute</span><span class="ptag">Working Memory via TodoWrite</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">1C</span>
+            <div class="xcard-summary"><h4>Multi-Location Publish Scope — First-Class Control at Confirm</h4><div class="xcard-hook">For P02, this is a hard dependency. Without it, the agent creates more work than it saves — and will be abandoned immediately.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">A publish scope selector in the confirm UI: single location, all locations, or select specific locations. For chains using Menu Masters, the integration must propagate atomically — not as a separate step the operator has to remember.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>"Apply to: [This location] [All 4 locations] [Select…]"</li><li>Detect Menu Masters connections and default to synchronized publish</li><li>Preview which locations are affected before confirm</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Default to single-location without surfacing multi-location options</li><li>Require a separate sync step after publish</li><li>Apply same recommendation uniformly across different concept tiers</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Background-to-Foreground Handoff</span><span class="ptag">Spectrum of Control</span></div></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ PHASE 2 ══ -->
+    <section class="section" id="phase2">
+      <div class="phase-label p2"><div class="pl-dot"></div>Phase 2 — Next</div>
+      <div class="section-head"><h2>Build Data Trust &amp; Close Workflow Gaps</h2><p>Phase 1 removes the reasons operators won't use the agent. Phase 2 builds the reasons they keep coming back.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid cols-2">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">2A</span>
+            <div class="xcard-summary"><h4>Data Provenance Labels</h4><div class="xcard-hook">Every number needs a traceable source. P03 asked "where does this data come from?" multiple times.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Every data point that drives a recommendation needs a plain-language provenance label inline — not in a tooltip or help article. "Based on your invoices in ExtraChef (last synced 3 days ago)" or "Based on 47 similar restaurants in your ZIP code." Operators who can interrogate a number will trust it far more than one that arrives confidently with no source.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Inline source label on every data-driven number</li><li>Flag stale data: "Recipe data last updated 6 months ago"</li><li>Show sample size for benchmarks: "n=47 restaurants"</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Surface a confident number with no provenance</li><li>Bury sources in help center articles</li><li>Treat all data sources as equivalent trust level</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Verbose Reasoning Transparency</span><span class="ptag">Output Verification Loop</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">2B</span>
+            <div class="xcard-summary"><h4>Anchored Projections</h4><div class="xcard-hook">P03 couldn't verify the $847 figure. He proposed the fix himself: "if you sold 100 items, this is your increase."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Show every projected impact number as a formula operators can audit: base assumption (unit volume), the change (price delta), the resulting impact. Let operators adjust the unit volume assumption inline. This shifts the agent from "trust me" to "check my math" — operators who check and find it correct become repeat users.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>"120 covers/mo × $1.50 increase = +$180/mo on this item"</li><li>Let operators edit the unit volume assumption inline</li><li>Show a range when uncertain: "+$400–$680/mo"</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Show a single dollar figure without the formula</li><li>Mix per-item and total-menu projections without clear labeling</li><li>Present projections with false precision</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Key quote — P03</div><div class="quote-block"><blockquote>Even just one number — if you sold a hundred items this month, this is what your increase would be.</blockquote></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">2C</span>
+            <div class="xcard-summary"><h4>Modifier Cascade Transparency</h4><div class="xcard-hook">Surface what else changes. P04 had a live revenue incident from a base price change that broke modifier pricing.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Every pricing recommendation must include a "downstream impact" section surfacing all affected modifiers, add-ons, and substitutions. Flag items where modifier pricing may create arbitrage after the base change. Allow the operator to cascade the change to modifiers in the same confirm flow.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Show all linked modifiers, add-ons, substitutions before approve</li><li>Flag potential arbitrage: "Customers could order X at old price via Y modifier"</li><li>Let operators cascade the price change to modifiers in the same flow</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Treat a base price change as an isolated item-level action</li><li>Bury modifier warnings below the fold</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Human-in-the-Loop Approval</span><span class="ptag">Plan-Then-Execute</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">2D</span>
+            <div class="xcard-summary"><h4>Gradual UI Transition</h4><div class="xcard-hook">P04 flagged GM adoption risk. The entry point should be the menus page — familiar, no new navigation required.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Start with contextual suggestions on the existing menus page. Introduce the full agent interface only after at least one successful recommendation interaction. Send email onboarding with video walkthroughs before operators encounter the agent in-product. Offer a sandbox/preview mode.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Start with contextual menus page suggestions — familiar entry point</li><li>Reveal agent chat only after first successful interaction</li><li>Email onboarding with video walkthroughs before in-product</li><li>Sandbox/preview mode before live changes</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Launch the full agent interface as the first touchpoint</li><li>Assume all GMs share the same AI comfort as the evaluating owner</li><li>Rely on tooltips as the primary onboarding mechanism</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Spectrum of Control</span><span class="ptag">Progressive Autonomy</span><span class="ptag">Agent-Assisted Scaffolding</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">2E</span>
+            <div class="xcard-summary"><h4>Post-Publish Coordination</h4><div class="xcard-hook">Approving a change is not the last step. Operators carry a cascade of downstream tasks in their heads.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">A smart contextual checklist immediately after publish. Auto-check items the system handles (POS sync). Deep-links for manual items: staff announcement, website update, social post, reprint reminder. At minimum a static checklist — at best one-click deep-links into Toast's marketing tools.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Show checklist immediately post-publish: "Staff notified? Website updated? POS ✓"</li><li>Auto-check items the system handles</li><li>Deep-links: "→ Post staff announcement" "→ Update website menu"</li><li>Reprint reminder for operators using physical menus</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Show "Published successfully" and close the flow</li><li>Automate downstream actions without confirmation</li><li>Show the same generic checklist to every operator type</li></ul></div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ PHASE 3 ══ -->
+    <section class="section" id="phase3">
+      <div class="phase-label p3"><div class="pl-dot"></div>Phase 3 — Later</div>
+      <div class="section-head"><h2>Expand Agency &amp; Unlock New Value</h2><p>These moves turn the agent from a pricing assistant into a margin-protection platform. They require Phase 1 and 2 to be solid first.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid cols-2">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">3A</span>
+            <div class="xcard-summary"><h4>Supplier Alternative Recommendations</h4><div class="xcard-hook">Protect margins, don't just raise prices. A different and potentially stickier value prop.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">When a cost spike is detected, surface two options: raise price OR find a supplier alternative. Show alternatives with enough detail to act: name, price per unit, lead time, Toast partnership status. Operators choose their lever; the agent provides both options.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Two options on cost-spike card: raise price OR alternative supplier</li><li>Comparison table: supplier, price/unit, lead time, status</li><li>Let operators save preferred suppliers for future alerts</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Lead with price increase as the only option for cost spikes</li><li>Show supplier list without integration into actual ordering workflow</li><li>Launch before Phase 2 data provenance is in place</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Latent Demand Discovery</span><span class="ptag">Episodic Memory Retrieval</span><span class="ptag">Democratization of Tooling</span></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">3B</span>
+            <div class="xcard-summary"><h4>Competitive Regional Benchmarking</h4><div class="xcard-hook">Both P02 and P03 independently described doing this manually today. Proven demand.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">A benchmarking module that goes beyond internal cost analysis into market positioning. Concept/tier-aware — let operators specify their price positioning (value / mid-range / upscale) to get relevant comps. Include regional specials and promotional patterns, not just static menu prices.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Concept-tier-aware comparisons: casual vs. upscale</li><li>Show data source + sample size: "n=47 restaurants within 2 miles"</li><li>Include specials and promotions, not just prices</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Mix upscale and casual benchmarks without tier segmentation</li><li>Launch before data provenance (2A) is resolved</li><li>Frame only as "you're underpriced" — also surface "well-positioned"</li></ul></div></div></div>
+          </div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">3C</span>
+            <div class="xcard-summary"><h4>The Daily Brief</h4><div class="xcard-hook">Bundle intelligence into an existing habit. P04's "morning news brief" mental model is the Phase 3 payoff.</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body">
+            <div class="xb-section"><div class="xb-label">What to build</div><div class="xb-text">Intelligence bundled into a single daily check-in that fits around how operators already start their day. The Toast Now app morning pop-up — forecasts, recommendations, and alerts in one dismissible card — is the right delivery surface, not a persistent notification stream. This is the Phase 3 culmination of the trust arc.</div></div>
+            <div class="xb-section"><div class="do-dont"><div class="do-block"><div class="dd-label">Do</div><ul><li>Bundle recommendations, cost alerts, benchmarks into one morning card</li><li>Make it dismissible — operators not ready today can clear it</li><li>Persist unaddressed recommendations as a draft, don't re-surface daily</li><li>Let operators configure what goes in their brief</li></ul></div><div class="dont-block"><div class="dd-label">Don't</div><ul><li>Launch a persistent notification stream before trust is established</li><li>Use urgency framing for operators on quarterly pricing cycles</li><li>Make it non-dismissible or tie it to a credit spend</li></ul></div></div></div>
+            <div class="xb-section"><div class="xb-label">Agentic patterns</div><div class="ptag-row"><span class="ptag">Proactive Trigger Vocabulary</span><span class="ptag">Episodic Memory Retrieval</span><span class="ptag">Context Window Auto-Compaction</span></div></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ PRINCIPLES ══ -->
+    <section class="section" id="principles">
+      <div class="section-head"><h2>Core Design Principles</h2><p>Six principles derived from the research — applicable across all three phases.</p></div>
+      <hr class="section-rule">
+      <div class="principle-grid">
+        <div class="pc"><div class="pc-n">Principle 1</div><h4>Propose, Never Act</h4><p>Draft/review is not a UX compromise — it's the product. Every action the agent could take autonomously should be surfaced as a proposal with a human approval step.</p><div class="pc-src">Human-in-the-Loop Approval · Plan-Then-Execute · all 3 auto-apply rejections</div></div>
+        <div class="pc"><div class="pc-n">Principle 2</div><h4>Show the Math</h4><p>Every number needs a traceable source and a verifiable formula. An anchored, falsifiable claim builds more trust than a confident unverifiable one.</p><div class="pc-src">Output Verification Loop · Verbose Reasoning · P03's projection anchoring request</div></div>
+        <div class="pc"><div class="pc-n">Principle 3</div><h4>Earn Each Step of Autonomy</h4><p>Trust expands incrementally. Institutional trust gets you in the door. Data trust converts a skeptic into a repeat user. Workflow completeness turns a repeat user into an advocate.</p><div class="pc-src">Spectrum of Control · Progressive Autonomy · Adoption Readiness Gradient</div></div>
+        <div class="pc"><div class="pc-n">Principle 4</div><h4>Close the Full Loop</h4><p>An agent that solves 80% of the workflow and leaves 20% manual may be a net-negative if that 20% is harder after the agent has touched the rest.</p><div class="pc-src">Background-to-Foreground Handoff · P02's Menu Masters dependency · P04's modifier cascade</div></div>
+        <div class="pc"><div class="pc-n">Principle 5</div><h4>Fail Loudly, Recover Gracefully</h4><p>How an agent fails communicates more about its reliability than how it succeeds. Every failure path needs as much design attention as the happy path.</p><div class="pc-src">Agent Circuit Breaker · Denial Tracking · Hook-Based Safety Guard Rails</div></div>
+        <div class="pc"><div class="pc-n">Principle 6</div><h4>Fit the Existing Habit</h4><p>The menus page is where operators already go. The morning check-in is when they already review their day. Surface intelligence inside those touchpoints — don't require a new routine.</p><div class="pc-src">P04's daily brief model · P01's contextual menus page request · Agent-Friendly Workflow Design</div></div>
+      </div>
+    </section>
+
+    <div class="sdivider"></div>
+
+    <!-- ══ QUOTES ══ -->
+    <section class="section" id="quotes">
+      <div class="section-head"><h2>Key Quotes</h2><p>Direct verbatims — the sharpest signal in operators' own words.</p></div>
+      <hr class="section-rule">
+      <div class="card-grid cols-2">
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Supplier alternatives · P01</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"Instead of raising the price of this dish, it would give me somewhere else to buy the cheese…"</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>I would do the thing that I was talking about, where I can reference product lists from all the suppliers around me, and instead of raising the price of this dish, it would give me somewhere else to buy the cheese that we're losing money on here.</blockquote><div class="quote-attr">P01 — Owner/Operator, FSR · Magic wand request</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill critical">Credits friction · P01</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"I might be able to just do the math longhand and not be charged anything."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>Yeah, it might… I might be able to just do the math longhand and not be charged anything.</blockquote><div class="quote-attr">P01 — Owner/Operator, FSR · Credits friction</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill opportunity">Agentic shift · P02</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"You're asking it to do something for you instead of just asking a question."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>I can see that you're asking it to do something for you instead of just asking a question, and that would be nice. It'd be nice to say, can you increase everything by 5%? — that would be nice to be able to do that.</blockquote><div class="quote-attr">P02 — Menu &amp; Ops Manager, QSR · Agentic shift recognition</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill neutral">Pricing cadence · P02</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"We're not gonna change our prices weekly… people will notice."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>We're not gonna change our prices weekly or even monthly. It's more of, like, a quarterly maybe, maybe half a year kind of thing, because people will notice that you're changing prices up and down and they don't like that.</blockquote><div class="quote-attr">P02 — Menu &amp; Ops Manager, QSR · Pricing cadence mismatch</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">Auto-apply trauma · P03</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"I almost felt like they hijacked my descriptions."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>I almost felt like they hijacked my descriptions. To the point of not being super accurate. So as long as I have control of it and not get hijacked — it just puts descriptions in there for me without me being able to adjust or change them — that's a big issue.</blockquote><div class="quote-attr">P03 — Owner/Operator, Multi-Concept FSR · Auto-apply / trust</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill neutral">Projection anchoring · P03</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"If you sold a hundred items this month, this is what your increase would be."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>Even just one number — if you sold a hundred items this month, this is what your increase would be.</blockquote><div class="quote-attr">P03 — Owner/Operator, Multi-Concept FSR · Projection anchoring</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill critical">Credits veto · P04</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"I definitely wouldn't purchase it… I would just investigate it myself."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>Toast makes a lot of money just off of us already with a regular account. If I went beyond my 50 credits, I definitely wouldn't purchase it. If it came down to wanting to know this thing, I would just go investigate it myself.</blockquote><div class="quote-attr">P04 — Multi-Location Operator, FSR · Credits friction — hardest veto</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">Modifier cascades · P04</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"You think it's a simple thing — everything goes up a dollar — but then you get into modifiers…"</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>You think it's a simple thing — okay, everything goes up a dollar — but then you get into different things like modifiers and add-ons and substitutions. How far does this go is what I would be wanting to know. Is it just that dish or is it anything that correlates with it?</blockquote><div class="quote-attr">P04 — Multi-Location Operator, FSR · Modifier cascade risk</div></div></div>
+        </div>
+
+        <div class="xcard" onclick="toggleCard(this)">
+          <div class="xcard-head">
+            <span class="xcard-pill high">Owner sign-off · P04</span>
+            <div class="xcard-summary"><div class="xcard-hook" style="font-style:italic;">"Pricing or menu changes are always myself and the owners sitting down and discussing."</div></div>
+            <span class="xcard-arrow">›</span>
+          </div>
+          <div class="xcard-body"><div class="quote-block"><blockquote>Anything, anything — pricing or menu changes are always myself and the owners sitting down and discussing. And then making a decision and then publishing it from there.</blockquote><div class="quote-attr">P04 — Multi-Location Operator, FSR · Owner sign-off requirement</div></div></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function toggleCard(el) {
+    const wasOpen = el.classList.contains('open');
+    el.classList.toggle('open', !wasOpen);
+  }
+
+  // Scrollspy
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.s-item[href]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
