@@ -55,6 +55,8 @@
   .topbar-sep { color: #444; }
   .topbar-title { color: rgba(255,255,255,.55); font-size: 13px; }
   .topbar-meta { color: rgba(255,255,255,.28); font-size: 11px; }
+  .topbar-nav-link { color: rgba(255,255,255,.45); font-size: 12px; text-decoration: none; transition: color .15s; }
+  .topbar-nav-link:hover { color: var(--accent); }
 
   /* ── LAYOUT ── */
   .layout { display: flex; padding-top: var(--topbar); min-height: 100vh; }
@@ -398,7 +400,16 @@
     <span class="topbar-sep">·</span>
     <span class="topbar-title">Ops Agent — User Research</span>
   </div>
-  <div class="topbar-meta">n=4 operators · April 2026</div>
+  <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+    <a class="topbar-nav-link" href="combined.html">Combined Summary</a>
+    <span class="topbar-sep">·</span>
+    <a class="topbar-nav-link" href="framework.html">Framework</a>
+    <span class="topbar-sep">·</span>
+    <a class="topbar-nav-link" href="implementation.html">Implementation</a>
+    <span class="topbar-sep">·</span>
+    <a class="topbar-nav-link" href="deck.html">Presentation</a>
+  </div>
+  <div class="topbar-meta" style="margin-left:20px">n=4 operators · April 2026</div>
 </header>
 
 <div class="layout">
@@ -408,9 +419,6 @@
     <div class="s-label">Overview</div>
     <a class="s-item active" href="#summary">Summary</a>
     <a class="s-item" href="#participants">Participants</a>
-
-    <div class="s-label">Context</div>
-    <a class="s-item" href="#adoption">Agent Adoption</a>
 
     <div class="s-label">Findings</div>
     <a class="s-item" href="#blockers">Must Fix <span class="s-badge red">3</span></a>
@@ -423,18 +431,15 @@
     <a class="s-item" href="p03.html">P03 · Owner/Op FSR ↗</a>
     <a class="s-item" href="p04.html">P04 · Operator FSR ↗</a>
 
-    <div class="s-label">More</div>
-    <a class="s-item" href="combined.html">Combined Summary ↗</a>
-    <a class="s-item" href="framework.html">Agentic Framework ↗</a>
-    <a class="s-item" href="implementation.html">Implementation Guide ↗</a>
-    <a class="s-item" href="deck.html">Presentation ↗</a>
-
     <div class="s-label">Design</div>
     <a class="s-item" href="#design">Roadmap</a>
     <a class="s-item" href="#phase1">Phase 1 — Now</a>
     <a class="s-item" href="#phase2">Phase 2 — Next</a>
     <a class="s-item" href="#phase3">Phase 3 — Later</a>
     <a class="s-item" href="#principles">Principles</a>
+
+    <div class="s-label">Context</div>
+    <a class="s-item" href="#adoption">Agent Adoption</a>
 
     <div class="s-label">Voices</div>
     <a class="s-item" href="#quotes">Key Quotes</a>
