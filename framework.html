@@ -323,29 +323,29 @@ a{color:inherit;text-decoration:none}
 
       <div class="skills-label">Foundational skills to build now</div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Data Audit</div><div class="skill-hook">Before any recommendation, checks whether underlying data is current and flags gaps</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Data Audit</div><div class="skill-hook">Before any recommendation, checks whether underlying data is current and flags gaps</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Before surfacing any recommendation, the agent silently checks whether the underlying data (recipes, costs, menu structure) is current and complete. Gaps are flagged with a "data health card" — the recommendation is withheld until inputs are trustworthy.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's blocker: stale recipe data meant she couldn't trust the numbers. An audit skill makes inputs trustworthy before outputs are shown — decoupling data trust from recommendation trust.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Anomaly Detection</div><div class="skill-hook">Monitors cost spikes, sales drops, margin compression in the background — surfaces contextually in the menu editor</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Anomaly Detection</div><div class="skill-hook">Monitors cost spikes, sales drops, margin compression in the background — surfaces contextually in the menu editor</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Monitors cost spikes, sales drops, and margin compression continuously. Surfaces them contextually — in the menu editor, not in a separate tool — so operators encounter insights where work is already happening.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Operators learn the agent is watching things they aren't. Each accurate alert is a trust deposit. This builds ambient trust before any recommendation is ever shown.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Data Provenance Labeling</div><div class="skill-hook">Every number shown includes a plain-language source label — "Based on regional Toast restaurant averages"</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Data Provenance Labeling</div><div class="skill-hook">Every number shown includes a plain-language source label — "Based on regional Toast restaurant averages"</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Every number shown to the operator includes a plain-language explanation of its source: "Based on your invoicing data via ExtraChef" or "Based on regional Toast restaurant averages (340 comparable restaurants)."
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core ask — asked "where are you getting your data from?" multiple times. Without provenance labels, operators disengage before acting. Labels make claims falsifiable and verifiable.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Competitive Benchmarking Signal</div><div class="skill-hook">Surfaces local market pricing context alongside menu items — not a recommendation, just a signal</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Competitive Benchmarking Signal</div><div class="skill-hook">Surfaces local market pricing context alongside menu items — not a recommendation, just a signal</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Surfaces local market pricing context alongside menu items as a passive signal — not a call to action. "Nearby restaurants in your category are charging $18–22 for a comparable dish. You're at $16.49."
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02 and P03 both do this manually today. Automating it earns immediate credibility — the agent is doing something they already value but find time-consuming.</div></div>
         </div>
@@ -377,29 +377,29 @@ a{color:inherit;text-decoration:none}
 
       <div class="skills-label">Skills to build</div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Anchored Projection</div><div class="skill-hook">Ties every dollar estimate to a verifiable unit sales assumption — "Based on 847 units sold last month..."</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Anchored Projection</div><div class="skill-hook">Ties every dollar estimate to a verifiable unit sales assumption — "Based on 847 units sold last month..."</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Every dollar projection is tied to a verifiable unit sales assumption. Shows the math explicitly: "Based on your 847 units sold last month, a $1.50 price increase recovers ~$1,270/month." Operators can sanity-check against their own knowledge.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core ask: "Even just one number, if you sold 100 items this month, this is what your increase would be." Unanchored projections ($847/month with no unit basis) erode trust rather than build it — big unverifiable numbers feel fabricated.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Confidence Scoring</div><div class="skill-hook">Shows certainty level per recommendation with brief reasoning — "High confidence, based on 6 months of your sales data"</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Confidence Scoring</div><div class="skill-hook">Shows certainty level per recommendation with brief reasoning — "High confidence, based on 6 months of your sales data"</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Each recommendation shows a confidence level with a brief explanation of why: "High confidence — based on 6 months of your own sales data + 340 comparable Toast restaurants." Operators apply their own judgment on top of a confidence signal rather than accepting or rejecting blindly.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02's explicit request. Habitual verify-and-match operators need a confidence signal they can reason about — not just a number, but a brief explanation of what's behind it.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Modifier Cascade Preview</div><div class="skill-hook">When a base item price changes, surfaces every affected modifier, add-on, and substitution with downstream pricing impact</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Modifier Cascade Preview</div><div class="skill-hook">When a base item price changes, surfaces every affected modifier, add-on, and substitution with downstream pricing impact</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">When a base item price change is proposed, the agent surfaces every modifier, add-on, and substitution that would be affected and shows the downstream pricing impact — including whether any existing modifiers would become arbitrage opportunities.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04's live incident: a base price change exposed modifier arbitrage (customers ordering a cheap dog patty to avoid paying for a double burger). The agent preventing that incident once earns more trust than any onboarding flow.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Alternatives Generation</div><div class="skill-hook">For cost-spike recommendations, proposes multiple response paths: raise price, find alternative supplier, reduce portion</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Alternatives Generation</div><div class="skill-hook">For cost-spike recommendations, proposes multiple response paths: raise price, find alternative supplier, reduce portion</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">For cost-spike recommendations, the agent proposes multiple response paths — raise the price, find an alternative supplier at the original cost, or reduce portion size. The operator chooses the response that fits their context.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's "magic wand" — wants the agent to find a cheaper supplier instead of always recommending a price increase. Reframes the agent from "price optimizer" to "margin protector" — a meaningfully different and stickier value proposition.</div></div>
         </div>
@@ -431,29 +431,29 @@ a{color:inherit;text-decoration:none}
 
       <div class="skills-label">Skills to build</div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Draft State Management</div><div class="skill-hook">Creates a persistent, named draft that survives sessions and can be shared with owners for sign-off</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Draft State Management</div><div class="skill-hook">Creates a persistent, named draft that survives sessions and can be shared with owners for sign-off</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Creates a persistent, named draft that survives browser sessions and can be shared with other owners for sign-off before publishing. The draft is a first-class object — not a transient state.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04, P02, and P03 all require owner approval before any pricing change goes live. Draft persistence makes the agent compatible with how multi-stakeholder restaurants actually make decisions — the approver isn't always the person who interacted with the agent.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Scope Selector</div><div class="skill-hook">At draft creation, operator sets scope: this location, all locations, or select locations</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Scope Selector</div><div class="skill-hook">At draft creation, operator sets scope: this location, all locations, or select locations</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">At draft creation, the operator sets scope: this location, all locations, or a selection of locations. The draft is scoped accordingly and Menu Masters / cross-location sync tools are invoked appropriately.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04 and P02's hard requirement — both operate 4 locations with shared menus. Without scope selection, the workflow forces them to repeat the approval process per store, making it net-negative.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Downstream Package Builder</div><div class="skill-hook">Automatically assembles the post-publish checklist — staff notification, website update prompt, social template</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Downstream Package Builder</div><div class="skill-hook">Automatically assembles the post-publish checklist — staff notification, website update prompt, social template</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Automatically assembles the post-publish coordination package as part of the draft: staff notification draft, website update prompt, social post template, and a list of affected menu sections that need reprinting. Approval triggers publish + downstream coordination in one step.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01 and P04's downstream coordination need. P01 wants an automatic staff note; P04 wants deep-link redirects to staff announcements and social tools. The package builder addresses both patterns without requiring the operator to remember what to do after approving.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Sandbox Preview</div><div class="skill-hook">Shows exactly what the menu will look like after the draft is applied — before committing</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Sandbox Preview</div><div class="skill-hook">Shows exactly what the menu will look like after the draft is applied — before committing</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Shows the operator exactly what the menu will look like after the draft is applied — modified items, affected modifiers, updated pricing — before any live change is committed. The sandbox is a read-only preview, not a staging environment.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's explicit request. Eliminates the fear of "what will this look like live." Operators with printed menus (P03) especially need to see the final state before approving, since a wrong approval has physical consequences.</div></div>
         </div>
@@ -485,29 +485,29 @@ a{color:inherit;text-decoration:none}
 
       <div class="skills-label">Skills to build (future)</div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Guardrail Definition</div><div class="skill-hook">Operator sets rules: "Never increase any item by more than 15%." Agent operates within them without prompting.</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Guardrail Definition</div><div class="skill-hook">Operator sets rules: "Never increase any item by more than 15%." Agent operates within them without prompting.</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Operator sets explicit rules: "Never increase any item by more than 15%." "Never change prices at more than 2 locations simultaneously." "Always require my approval for items over $25." The agent operates within these without prompting unless a boundary is approached.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Operators feel in control of the envelope even when the agent is acting inside it. The guardrail definition interface is itself a trust-building interaction — it forces operators to articulate their own constraints.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Audit Trail</div><div class="skill-hook">Every agent action logged with timestamp, reasoning, data source, and expected outcome</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Audit Trail</div><div class="skill-hook">Every agent action logged with timestamp, reasoning, data source, and expected outcome</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Every agent action is logged with timestamp, reasoning, data source, and expected outcome. The operator can review the log at any time. The log is the paper receipt of agent actions — it makes the agent's behavior legible and contestable.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core concern: "I need to know what's happening." An audit trail is the paper receipt of agent actions — it makes autonomous behavior legible and gives operators something to point to when something goes wrong.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Reversibility Window</div><div class="skill-hook">Any agent-executed change can be rolled back within 24 hours with one click</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Reversibility Window</div><div class="skill-hook">Any agent-executed change can be rolled back within 24 hours with one click</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">Any agent-executed change can be rolled back within 24 hours with one click, with a full explanation of what will be restored. The rollback is itself logged and does not require approval.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Removes the fear of irreversible mistakes. Operators take more risks when they know there's an undo. The presence of a rollback option is not a failure state — it's a trust signal that accelerates adoption.</div></div>
         </div>
       </div>
 
-      <div class="skill-row" onclick="this.classList.toggle('open')">
-        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Cadence Awareness</div><div class="skill-hook">Agent learns the operator's actual pricing cadence and stops surfacing "act now" urgency to quarterly-change operators</div><div class="skill-arrow">›</div></div>
+      <div class="skill-row">
+        <div class="skill-head" onclick="this.closest('.skill-row').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="skill-dot"></div><div class="skill-name">Cadence Awareness</div><div class="skill-hook">Agent learns the operator's actual pricing cadence and stops surfacing "act now" urgency to quarterly-change operators</div><div class="skill-arrow">›</div></div>
         <div class="skill-body">The agent learns from operator behavior and aligns recommendation timing to their actual pricing cadence — quarterly for QSR, monthly for FSR, event-driven for farm-to-table. Stops surfacing "act now" urgency to operators who batch changes.
           <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02's pricing cadence mismatch — "we change prices quarterly at most." An agent that learns when not to push builds more trust than one that's always urgent. Irrelevant urgency erodes the overall signal-to-noise ratio.</div></div>
         </div>
@@ -557,23 +557,23 @@ a{color:inherit;text-decoration:none}
   <div style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.6">Three embedded skills that must be present from day one because they underpin every phase. They don't belong to any single phase — removing them at any point makes the next phase harder to adopt.</div>
 
   <div class="skills-grid">
-    <div class="embedded-skill" onclick="this.classList.toggle('open')">
-      <div class="es-icon">💬</div>
+    <div class="embedded-skill">
+      <div class="es-head" onclick="this.closest('.embedded-skill').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="es-icon">💬</div>
       <div class="es-name">Explainability</div>
       <div class="es-hook">Every recommendation, projection, and action surfaces its reasoning in plain language — not just a score</div>
-      <div class="es-body">Not just a confidence score — an actual sentence: "I'm recommending this because your pork belly cost increased 23% in the last 60 days while comparable restaurants in your area have already adjusted prices upward." This skill is what makes data trust possible. Without it, every other skill is harder to adopt. Operators don't trust black boxes — they trust agents that show their work.</div>
+      </div><div class="es-body">Not just a confidence score — an actual sentence: "I'm recommending this because your pork belly cost increased 23% in the last 60 days while comparable restaurants in your area have already adjusted prices upward." This skill is what makes data trust possible. Without it, every other skill is harder to adopt. Operators don't trust black boxes — they trust agents that show their work.</div>
     </div>
-    <div class="embedded-skill" onclick="this.classList.toggle('open')">
-      <div class="es-icon">⚕️</div>
+    <div class="embedded-skill">
+      <div class="es-head" onclick="this.closest('.embedded-skill').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="es-icon">⚕️</div>
       <div class="es-name">Data Health</div>
       <div class="es-hook">Before any recommendation is shown, silently checks data completeness and freshness — surfaces a health card if inputs are stale</div>
-      <div class="es-body">Before any recommendation is shown, the agent silently checks data completeness and freshness. If data is stale or missing, it surfaces a data health card first — not the recommendation. This decouples data trust from recommendation trust. Operators stop doubting the agent's logic when they know the agent itself is checking its own inputs. P01's stale recipe data is the canonical example of why this skill is load-bearing.</div>
+      </div><div class="es-body">Before any recommendation is shown, the agent silently checks data completeness and freshness. If data is stale or missing, it surfaces a data health card first — not the recommendation. This decouples data trust from recommendation trust. Operators stop doubting the agent's logic when they know the agent itself is checking its own inputs. P01's stale recipe data is the canonical example of why this skill is load-bearing.</div>
     </div>
-    <div class="embedded-skill" onclick="this.classList.toggle('open')">
-      <div class="es-icon">🛑</div>
+    <div class="embedded-skill">
+      <div class="es-head" onclick="this.closest('.embedded-skill').classList.toggle('open')" style="cursor:pointer;user-select:none"><div class="es-icon">🛑</div>
       <div class="es-name">Human Override</div>
       <div class="es-hook">At every phase, every agent action has a visible, immediate override — not buried in settings, but in the primary workflow</div>
-      <div class="es-body">At every phase, every agent action has a visible and immediate override. Not buried in settings — surfaced in the primary workflow. The presence of an override is not a failure state; it's a trust signal. P03's Uber Eats trauma is the canonical example: the moment she felt she couldn't override descriptions, she disengaged entirely. Operators adopt agents faster when they know the off switch is always one tap away.</div>
+      </div><div class="es-body">At every phase, every agent action has a visible and immediate override. Not buried in settings — surfaced in the primary workflow. The presence of an override is not a failure state; it's a trust signal. P03's Uber Eats trauma is the canonical example: the moment she felt she couldn't override descriptions, she disengaged entirely. Operators adopt agents faster when they know the off switch is always one tap away.</div>
     </div>
   </div>
 
