@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implementation Guide · Toast IQ Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:100px}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-back{color:rgba(255,255,255,0.55);font-size:12px;transition:color .15s}
+.topbar-back:hover{color:#f97316}
+.topbar-sep{color:rgba(255,255,255,0.15);font-size:12px}
+.topbar-brand{color:#f97316;font-size:11px;font-weight:800;margin-left:auto}
+.topbar-nav-wrap{display:flex;align-items:center;gap:4px}
+
+/* ── HERO ── */
+.hero{background:#1e1e1e;padding:48px 40px 40px;max-width:100%}
+.hero-inner{max-width:960px;margin:0 auto}
+.hero-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:12px}
+.hero-title{font-size:32px;font-weight:800;color:white;line-height:1.2;margin-bottom:10px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:620px;margin-bottom:28px}
+.hero-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.hero-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 18px}
+.hero-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(249,115,22,0.75);margin-bottom:6px}
+.hero-card-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6}
+
+/* ── CONTAINER ── */
+.container{max-width:960px;margin:0 auto;padding:0 24px}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin:40px 0 14px}
+.section-title-row{display:flex;align-items:baseline;gap:10px}
+.section-title-divider{flex:1;height:1px;background:#ede8e0}
+
+/* ── PAGE TABS ── */
+.page-tabs{display:flex;gap:4px;margin-top:28px;border-bottom:1px solid #ede8e0;padding-bottom:0}
+.page-tab{padding:10px 18px;font-size:12px;font-weight:700;color:#aaa;border-radius:8px 8px 0 0;cursor:pointer;border:1px solid transparent;border-bottom:none;transition:all .15s;margin-bottom:-1px;background:transparent}
+.page-tab.active{background:white;border-color:#ede8e0;color:#1a1a1a}
+.page-tab:hover:not(.active){color:#555}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── CALLOUT BOXES ── */
+.callout{border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.callout.orange{background:#fff7ed;border:1px solid #fed7aa}
+.callout.orange .callout-label{color:#ea580c}
+.callout.blue{background:#eff6ff;border:1px solid #bfdbfe}
+.callout.blue .callout-label{color:#1d6db5}
+.callout.red{background:#fff5f5;border:1px solid #fde0dc}
+.callout.red .callout-label{color:#c0390b}
+.callout.green{background:#f0fdf4;border:1px solid #bbf7d0}
+.callout.green .callout-label{color:#16a34a}
+.callout.dark{background:#1e1e1e;border:1px solid #333}
+.callout.dark .callout-label{color:#f97316}
+.callout.dark .callout-text{color:rgba(255,255,255,0.7)}
+.callout-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.callout-text{font-size:13px;color:#444;line-height:1.65}
+
+/* ── CONTRACT / SCHEMA ── */
+.contract-wrap{background:white;border:1px solid #ede8e0;border-radius:12px;overflow:hidden;margin-bottom:24px}
+.contract-head{padding:14px 20px;border-bottom:1px solid #ede8e0;display:flex;align-items:center;gap:10px}
+.contract-title{font-size:14px;font-weight:800;color:#1a1a1a}
+.contract-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.contract-body{padding:20px}
+.code-block{background:#1e1e1e;border-radius:8px;padding:16px 18px;font-family:'SF Mono','Fira Mono',monospace;font-size:12px;line-height:1.8;color:#e5e7eb;overflow-x:auto;margin:12px 0}
+.code-block .k{color:#f97316} /* key / keyword */
+.code-block .v{color:#86efac} /* value / string */
+.code-block .c{color:#6b7280} /* comment */
+.code-block .t{color:#c084fc} /* type */
+.code-field-list{list-style:none;margin-top:14px}
+.code-field-list li{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:10px 0;border-top:1px solid #f5f0ea}
+.code-field-list li:first-child{border-top:none;padding-top:0}
+.cfl-key{font-family:'SF Mono','Fira Mono',monospace;font-size:12px;color:#ea580c;font-weight:600;align-self:start;padding-top:2px}
+.cfl-desc{font-size:12px;color:#444;line-height:1.55}
+.cfl-note{font-size:11px;color:#888;margin-top:3px}
+
+/* ── BEFORE/AFTER ── */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.ba-box{border-radius:8px;padding:14px 16px}
+.ba-box.before{background:#fff5f5;border:1px solid #fde0dc}
+.ba-box.after{background:#f0fdf4;border:1px solid #bbf7d0}
+.ba-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ba-box.before .ba-label{color:#c0390b}
+.ba-box.after .ba-label{color:#16a34a}
+.ba-flow{font-family:'SF Mono','Fira Mono',monospace;font-size:11px;color:#444;line-height:1.8}
+.ba-box.before .ba-flow{color:#7f1d1d}
+.ba-box.after .ba-flow{color:#14532d}
+.ba-arrow{text-align:center;color:#aaa;font-size:18px;display:flex;align-items:center;justify-content:center;font-weight:300}
+
+/* ── CHANGE CARDS ── */
+.change-card{background:white;border:1px solid #ede8e0;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.change-head{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .12s}
+.change-head:hover{background:#faf8f5}
+.change-head-left{display:flex;align-items:center;gap:10px}
+.change-num{width:24px;height:24px;border-radius:6px;background:#f97316;color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.change-title{font-size:13px;font-weight:700;color:#1a1a1a}
+.change-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.tag-structural{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.tag-schema{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.tag-pattern{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.tag-retire{background:#fff5f5;color:#c0390b;border:1px solid #fde0dc}
+.tag-infra{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.change-chevron{color:#aaa;font-size:14px;transition:transform .2s}
+.change-card.open .change-chevron{transform:rotate(180deg)}
+.change-body{display:none;padding:0 20px 20px;border-top:1px solid #f5f0ea}
+.change-card.open .change-body{display:block}
+.change-why{font-size:12px;color:#555;line-height:1.65;margin:14px 0 10px}
+
+/* ── MODES ── */
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.mode-card{border-radius:10px;padding:16px 18px;border:1.5px solid}
+.mode-card.propose{background:#eff6ff;border-color:#bfdbfe}
+.mode-card.draft{background:#fff7ed;border-color:#fed7aa}
+.mode-card.execute{background:#f0fdf4;border-color:#bbf7d0}
+.mode-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.mode-card.propose .mode-label{color:#1d6db5}
+.mode-card.draft .mode-label{color:#ea580c}
+.mode-card.execute .mode-label{color:#16a34a}
+.mode-desc{font-size:12px;line-height:1.6}
+.mode-card.propose .mode-desc{color:#1e40af}
+.mode-card.draft .mode-desc{color:#7c2d12}
+.mode-card.execute .mode-desc{color:#14532d}
+.mode-rule{font-size:11px;margin-top:8px;font-style:italic;opacity:0.7}
+
+/* ── ANTI-PATTERN LIST ── */
+.ap-list{list-style:none;margin-top:4px}
+.ap-item{display:flex;gap:12px;padding:10px 0;border-top:1px solid #f5f0ea;align-items:flex-start}
+.ap-item:first-child{border-top:none;padding-top:4px}
+.ap-icon{width:20px;height:20px;border-radius:4px;background:#fff5f5;border:1px solid #fde0dc;color:#c0390b;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ap-content{}
+.ap-name{font-size:12px;font-weight:700;color:#c0390b;margin-bottom:2px}
+.ap-fix{font-size:12px;color:#555;line-height:1.55}
+
+/* ── INFRA SKILLS ── */
+.infra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.infra-card{background:#1e1e1e;border:1px solid #333;border-radius:12px;overflow:hidden}
+.infra-top{padding:16px 18px 0}
+.infra-num{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#f97316;margin-bottom:6px}
+.infra-name{font-family:'SF Mono','Fira Mono',monospace;font-size:14px;font-weight:700;color:white;margin-bottom:6px}
+.infra-desc{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.55;padding-bottom:14px}
+.infra-io{padding:12px 18px;border-top:1px solid #333}
+.infra-io-row{display:grid;grid-template-columns:50px 1fr;gap:8px;margin-bottom:8px;font-size:11px}
+.infra-io-row:last-child{margin-bottom:0}
+.infra-io-label{color:#f97316;font-weight:700;font-size:10px;text-transform:uppercase;padding-top:1px}
+.infra-io-text{color:rgba(255,255,255,0.55);line-height:1.5}
+.infra-used{padding:10px 18px;border-top:1px solid #333;font-size:10px;color:rgba(249,115,22,0.6);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+
+/* ── COMPONENT LIBRARY ── */
+.comp-phase-section{margin-bottom:32px}
+.comp-phase-title{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.comp-phase-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
+.cpb1{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.cpb2{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.cpb3{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.cpb4{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.comp-phase-subtitle{font-size:12px;color:#888}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.comp-card{background:white;border:1px solid #ede8e0;border-radius:10px;overflow:hidden}
+.comp-card-head{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .12s}
+.comp-card-head:hover{background:#faf8f5}
+.comp-card.open .comp-chevron{transform:rotate(180deg)}
+.comp-name{font-size:13px;font-weight:800;color:#1a1a1a}
+.comp-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.ct1{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.ct2{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.ct3{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.ct4{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.comp-chevron{color:#aaa;font-size:12px;transition:transform .2s}
+.comp-body{display:none;padding:0 16px 14px;border-top:1px solid #f5f0ea}
+.comp-card.open .comp-body{display:block}
+.comp-desc{font-size:12px;color:#555;line-height:1.6;margin-top:10px}
+.comp-schema{margin-top:10px}
+.comp-schema-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:4px}
+
+/* ── MAPPING TABLE ── */
+.map-table-wrap{background:white;border:1px solid #ede8e0;border-radius:12px;overflow:hidden;margin-bottom:24px}
+.map-table{width:100%;border-collapse:collapse}
+.map-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;padding:10px 16px;text-align:left;border-bottom:1px solid #f5f0ea;background:#faf8f5}
+.map-table td{padding:11px 16px;font-size:12px;color:#444;border-bottom:1px solid #f5f0ea;vertical-align:top;line-height:1.5}
+.map-table tr:last-child td{border-bottom:none}
+.map-table td:first-child{font-family:'SF Mono','Fira Mono',monospace;font-size:11px;color:#ea580c;font-weight:600;white-space:nowrap}
+.map-table td:nth-child(2){font-weight:700;color:#1a1a1a;font-size:12px}
+.map-reason{font-size:11px;color:#888;margin-top:2px}
+
+/* ── DECISION TREE ── */
+.dtree{margin:20px 0}
+.dt-step{display:flex;gap:14px;align-items:flex-start;margin-bottom:4px}
+.dt-connector{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0}
+.dt-num{width:28px;height:28px;border-radius:50%;background:#f97316;color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dt-line{width:2px;flex:1;min-height:20px;background:#ede8e0;margin-top:2px}
+.dt-content{flex:1;padding-bottom:16px}
+.dt-question{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.dt-branches{display:flex;gap:8px;flex-wrap:wrap}
+.dt-branch{border-radius:8px;padding:8px 12px;font-size:11px;line-height:1.5;flex:1;min-width:160px}
+.dt-branch.yes{background:#f0fdf4;border:1px solid #bbf7d0}
+.dt-branch.no{background:#fff5f5;border:1px solid #fde0dc}
+.dt-branch.a{background:#eff6ff;border:1px solid #bfdbfe}
+.dt-branch.b{background:#fff7ed;border:1px solid #fed7aa}
+.dt-branch.c{background:#f0fdf4;border:1px solid #bbf7d0}
+.dt-branch-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.dt-branch.yes .dt-branch-label{color:#16a34a}
+.dt-branch.no .dt-branch-label{color:#c0390b}
+.dt-branch.a .dt-branch-label{color:#1d6db5}
+.dt-branch.b .dt-branch-label{color:#ea580c}
+.dt-branch.c .dt-branch-label{color:#16a34a}
+.dt-branch-text{color:#444;font-size:11px;line-height:1.5}
+.dt-stop{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;background:#fff5f5;color:#c0390b;border:1px solid #fde0dc;margin-top:3px}
+.dt-action{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe;margin-top:3px}
+
+/* ── COMPOSITION RULES ── */
+.rule-list{list-style:none;margin-top:4px}
+.rule-item{display:flex;gap:12px;padding:14px 0;border-top:1px solid #f5f0ea;align-items:flex-start}
+.rule-item:first-child{border-top:none;padding-top:0}
+.rule-num{width:24px;height:24px;border-radius:6px;background:#1e1e1e;color:#f97316;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.rule-content{}
+.rule-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.rule-desc{font-size:12px;color:#555;line-height:1.6}
+
+/* ── AGENTFRAME ── */
+.agentframe-wrap{background:#1e1e1e;border-radius:12px;padding:24px 28px;margin:20px 0}
+.af-title{font-size:16px;font-weight:800;color:white;margin-bottom:4px}
+.af-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:20px}
+.af-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.af-step{border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 14px}
+.af-step-num{font-size:10px;font-weight:700;color:rgba(249,115,22,0.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.af-step-text{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5}
+
+/* ── MISC ── */
+.gap{height:16px}
+.mt8{margin-top:8px}
+.mt14{margin-top:14px}
+.mt20{margin-top:20px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-nav-wrap">
+    <a class="topbar-back" href="index.html">← Report</a>
+    <span class="topbar-sep">|</span>
+    <a class="topbar-back" href="combined.html">Combined</a>
+    <span class="topbar-sep">|</span>
+    <a class="topbar-back" href="framework.html">Framework</a>
+    <span class="topbar-sep">|</span>
+    <a class="topbar-back" style="color:#fb923c" href="implementation.html">Implementation</a>
+    <span class="topbar-sep">|</span>
+    <a class="topbar-back" href="p01.html">P01</a>
+    <a class="topbar-back" href="p02.html">P02</a>
+    <a class="topbar-back" href="p03.html">P03</a>
+    <a class="topbar-back" href="p04.html">P04</a>
+  </div>
+  <span class="topbar-brand">Toast IQ · Ops Agent Research</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Implementation Guide</div>
+    <div class="hero-title">What to Build and How to Build It</div>
+    <div class="hero-sub">Concrete structural requirements derived from the research — skill output contracts, behavioral modes, component library, and the composition rules that tie them together.</div>
+    <div class="hero-2col">
+      <div class="hero-card">
+        <div class="hero-card-label">Skill Design</div>
+        <div class="hero-card-text">9 structural changes every skill must make. The output contract, propose/draft/execute spectrum, data health gating, cascade mapping, and 3 foundational infrastructure skills to build first.</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-label">Component Library</div>
+        <div class="hero-card-text">18 UI components organized by trust phase. The mapping from skill output fields to required components. An 8-step deterministic composition tree and the AgentFrame compositing container.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- PAGE TABS -->
+  <div class="page-tabs">
+    <div class="page-tab active" onclick="switchTab('skills',this)">Skill Design</div>
+    <div class="page-tab" onclick="switchTab('components',this)">Component Library</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ TAB: SKILLS ═══════════════════════════════════════ -->
+  <div id="tab-skills" class="tab-pane active">
+
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">The Core Shift</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="callout dark" style="margin-top:14px">
+      <div class="callout-label">Philosophy</div>
+      <div class="callout-text">Right now, most agent skills are designed around a single question: <em>what should the agent do?</em> The research demands a second question be asked first: <em>has the agent earned the right to do this yet?</em> Every skill needs to carry its own trust scaffolding — not as a wrapper added later, but as part of its anatomy from the start.</div>
+    </div>
+
+    <!-- BUILD FIRST banner -->
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">Build These First</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="callout green" style="margin-top:14px">
+      <div class="callout-label">Infrastructure Skills — Required Before Domain Skills</div>
+      <div class="callout-text">These are not domain skills. They are the infrastructure that every domain skill depends on. Build them first and compose them in — do not duplicate their logic per skill.</div>
+    </div>
+
+    <div class="infra-grid">
+      <div class="infra-card">
+        <div class="infra-top">
+          <div class="infra-num">Infra #1</div>
+          <div class="infra-name">data_health_check</div>
+          <div class="infra-desc">Validates prerequisite data before any recommendation skill surfaces output. Surfaces a DataHealthCard when data is stale, missing, or unverifiable.</div>
+        </div>
+        <div class="infra-io">
+          <div class="infra-io-row"><div class="infra-io-label">Input</div><div class="infra-io-text">Set of data dependencies — recipe data, cost data, sales history, location config</div></div>
+          <div class="infra-io-row"><div class="infra-io-label">Output</div><div class="infra-io-text">Health status per dependency, staleness flags, gap list, suggested remediation</div></div>
+        </div>
+        <div class="infra-used">Used by: every recommendation skill</div>
+      </div>
+      <div class="infra-card">
+        <div class="infra-top">
+          <div class="infra-num">Infra #2</div>
+          <div class="infra-name">cascade_mapper</div>
+          <div class="infra-desc">Traverses the full entity relationship graph for any priced entity. Required before surfacing any change recommendation — not optional.</div>
+        </div>
+        <div class="infra-io">
+          <div class="infra-io-row"><div class="infra-io-label">Input</div><div class="infra-io-text">Entity ID + proposed change type</div></div>
+          <div class="infra-io-row"><div class="infra-io-label">Output</div><div class="infra-io-text">Full graph: modifiers, add-ons, substitutions, bundles, delivery items — with current + projected values</div></div>
+        </div>
+        <div class="infra-used">Used by: every change skill</div>
+      </div>
+      <div class="infra-card">
+        <div class="infra-top">
+          <div class="infra-num">Infra #3</div>
+          <div class="infra-name">draft_manager</div>
+          <div class="infra-desc">Creates and manages persistent, named draft records. Routes to reviewer roles. Maintains status lifecycle. Generates rollback tokens.</div>
+        </div>
+        <div class="infra-io">
+          <div class="infra-io-row"><div class="infra-io-label">Input</div><div class="infra-io-text">Change package: primary change + cascade + downstream checklist + scope + reviewer_role</div></div>
+          <div class="infra-io-row"><div class="infra-io-label">Output</div><div class="infra-io-text">Persistent draft record with ID, status, reviewer assignment, rollback token</div></div>
+        </div>
+        <div class="infra-used">Used by: every skill that transitions propose → execute</div>
+      </div>
+    </div>
+
+    <!-- OUTPUT CONTRACT -->
+    <div class="section-title-row" style="margin-top:36px">
+      <span class="section-title" style="margin:0">The Skill Output Contract</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="contract-wrap" style="margin-top:14px">
+      <div class="contract-head">
+        <div class="contract-title">Required Output Schema — Every Skill</div>
+        <div class="contract-badge">Structural Requirement</div>
+      </div>
+      <div class="contract-body">
+        <div class="callout orange" style="margin-bottom:0;margin-top:0">
+          <div class="callout-label">Why This Matters</div>
+          <div class="callout-text">Every skill today returns its primary result. Going forward, every skill output must carry four additional fields. These are not optional enhancements — they are load-bearing trust scaffolding. If a field is missing, a required UI component cannot render, and the trust contract breaks.</div>
+        </div>
+        <div class="code-block" style="margin-top:16px">{
+  <span class="k">result</span>: <span class="t">&lt;primary output&gt;</span>,
+
+  <span class="k">provenance</span>: <span class="t">string</span>,          <span class="c">// plain-language explanation of data origin</span>
+  <span class="k">basis</span>: <span class="t">string</span>,             <span class="c">// the assumption this result rests on — makes it falsifiable</span>
+  <span class="k">affected_entities</span>: <span class="t">Entity[]</span>, <span class="c">// downstream items, modifiers, locations impacted</span>
+  <span class="k">rollback_token</span>: <span class="t">string | null</span> <span class="c">// reversibility handle — null for read-only skills</span>
+}</div>
+        <ul class="code-field-list">
+          <li>
+            <span class="cfl-key">provenance</span>
+            <div><div class="cfl-desc">P03 asked "where does this data come from?" multiple times. Operators won't act on numbers they can't trace. Provenance is a first-class output, not a tooltip buried in settings.</div></div>
+          </li>
+          <li>
+            <span class="cfl-key">basis</span>
+            <div><div class="cfl-desc">P03's "$847" problem. An unanchored projection erodes trust. Every projection must expose the assumption it rests on ("based on 847 units sold last month") so operators can sanity-check against what they know.</div></div>
+          </li>
+          <li>
+            <span class="cfl-key">affected_entities</span>
+            <div><div class="cfl-desc">P04's modifier incident. A pricing change is never just a pricing change. If the skill doesn't map what else it touches, the operator either catches it manually or discovers it in production. Neither builds trust.</div></div>
+          </li>
+          <li>
+            <span class="cfl-key">rollback_token</span>
+            <div><div class="cfl-desc">Reversibility is a trust signal, not an escape hatch. Its presence tells the operator the agent understands consequences. Skills that modify state must return this; read-only skills return null.</div></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BEHAVIORAL MODES -->
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">Behavioral Modes — Propose / Draft / Execute</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="callout orange" style="margin-top:14px">
+      <div class="callout-label">Most Important Structural Change</div>
+      <div class="callout-text">Every action skill must declare and respect a behavioral mode. <strong>No skill should default to execute.</strong> Skills that currently go straight to action need to be decomposed into at minimum a propose step and a separate execute step, with an explicit draft state between them. These are not the same skill with a confirmation dialog — they are structurally separate phases with different state ownership.</div>
+    </div>
+
+    <div class="mode-grid" style="margin-top:16px">
+      <div class="mode-card propose">
+        <div class="mode-label">Propose</div>
+        <div class="mode-desc">Returns a recommendation with full reasoning. No state is created or modified. Operator reads and decides whether to proceed.</div>
+        <div class="mode-rule">Default for all skills until operator configuration explicitly elevates it.</div>
+      </div>
+      <div class="mode-card draft">
+        <div class="mode-label">Draft</div>
+        <div class="mode-desc">Creates a persistent, named draft capturing the full change package. Draft survives sessions. Addressable to a reviewer role, not just the initiating user.</div>
+        <div class="mode-rule">Nothing is published until a designated approver acts.</div>
+      </div>
+      <div class="mode-card execute">
+        <div class="mode-label">Execute</div>
+        <div class="mode-desc">Applies the change. Only available after a draft has been reviewed and approved.</div>
+        <div class="mode-rule">Should never be reachable in a single step from a cold start.</div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="c">// Declare in every skill definition</span>
+<span class="k">mode</span>: <span class="v">"propose"</span> | <span class="v">"draft"</span> | <span class="v">"execute"</span></div>
+
+    <!-- THE 9 CHANGES -->
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">9 Structural Changes</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <!-- Change 1: Output contract (collapsed — already shown above) -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">1</div>
+          <div class="change-title">Skill Output Contract — 4 Required Extra Fields</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-schema">Schema</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Every skill output must carry <code>provenance</code>, <code>basis</code>, <code>affected_entities</code>, and <code>rollback_token</code> alongside its primary result. Without these fields, the required UI components cannot render and the operator trust contract breaks. See the full schema above.</div>
+      </div>
+    </div>
+
+    <!-- Change 2: Behavioral modes -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">2</div>
+          <div class="change-title">Behavioral Modes — Propose / Draft / Execute</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-structural">Structural</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">No skill should default to execute. Decompose all action skills into propose → draft → execute as structurally separate phases. See the mode grid above for definitions.</div>
+      </div>
+    </div>
+
+    <!-- Change 3: Data Health Check -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">3</div>
+          <div class="change-title">Data Health Check — Gate Every Recommendation</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-pattern">Pattern</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Before any recommendation skill surfaces its output, it must run a silent data health check. If underlying data is stale, incomplete, or unverifiable, the skill surfaces a DataHealthCard instead of the recommendation — not an error state, a helpful honest card. This is not a separate skill the orchestrator calls; it's a mandatory prerequisite baked into every recommendation skill.</div>
+        <div class="ba-grid">
+          <div class="ba-box before">
+            <div class="ba-label">Before</div>
+            <div class="ba-flow">input<br>→ recommendation</div>
+          </div>
+          <div class="ba-box after">
+            <div class="ba-label">After</div>
+            <div class="ba-flow">input<br>→ data_health_check<br>→ [healthy] recommendation<br>→ [unhealthy] DataHealthCard<br>&nbsp;&nbsp;&nbsp;&nbsp;+ what's missing<br>&nbsp;&nbsp;&nbsp;&nbsp;+ how to fix it</div>
+          </div>
+        </div>
+        <div class="callout blue" style="margin-top:0">
+          <div class="callout-label">Research Evidence</div>
+          <div class="callout-text">Directly addresses P01's recipe staleness blocker and P03's data provenance skepticism. Operators stop doubting the agent's logic when the agent itself is visibly checking its own inputs before making claims.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change 4: Cascade Mapping -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">4</div>
+          <div class="change-title">Cascade Mapping — Required Step in All Change Skills</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-structural">Structural</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Any skill that proposes a change to a priced entity — item, modifier group, category, bundle — must include a cascade map in its output before surfacing the recommendation. The skill needs access to the entity relationship graph (item → modifier groups → modifiers → substitutions). This must be declared as an input dependency.</div>
+        <div class="ba-grid">
+          <div class="ba-box before">
+            <div class="ba-label">Before</div>
+            <div class="ba-flow">detect cost spike<br>→ recommend price increase<br>→ show confirm</div>
+          </div>
+          <div class="ba-box after">
+            <div class="ba-label">After</div>
+            <div class="ba-flow">detect cost spike<br>→ map affected modifiers,<br>&nbsp;&nbsp;&nbsp;&nbsp;add-ons, bundles<br>→ calculate cascade impact<br>→ recommend WITH cascade<br>→ confirm WITH full cascade</div>
+          </div>
+        </div>
+        <div class="callout red" style="margin-top:0">
+          <div class="callout-label">Research Evidence</div>
+          <div class="callout-text">P04's modifier incident was not an edge case — it was a predictable consequence of treating pricing as item-level when it's actually graph-level. The operator sees the full picture or they don't see the recommendation at all.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change 5: Stakeholder model -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">5</div>
+          <div class="change-title">Stakeholder Model — Initiator ≠ Approver</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-schema">Schema</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Current skills assume the person running the skill approves its output. The research shows this is structurally wrong. P04: GM runs the skill; owners approve. P02: operations manager runs; pricing requires org sign-off. P03: owner initiates but still requires deliberate personal review — not in the same session. Draft skills need a <code>reviewer_role</code> field assigned to a role, not a user. The draft cannot auto-advance until someone in that role acts.</div>
+        <div class="code-block"><span class="k">draft</span>: {
+  <span class="k">id</span>: <span class="t">uuid</span>,
+  <span class="k">created_by</span>: <span class="t">user_id</span>,
+  <span class="k">reviewer_role</span>: <span class="v">"owner"</span> | <span class="v">"operator"</span> | <span class="v">"manager"</span>,
+  <span class="k">expires_at</span>: <span class="t">null</span>,                   <span class="c">// persistent by default</span>
+  <span class="k">scope</span>: <span class="v">"this_location"</span> | <span class="v">"all_locations"</span> | <span class="v">"select_locations"</span>,
+  <span class="k">status</span>: <span class="v">"pending_review"</span> | <span class="v">"approved"</span> | <span class="v">"rejected"</span> | <span class="v">"modified"</span>
+}</div>
+      </div>
+    </div>
+
+    <!-- Change 6: Urgency language -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">6</div>
+          <div class="change-title">Urgency Language — Configurable, Not Hardcoded</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-schema">Schema</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Skills that surface recommendations should not hardcode urgency framing. "Act now" and "effective tomorrow" are calibrated for high-volatility cost environments — they actively erode trust with QSR operators who change prices quarterly. Skills must return a <code>recommendation_timing</code> object; the urgency label is derived from the intersection of sensitivity and that operator's actual cadence.</div>
+        <div class="code-block"><span class="k">recommendation_timing</span>: {
+  <span class="k">sensitivity</span>: <span class="v">"high"</span> | <span class="v">"medium"</span> | <span class="v">"low"</span>,
+  <span class="k">operator_cadence</span>: <span class="v">"immediate"</span> | <span class="v">"monthly"</span> | <span class="v">"quarterly"</span> | <span class="v">"annual"</span>,
+  <span class="k">suggested_action_window</span>: <span class="t">string</span>, <span class="c">// derived from sensitivity × cadence</span>
+  <span class="k">urgency_label</span>: <span class="t">string</span>           <span class="c">// generated, never hardcoded</span>
+}
+<span class="c">// Example: high sensitivity + quarterly cadence</span>
+<span class="c">// → "Consider for your next menu review" not "Act now"</span></div>
+      </div>
+    </div>
+
+    <!-- Change 7: Progressive disclosure -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">7</div>
+          <div class="change-title">Progressive Disclosure — Two-Tier Output Schema</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-schema">Schema</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">This is not a UI concern — it's a skill output schema concern. If the skill returns a wall of text, the surface can't progressively disclose it. The structure must come from the skill. Every skill output must be structured in two tiers so any surface can render them appropriately.</div>
+        <div class="code-block"><span class="k">output</span>: {
+  <span class="k">summary</span>: {
+    <span class="k">headline</span>: <span class="t">string</span>,          <span class="c">// what the skill found or recommends</span>
+    <span class="k">recommendation</span>: <span class="t">string</span>,    <span class="c">// primary result in plain language</span>
+    <span class="k">expected_outcome</span>: <span class="t">string</span>   <span class="c">// what happens if followed</span>
+  },
+  <span class="k">detail</span>: {
+    <span class="k">reasoning</span>: <span class="t">string</span>,
+    <span class="k">data_sources</span>: <span class="t">string[]</span>,
+    <span class="k">alternatives</span>: <span class="t">Alternative[]</span>,
+    <span class="k">affected_entities</span>: <span class="t">Entity[]</span>,
+    <span class="k">projection_basis</span>: <span class="t">string</span>
+  }
+}</div>
+      </div>
+    </div>
+
+    <!-- Change 8: Scope awareness -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">8</div>
+          <div class="change-title">Scope Awareness — Multi-Location from Invocation</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-structural">Structural</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why">Scope is not a post-hoc filter — it shapes the entire skill execution. If the skill doesn't support a declared scope, it fails explicitly rather than silently applying to the wrong set of locations. For P02, a skill without scope awareness requires manual repetition across 4 locations — that's worse than no skill at all.</div>
+        <div class="ba-grid">
+          <div class="ba-box before">
+            <div class="ba-label">Before</div>
+            <div class="ba-flow">skill runs<br>→ change proposed<br>→ operator applies<br>&nbsp;&nbsp;&nbsp;&nbsp;manually per location</div>
+          </div>
+          <div class="ba-box after">
+            <div class="ba-label">After</div>
+            <div class="ba-flow">scope declared at invocation<br>→ skill executes within scope<br>→ draft is scoped<br>→ publish is scoped</div>
+          </div>
+        </div>
+        <div class="code-block"><span class="k">invocation</span>: {
+  <span class="k">scope</span>: {
+    <span class="k">type</span>: <span class="v">"single"</span> | <span class="v">"all"</span> | <span class="v">"select"</span>,
+    <span class="k">location_ids</span>: <span class="t">string[]</span> | <span class="t">null</span>
+  }
+}</div>
+      </div>
+    </div>
+
+    <!-- Change 9: Anti-patterns -->
+    <div class="change-card">
+      <div class="change-head" onclick="this.closest('.change-card').classList.toggle('open')">
+        <div class="change-head-left">
+          <div class="change-num">9</div>
+          <div class="change-title">Anti-Patterns to Retire</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="change-tag tag-retire">Retire</span>
+          <span class="change-chevron">▼</span>
+        </div>
+      </div>
+      <div class="change-body">
+        <div class="change-why" style="margin-bottom:14px">Six patterns that exist in current skills and must be eliminated. Each one breaks a specific aspect of the operator trust contract.</div>
+        <ul class="ap-list">
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Single-step action skills</div>
+              <div class="ap-fix">Any skill that takes input and directly modifies state without an intermediate draft/review step. → Decompose into propose + draft + execute.</div>
+            </div>
+          </li>
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Unattributed numbers</div>
+              <div class="ap-fix">Any skill returning a dollar figure, percentage, or projection without basis and provenance. The number is meaningless without its supporting claim.</div>
+            </div>
+          </li>
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Hardcoded urgency copy</div>
+              <div class="ap-fix">Any skill emitting "act now," "effective immediately," or similar as a static string. → Replace with the configurable urgency pattern (Change #6).</div>
+            </div>
+          </li>
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Initiator-as-approver assumption</div>
+              <div class="ap-fix">Any skill that resolves its output to the user who ran it, assuming they have authority to approve. → Introduce the reviewer_role model (Change #5).</div>
+            </div>
+          </li>
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Flat output structure</div>
+              <div class="ap-fix">Any skill returning undifferentiated text or a single result object without summary/detail tiers. → Restructure to two-tier output schema (Change #7).</div>
+            </div>
+          </li>
+          <li class="ap-item">
+            <div class="ap-icon">✕</div>
+            <div class="ap-content">
+              <div class="ap-name">Silent cascade</div>
+              <div class="ap-fix">Any change skill that proposes modifying a priced entity without first mapping modifier and add-on impact. → Add cascade_mapper as a mandatory prerequisite (Change #4).</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- end tab-skills -->
+
+  <!-- ═══════════════════════════════════════ TAB: COMPONENTS ═══════════════════════════════════════ -->
+  <div id="tab-components" class="tab-pane">
+
+    <div class="callout dark" style="margin-top:32px">
+      <div class="callout-label">Core Principle</div>
+      <div class="callout-text">The skill output contract is not just a data structure — it's a component specification. Every field in the output requires a corresponding UI component to render it correctly. If we know the schema, we know the components. If a component is missing, a skill output field is being discarded or collapsed into plain text, which breaks the trust contract.</div>
+    </div>
+
+    <!-- MAPPING TABLE -->
+    <div class="section-title-row" style="margin-top:28px">
+      <span class="section-title" style="margin:0">Output Field → Component Mapping</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="callout blue" style="margin-top:14px">
+      <div class="callout-label">Minimum Required Set</div>
+      <div class="callout-text">This is not aspirational — it's required. Any component missing from this list means a skill output field is being discarded or collapsed into plain text.</div>
+    </div>
+    <div class="map-table-wrap" style="margin-top:14px">
+      <table class="map-table">
+        <thead>
+          <tr>
+            <th>Skill Output Field</th>
+            <th>Required Component</th>
+            <th>Why — Research Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>provenance</td>
+            <td>ProvenanceLabel</td>
+            <td>P03 won't act without knowing where numbers come from</td>
+          </tr>
+          <tr>
+            <td>basis</td>
+            <td>AnchoredProjection</td>
+            <td>P03's "$847" problem — unanchored numbers erode trust</td>
+          </tr>
+          <tr>
+            <td>affected_entities</td>
+            <td>CascadeMap</td>
+            <td>P04's modifier incident — change impact must be visible before confirm</td>
+          </tr>
+          <tr>
+            <td>rollback_token</td>
+            <td>ReversibilityIndicator</td>
+            <td>Trust signal; its presence matters as much as its function</td>
+          </tr>
+          <tr>
+            <td>summary + detail</td>
+            <td>DisclosureCard</td>
+            <td>P01/P04 — operators need headline first, depth on demand</td>
+          </tr>
+          <tr>
+            <td>mode: propose</td>
+            <td>RecommendationCard</td>
+            <td>Read-only, reasoning visible, no action affordances except "create draft"</td>
+          </tr>
+          <tr>
+            <td>mode: draft</td>
+            <td>DraftWorkspace</td>
+            <td>Editable, scope-aware, reviewer-assigned, persistent</td>
+          </tr>
+          <tr>
+            <td>mode: execute</td>
+            <td>ConfirmationFrame + AuditEntry</td>
+            <td>Irreversible step; must show what will change, what can be undone</td>
+          </tr>
+          <tr>
+            <td>recommendation_timing</td>
+            <td>UrgencyBadge</td>
+            <td>Derived from cadence + sensitivity, never hardcoded</td>
+          </tr>
+          <tr>
+            <td>reviewer_role</td>
+            <td>ReviewerAssignment</td>
+            <td>Routes draft to the right stakeholder, not just the initiating user</td>
+          </tr>
+          <tr>
+            <td>data_prerequisites (failed)</td>
+            <td>DataHealthCard</td>
+            <td>Gates the recommendation — shown instead of RecCard when data is unhealthy</td>
+          </tr>
+          <tr>
+            <td>confidence</td>
+            <td>ConfidenceIndicator</td>
+            <td>P02's explicit ask — score + one-line reasoning</td>
+          </tr>
+          <tr>
+            <td>alternatives</td>
+            <td>AlternativesPanel</td>
+            <td>P01's magic wand — agent offers paths, operator chooses</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- COMPONENT LIBRARY BY PHASE -->
+    <div class="section-title-row" style="margin-top:8px">
+      <span class="section-title" style="margin:0">Component Library by Phase</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="comp-phase-section" style="margin-top:18px">
+      <div class="comp-phase-title">
+        <span class="comp-phase-badge cpb1">Phase 1 — Intelligence (Observe)</span>
+        <span class="comp-phase-subtitle">Ambient, read-only, zero-friction. Ask nothing of the operator.</span>
+      </div>
+      <div class="comp-grid">
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">SignalCard</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Base unit of Phase 1. Surfaces an anomaly, trend, or benchmark signal contextually — inside the menu editor, product mix view, or wherever the operator already is. No CTA for action. No credits consumed.</div>
+            <div class="comp-schema">
+              <div class="comp-schema-label">Schema</div>
+              <div class="code-block" style="font-size:11px">SignalCard {
+  signal: string
+  implication: string
+  provenance: ProvenanceLabel
+  expand_target: DetailPanel | null
+}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">ProvenanceLabel</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Inline, always visible alongside any data-derived number. Not a tooltip — a persistent label. Two formats: compact ("Toast network avg, n=340") and expanded (full plain-language methodology). Used inside every other component that contains a number. <strong>Cannot be removed for space or aesthetic reasons — load-bearing.</strong></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">DataHealthCard</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Shown instead of a RecommendationCard when prerequisite data is stale or missing. Contains: which data is unhealthy, why it matters for this recommendation, and a direct action to fix it. Designed to feel helpful, not punishing — the agent is being honest about its own limitations.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">BenchmarkBand</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Visual positioning of an item's current price relative to local market range. Shows where the operator sits in the distribution without prescribing action. Used in Phase 1 to build ambient awareness; reused in Phase 2 as context inside the RecommendationCard.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="comp-phase-section">
+      <div class="comp-phase-title">
+        <span class="comp-phase-badge cpb2">Phase 2 — Recommendation (Propose)</span>
+        <span class="comp-phase-subtitle">Complete case presented. Operator reads, evaluates. No state modified.</span>
+      </div>
+      <div class="comp-grid">
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">RecommendationCard</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Primary Phase 2 component. Two-tier structure — summary always visible, detail on expand. Summary: headline, expected outcome, UrgencyBadge. Detail: ConfidenceIndicator, reasoning, ProvenanceLabel per source, AnchoredProjection, AlternativesPanel, CascadeMap preview. The only action affordance is "Create draft" — not "Approve," not "Apply."</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">AnchoredProjection</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Renders any dollar or percentage projection. Always shows: the number, the unit sales assumption it rests on, and an expandable "show the math" panel. Never renders an unanchored number — if basis is unavailable, renders a range with explicit uncertainty bounds instead.</div>
+            <div class="comp-schema">
+              <div class="comp-schema-label">Schema</div>
+              <div class="code-block" style="font-size:11px">AnchoredProjection {
+  value: "$1,270/month"
+  basis: "Based on 847 units sold in March"
+  math_expandable: true
+  uncertainty_bounds: null | [low, high]
+}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">ConfidenceIndicator</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Score (High / Medium / Low) with a one-line reason. "High — based on your 6-month sales history and 340 comparable Toast restaurants." The reason is what matters — the score alone is not enough. P02's explicit ask.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">CascadeMap</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Visualizes every entity affected by a proposed change: base item → modifier groups → modifiers → substitutions → bundles → delivery menu items. Shows current and proposed values side by side. Highlights potential arbitrage or pricing inconsistencies. Renders before the confirm affordance — always. Not on expand — upfront.</div>
+            <div class="comp-schema">
+              <div class="comp-schema-label">Schema</div>
+              <div class="code-block" style="font-size:11px">CascadeMap {
+  root_entity: Entity
+  affected: AffectedEntity[]
+  arbitrage_warnings: Warning[]
+}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">AlternativesPanel</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">When the skill generates multiple response paths (raise price / find supplier / reduce portion), renders them as selectable options with projected outcomes per option. Operator chooses which path to draft. Implements P01's "magic wand" pattern — the agent offers paths, the operator chooses.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">UrgencyBadge</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Derived from <code>recommendation_timing</code>. Visual weight varies with sensitivity × cadence intersection. Never uses hardcoded strings — always generated from the timing object. High-sensitivity issue for a quarterly-cadence operator renders as "Consider for Q3 menu review" not "Act now."</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="comp-phase-section">
+      <div class="comp-phase-title">
+        <span class="comp-phase-badge cpb3">Phase 3 — Draft (Prepare)</span>
+        <span class="comp-phase-subtitle">Agent's work product — complete change package for operator review and approval.</span>
+      </div>
+      <div class="comp-grid">
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">DraftWorkspace</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Primary Phase 3 surface. Contains the complete change package: primary change, CascadeMap (full, not preview), ScopeSelector, ReviewerAssignment, DownstreamChecklist, SandboxPreview toggle, and approve/reject/modify affordances. Persists across sessions. Designed to be shareable with an owner who didn't initiate the workflow.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">ScopeSelector</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Appears at draft creation and is locked once the draft enters review. Options: this location / all locations / select locations. The scope is visible throughout the draft — the reviewer always knows what they're approving.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">ReviewerAssignment</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Routes the draft to a role, not a user. "This draft requires owner approval before publishing." Shows who in that role has been notified and when. Draft status is <code>pending_review</code> until someone in the reviewer role acts — it cannot auto-advance.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">SandboxPreview</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Renders the menu exactly as it will appear after the draft is applied. Toggle between current state and post-change state. P01's explicit request — eliminates the fear of publishing something unexpected.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">DownstreamChecklist</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Generated as part of the draft, not after publish. Contains the post-publish action list specific to this change: reprint menus, update website, notify staff (with draft notification text pre-written), social post (with draft copy). P01 and P04's downstream coordination need — built into the draft, not an afterthought.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">ReversibilityIndicator</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Present on every DraftWorkspace and every ConfirmationFrame. Shows: what can be rolled back, for how long, and what the rollback restores. Rendered prominently — not buried. Its visibility is the trust signal. <strong>Cannot be removed for space or aesthetic reasons — load-bearing.</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="comp-phase-section">
+      <div class="comp-phase-title">
+        <span class="comp-phase-badge cpb4">Phase 4 — Autonomy (Execute and Report)</span>
+        <span class="comp-phase-subtitle">Exception-based. Surface only after Phase 3 trust is established.</span>
+      </div>
+      <div class="comp-grid">
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">GuardrailStatus</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Visual display of the operator's defined rules and where the agent is currently operating relative to them. "Price changes: max 15% — current recommendation: 8%." Shows the envelope; shows where the agent is within it. Not a dashboard — a contextual status shown when the agent is about to act.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">DailySummary</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">P04's morning news brief, implemented. One card per day: actions taken (with audit links) / recommendations pending / approaching guardrail boundaries. Designed to be reviewed in under 60 seconds — not a report, a brief.</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-card-head" onclick="this.closest('.comp-card').classList.toggle('open')">
+            <span class="comp-name">AuditEntry</span>
+            <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
+          </div>
+          <div class="comp-body">
+            <div class="comp-desc">Every agent action creates one. Contains: timestamp, action taken, reasoning summary, data sources, expected outcome, rollback token + expiry. Always accessible — reachable from any DailySummary card, not buried in settings logs.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COMPOSITION DECISION TREE -->
+    <div class="section-title-row" style="margin-top:8px">
+      <span class="section-title" style="margin:0">Composition Decision Tree</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="callout orange" style="margin-top:14px">
+      <div class="callout-label">Deterministic, Not Aesthetic</div>
+      <div class="callout-text">When an agent skill completes and is ready to render its output, it resolves the component set by walking this tree. The agent doesn't make aesthetic choices — it follows the rules. The components compose themselves based on what the skill returned.</div>
+    </div>
+
+    <div class="dtree" style="margin-top:20px">
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">1</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Did <code>data_health_check</code> pass?</div>
+          <div class="dt-branches">
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Render <strong>DataHealthCard</strong> only.</div>
+              <div><span class="dt-stop">STOP</span></div>
+            </div>
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Continue to step 2.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">2</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">What is the skill mode?</div>
+          <div class="dt-branches">
+            <div class="dt-branch a">
+              <div class="dt-branch-label">propose</div>
+              <div class="dt-branch-text">Start with <strong>RecommendationCard</strong></div>
+            </div>
+            <div class="dt-branch b">
+              <div class="dt-branch-label">draft</div>
+              <div class="dt-branch-text">Start with <strong>DraftWorkspace</strong></div>
+            </div>
+            <div class="dt-branch c">
+              <div class="dt-branch-label">execute</div>
+              <div class="dt-branch-text">Start with <strong>ConfirmationFrame</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">3</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Does output contain <code>affected_entities</code>?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Inject <strong>CascadeMap</strong> before confirm affordance.</div>
+              <div><span class="dt-action">REQUIRED</span></div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Skip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">4</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Does output contain a projection?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Render <strong>AnchoredProjection</strong>. Refuse to render raw number.</div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Skip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">5</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Does output contain <code>alternatives</code>?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Inject <strong>AlternativesPanel</strong> into detail tier.</div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Skip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">6</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Does the draft require <code>reviewer_role</code> assignment?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Inject <strong>ReviewerAssignment</strong> + <strong>ScopeSelector</strong> into DraftWorkspace.</div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Skip.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">7</div><div class="dt-line"></div></div>
+        <div class="dt-content">
+          <div class="dt-question">Does the operator have a non-immediate cadence?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Generate <strong>UrgencyBadge</strong> from timing object, not hardcoded string.</div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No</div>
+              <div class="dt-branch-text">Use default timing language.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-step">
+        <div class="dt-connector"><div class="dt-num">8</div></div>
+        <div class="dt-content" style="padding-bottom:0">
+          <div class="dt-question">Is a <code>rollback_token</code> present?</div>
+          <div class="dt-branches">
+            <div class="dt-branch yes">
+              <div class="dt-branch-label">Yes</div>
+              <div class="dt-branch-text">Render <strong>ReversibilityIndicator</strong> prominently.</div>
+            </div>
+            <div class="dt-branch no">
+              <div class="dt-branch-label">No — mode: execute</div>
+              <div class="dt-branch-text">Render read-only indicator: "this action cannot be undone."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COMPOSITION RULES -->
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">5 Composition Rules</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="contract-wrap" style="margin-top:14px">
+      <div class="contract-body" style="padding-top:16px">
+        <ul class="rule-list">
+          <li class="rule-item">
+            <div class="rule-num">1</div>
+            <div class="rule-content">
+              <div class="rule-name">Phase gates the available set</div>
+              <div class="rule-desc">A Phase 1 operator only ever sees Intelligence Components. DraftWorkspace doesn't exist for them — not because it's hidden, but because the skill is running in <code>propose</code> mode and won't generate a draft object until trust has been established. The component set is unlocked by the operator's trust phase, not by feature flags.</div>
+            </div>
+          </li>
+          <li class="rule-item">
+            <div class="rule-num">2</div>
+            <div class="rule-content">
+              <div class="rule-name">Skill output fields determine required components</div>
+              <div class="rule-desc">If the skill returns <code>affected_entities</code>, a CascadeMap is required — not optional. If the skill returns a projection without a <code>basis</code>, AnchoredProjection should refuse to render an unanchored number and surface a degraded state instead. The component enforces the output contract.</div>
+            </div>
+          </li>
+          <li class="rule-item">
+            <div class="rule-num">3</div>
+            <div class="rule-content">
+              <div class="rule-name">Complexity determines component depth</div>
+              <div class="rule-desc">A change affecting 2 entities → CascadeMap renders as a compact list. A change affecting 14 entities with 3 arbitrage warnings → CascadeMap renders as an expanded tree with warnings surfaced at the top. The component adapts to the complexity of its input, not a fixed template.</div>
+            </div>
+          </li>
+          <li class="rule-item">
+            <div class="rule-num">4</div>
+            <div class="rule-content">
+              <div class="rule-name">Operator behavior refines defaults</div>
+              <div class="rule-desc">If the operator has expanded the detail tier of the last 8 RecommendationCards, the component should default to detail-open for this operator. If they've dismissed UrgencyBadges without reading them for 3 months, the agent should de-escalate urgency framing. Component defaults are operator-specific, not universal.</div>
+            </div>
+          </li>
+          <li class="rule-item">
+            <div class="rule-num">5</div>
+            <div class="rule-content">
+              <div class="rule-name">Trust signals are never optional</div>
+              <div class="rule-desc">ProvenanceLabel, AnchoredProjection basis, and ReversibilityIndicator cannot be removed for space or aesthetic reasons. They are load-bearing. If the layout can't fit them, the layout is wrong.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AGENTFRAME -->
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">AgentFrame — The Compositing Container</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="agentframe-wrap">
+      <div class="af-title">AgentFrame</div>
+      <div class="af-sub">Every component above is a leaf. AgentFrame is the one component that assembles them. Without it, each skill hardcodes its own layout. With it, new skills just return the right output schema — the frame handles the rest.</div>
+      <div class="af-steps">
+        <div class="af-step">
+          <div class="af-step-num">Knows</div>
+          <div class="af-step-text">Current operator trust phase</div>
+        </div>
+        <div class="af-step">
+          <div class="af-step-num">Receives</div>
+          <div class="af-step-text">Full skill output object</div>
+        </div>
+        <div class="af-step">
+          <div class="af-step-num">Walks</div>
+          <div class="af-step-text">The 8-step composition decision tree</div>
+        </div>
+        <div class="af-step">
+          <div class="af-step-num">Assembles</div>
+          <div class="af-step-text">Right component set in the right order</div>
+        </div>
+        <div class="af-step">
+          <div class="af-step-num">Manages</div>
+          <div class="af-step-text">State transitions: propose → draft → execute</div>
+        </div>
+        <div class="af-step">
+          <div class="af-step-num">Surfaces</div>
+          <div class="af-step-text">Correct action affordances for the current state</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end tab-components -->
+
+</div><!-- end container -->
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
