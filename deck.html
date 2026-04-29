@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Presentation · Toast IQ Ops Agent</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#fff}
+
+/* ── DECK SHELL ── */
+.deck{width:100%;height:100%;display:flex;flex-direction:column}
+
+/* ── TOP CHROME ── */
+.chrome{height:44px;background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;z-index:50}
+.chrome-back{color:rgba(255,255,255,0.45);font-size:12px;text-decoration:none;transition:color .15s}
+.chrome-back:hover{color:#f97316}
+.chrome-sep{color:rgba(255,255,255,0.12);font-size:12px}
+.chrome-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.6)}
+.chrome-brand{margin-left:auto;font-size:11px;font-weight:800;color:#f97316}
+
+/* ── SLIDE VIEWPORT ── */
+.viewport{flex:1;position:relative;overflow:hidden}
+
+/* ── SLIDES ── */
+.slide{position:absolute;inset:0;display:flex;opacity:0;pointer-events:none;transition:opacity .4s ease,transform .4s ease;transform:translateX(40px)}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.prev{transform:translateX(-40px)}
+
+/* ── NAV BAR ── */
+.nav{height:56px;background:rgba(0,0,0,0.5);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;gap:0;flex-shrink:0;padding:0 24px;position:relative}
+.nav-dots{display:flex;gap:6px;align-items:center}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all .2s;border:none;padding:0}
+.nav-dot.active{background:#f97316;width:20px;border-radius:3px}
+.nav-dot:hover:not(.active){background:rgba(255,255,255,0.4)}
+.nav-prev,.nav-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.6);font-size:14px;padding:6px 14px;cursor:pointer;transition:all .15s;line-height:1}
+.nav-prev{left:20px}
+.nav-next{right:20px}
+.nav-prev:hover,.nav-next:hover{background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.4);color:#f97316}
+.nav-prev:disabled,.nav-next:disabled{opacity:0.2;cursor:default}
+.nav-counter{position:absolute;right:80px;font-size:11px;color:rgba(255,255,255,0.3)}
+
+/* ══════════════════════════════════════
+   SLIDE LAYOUTS
+══════════════════════════════════════ */
+
+/* ── Slide: Cover ── */
+.s-cover{background:linear-gradient(135deg,#0f0f0f 0%,#1a1a1a 50%,#111 100%);flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px}
+.s-cover::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(249,115,22,0.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,rgba(249,115,22,0.04) 0%,transparent 50%)}
+.cover-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#f97316;margin-bottom:20px;position:relative}
+.cover-title{font-size:clamp(28px,4vw,52px);font-weight:900;line-height:1.1;max-width:720px;margin-bottom:16px;position:relative}
+.cover-title span{color:#f97316}
+.cover-sub{font-size:clamp(13px,1.4vw,16px);color:rgba(255,255,255,0.45);max-width:500px;line-height:1.6;position:relative;margin-bottom:40px}
+.cover-pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative}
+.cover-pill{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65)}
+.cover-pill.hi{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.3);color:#fb923c}
+
+/* ── Slide: Exec Summary ── */
+.s-exec{background:#0f0f0f;flex-direction:column;padding:0}
+.exec-hero{background:linear-gradient(135deg,#1a1a1a,#111);padding:36px 56px 28px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.exec-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#f97316;margin-bottom:8px}
+.exec-title{font-size:clamp(22px,3vw,34px);font-weight:900;color:white;line-height:1.1;margin-bottom:8px}
+.exec-desc{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:640px}
+.exec-body{flex:1;padding:28px 56px;display:grid;grid-template-columns:1fr 1fr;gap:16px;overflow:hidden}
+.exec-stat-row{grid-column:1/-1;display:flex;gap:16px}
+.exec-stat{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;text-align:center}
+.exec-stat-num{font-size:28px;font-weight:900;color:#f97316;line-height:1}
+.exec-stat-label{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.4}
+.exec-find{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 20px}
+.exec-find-num{width:22px;height:22px;border-radius:6px;background:#f97316;color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.exec-find-title{font-size:13px;font-weight:700;color:white;margin-bottom:4px;line-height:1.3}
+.exec-find-text{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.55}
+
+/* ── Slide: Learnings ── */
+.s-learnings{background:#0f0f0f;flex-direction:column;padding:0}
+.slide-header{padding:32px 56px 20px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+.slide-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#f97316;margin-bottom:6px}
+.slide-title{font-size:clamp(20px,2.5vw,30px);font-weight:900;color:white;line-height:1.1}
+.slide-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px}
+.slide-body{flex:1;padding:20px 56px;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+
+.learn-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px;display:flex;gap:16px;align-items:flex-start}
+.learn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.learn-icon.orange{background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.25)}
+.learn-icon.blue{background:rgba(29,109,181,0.15);border:1px solid rgba(29,109,181,0.3)}
+.learn-icon.red{background:rgba(192,57,11,0.15);border:1px solid rgba(192,57,11,0.3)}
+.learn-icon.green{background:rgba(22,163,74,0.15);border:1px solid rgba(22,163,74,0.3)}
+.learn-icon.purple{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3)}
+.learn-content{}
+.learn-title{font-size:13px;font-weight:800;color:white;margin-bottom:3px}
+.learn-text{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.55}
+.learn-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:4px;margin-top:5px;text-transform:uppercase;letter-spacing:.4px}
+.lb-all{background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.25)}
+.lb-most{background:rgba(29,109,181,0.15);color:#60a5fa;border:1px solid rgba(29,109,181,0.3)}
+.lb-half{background:rgba(22,163,74,0.15);color:#4ade80;border:1px solid rgba(22,163,74,0.25)}
+
+/* ── Slide: Design Feedback ── */
+.s-design{background:#0f0f0f;flex-direction:column;padding:0}
+.design-body{flex:1;padding:20px 56px;display:grid;grid-template-columns:1fr 1fr;gap:14px;overflow:hidden}
+.d-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 20px}
+.d-card.wide{grid-column:1/-1}
+.d-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.d-card-icon{font-size:18px}
+.d-card-title{font-size:13px;font-weight:800;color:white}
+.d-tag{font-size:9px;font-weight:700;padding:1px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;margin-left:auto}
+.dt-friction{background:rgba(192,57,11,0.15);color:#f87171;border:1px solid rgba(192,57,11,0.3)}
+.dt-gap{background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.25)}
+.dt-positive{background:rgba(22,163,74,0.15);color:#4ade80;border:1px solid rgba(22,163,74,0.25)}
+.d-card-text{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6}
+.d-quote{font-style:italic;font-size:12px;color:rgba(255,255,255,0.55);border-left:2px solid #f97316;padding-left:12px;margin-top:10px;line-height:1.6}
+
+/* ── Slide: Concept Feedback ── */
+.s-concept{background:#0f0f0f;flex-direction:column;padding:0}
+.concept-body{flex:1;padding:20px 56px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:12px;overflow:hidden}
+.p-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column}
+.p-card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.p-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.3px}
+.pb-p01{background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.25)}
+.pb-p02{background:rgba(29,109,181,0.15);color:#60a5fa;border:1px solid rgba(29,109,181,0.3)}
+.pb-p03{background:rgba(124,58,237,0.15);color:#c084fc;border:1px solid rgba(124,58,237,0.3)}
+.pb-p04{background:rgba(22,163,74,0.15);color:#4ade80;border:1px solid rgba(22,163,74,0.25)}
+.p-card-role{font-size:10px;color:rgba(255,255,255,0.3);font-weight:600}
+.p-card-title{font-size:12px;font-weight:800;color:white;margin-bottom:4px}
+.p-card-text{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.55;flex:1}
+.p-card-quote{font-style:italic;font-size:10.5px;color:rgba(255,255,255,0.55);border-left:2px solid rgba(249,115,22,0.4);padding-left:8px;margin-top:8px;line-height:1.5}
+.concept-theme{grid-column:1/-1;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:16px}
+.concept-theme-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;white-space:nowrap}
+.concept-theme-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5}
+
+/* ── Slide: Recommendations ── */
+.s-recs{background:#0f0f0f;flex-direction:column;padding:0}
+.recs-body{flex:1;padding:20px 56px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.rec-item{display:flex;gap:16px;align-items:flex-start;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 18px}
+.rec-priority{width:36px;height:36px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;gap:1px}
+.rp-1{background:rgba(192,57,11,0.2);border:1px solid rgba(192,57,11,0.35)}
+.rp-1 .rp-label{color:#f87171}
+.rp-2{background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3)}
+.rp-2 .rp-label{color:#fb923c}
+.rp-3{background:rgba(29,109,181,0.15);border:1px solid rgba(29,109,181,0.3)}
+.rp-3 .rp-label{color:#60a5fa}
+.rp-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.rp-num{font-size:14px;font-weight:900;color:white}
+.rec-content{flex:1}
+.rec-title{font-size:13px;font-weight:800;color:white;margin-bottom:3px}
+.rec-text{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.55}
+.rec-how{font-size:10px;color:rgba(249,115,22,0.7);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── Slide: Opportunities ── */
+.s-opps{background:#0f0f0f;flex-direction:column;padding:0}
+.opps-body{flex:1;padding:20px 56px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;overflow:hidden}
+.opp-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.opp-card.highlight{background:rgba(249,115,22,0.06);border-color:rgba(249,115,22,0.2)}
+.opp-top{display:flex;align-items:center;gap:10px}
+.opp-icon{font-size:20px}
+.opp-title{font-size:13px;font-weight:800;color:white;flex:1}
+.opp-size{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.os-big{background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.25)}
+.os-medium{background:rgba(29,109,181,0.15);color:#60a5fa;border:1px solid rgba(29,109,181,0.3)}
+.opp-text{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6}
+.opp-evidence{font-size:10px;color:rgba(255,255,255,0.25);margin-top:auto;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)}
+
+/* ── Slide: What's Next ── */
+.s-next{background:#0f0f0f;flex-direction:column;padding:0}
+.next-body{flex:1;padding:20px 56px;display:grid;grid-template-columns:1fr 1fr;gap:14px;overflow:hidden}
+.next-col{display:flex;flex-direction:column;gap:10px}
+.next-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 18px}
+.next-card.dark-card{background:rgba(249,115,22,0.06);border-color:rgba(249,115,22,0.2)}
+.next-phase{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:6px}
+.next-title{font-size:13px;font-weight:800;color:white;margin-bottom:6px}
+.next-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.next-list li{font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.next-list li::before{content:'→';color:#f97316;font-size:10px;flex-shrink:0;margin-top:1px}
+.next-closing{grid-column:1/-1;background:linear-gradient(135deg,rgba(249,115,22,0.08),rgba(249,115,22,0.03));border:1px solid rgba(249,115,22,0.15);border-radius:12px;padding:18px 24px;display:flex;align-items:center;gap:20px}
+.next-closing-text{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;flex:1}
+.next-closing-text strong{color:white}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- TOP CHROME -->
+  <div class="chrome">
+    <a href="index.html" class="chrome-back">← Report</a>
+    <span class="chrome-sep">|</span>
+    <a href="combined.html" class="chrome-back">Combined</a>
+    <span class="chrome-sep">|</span>
+    <a href="framework.html" class="chrome-back">Framework</a>
+    <span class="chrome-sep">|</span>
+    <a href="implementation.html" class="chrome-back">Implementation</a>
+    <span class="chrome-sep">|</span>
+    <a href="deck.html" class="chrome-back" style="color:#fb923c">Presentation</a>
+    <span class="chrome-brand">Toast IQ · Ops Agent Research</span>
+  </div>
+
+  <!-- VIEWPORT -->
+  <div class="viewport">
+
+    <!-- ══ SLIDE 0: COVER ══ -->
+    <div class="slide s-cover active" data-index="0">
+      <div class="cover-eyebrow">Toast IQ Research · April 2025</div>
+      <div class="cover-title">Ops Agent<br><span>User Interviews</span></div>
+      <div class="cover-sub">Findings, learnings, and recommendations from 4 operator sessions exploring AI-assisted pricing and menu management</div>
+      <div class="cover-pills">
+        <div class="cover-pill hi">n = 4 operators</div>
+        <div class="cover-pill hi">avg 4.25 / 5 receptivity</div>
+        <div class="cover-pill">FSR · QSR · Multi-location</div>
+        <div class="cover-pill">0 concept rejections</div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 1: EXEC SUMMARY ══ -->
+    <div class="slide s-exec" data-index="1">
+      <div class="exec-hero">
+        <div class="exec-eyebrow">01 — Executive Summary</div>
+        <div class="exec-title">What We Did & What We Found</div>
+        <div class="exec-desc">We ran 4 moderated interviews with restaurant operators across FSR and QSR segments, testing the Ops Agent pricing concept. No one rejected the idea — friction is structural, not attitudinal.</div>
+      </div>
+      <div class="exec-body">
+        <div class="exec-stat-row">
+          <div class="exec-stat">
+            <div class="exec-stat-num">4</div>
+            <div class="exec-stat-label">Operators interviewed<br>FSR + QSR</div>
+          </div>
+          <div class="exec-stat">
+            <div class="exec-stat-num">4.25</div>
+            <div class="exec-stat-label">Avg receptivity score<br>out of 5</div>
+          </div>
+          <div class="exec-stat">
+            <div class="exec-stat-num">0</div>
+            <div class="exec-stat-label">Concept rejections<br>all understood the value</div>
+          </div>
+          <div class="exec-stat">
+            <div class="exec-stat-num">5</div>
+            <div class="exec-stat-label">Cross-cutting themes<br>surfaced unprompted</div>
+          </div>
+        </div>
+        <div class="exec-find">
+          <div class="exec-find-num">1</div>
+          <div class="exec-find-title">Credits model will suppress power users</div>
+          <div class="exec-find-text">Every participant noticed the credits gate unprompted. A power user would rather do research manually than spend credits without seeing a clear ROI first.</div>
+        </div>
+        <div class="exec-find">
+          <div class="exec-find-num">2</div>
+          <div class="exec-find-title">Human sign-off is non-negotiable</div>
+          <div class="exec-find-text">3 of 4 operators require owner or designated approver sign-off before any pricing change goes live. Auto-apply must not exist in any form at this stage.</div>
+        </div>
+        <div class="exec-find">
+          <div class="exec-find-num">3</div>
+          <div class="exec-find-title">The concept is legible — P02 said it unprompted</div>
+          <div class="exec-find-text">"You're asking it to do something for you instead of just asking a question." The agentic shift lands. Operators are waiting for execution to catch up to the concept they already want.</div>
+        </div>
+        <div class="exec-find">
+          <div class="exec-find-num">4</div>
+          <div class="exec-find-title">Multi-location gaps are deal-breakers</div>
+          <div class="exec-find-text">Without a publish scope selector and Menu Masters integration, 4-location operators must repeat the workflow per store — making the agent net-negative, not net-positive.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2: KEY LEARNINGS ══ -->
+    <div class="slide s-learnings" data-index="2">
+      <div class="slide-header">
+        <div class="slide-eyebrow">02 — Key Learnings</div>
+        <div class="slide-title">5 Cross-Cutting Themes</div>
+        <div class="slide-sub">Surfaced across all 4 sessions — ranked by frequency and business impact</div>
+      </div>
+      <div class="slide-body">
+        <div class="learn-card">
+          <div class="learn-icon orange">💳</div>
+          <div class="learn-content">
+            <div class="learn-title">Credits / monetization friction — universal signal</div>
+            <div class="learn-text">Every operator noticed the credits model unprompted. Common ask: show dollar value per credit and projected ROI <em>before</em> the confirm gate. P04 — the highest-intent user — would abandon the workflow rather than spend.</div>
+            <span class="learn-badge lb-all">4 / 4 participants</span>
+          </div>
+        </div>
+        <div class="learn-card">
+          <div class="learn-icon red">🔐</div>
+          <div class="learn-content">
+            <div class="learn-title">Owner sign-off gate — structural requirement, not preference</div>
+            <div class="learn-text">P04: organizational hierarchy. P02: process governance. P03: prior trauma with Uber Eats auto-publishing. Three different reasons, same behavior. The review step will remain even as trust grows — operators want the agent to reduce cognitive load, not remove them from the loop.</div>
+            <span class="learn-badge lb-most">3 / 4 participants</span>
+          </div>
+        </div>
+        <div class="learn-card">
+          <div class="learn-icon blue">🏪</div>
+          <div class="learn-content">
+            <div class="learn-title">Multi-location publish scope — deal-breaker for chains</div>
+            <div class="learn-text">P02 and P04 both operate 4 locations with shared menus. Without a scope selector and Menu Masters integration, they'd have to repeat the workflow per store. An agent that solves 80% of the workflow but leaves 20% as harder-than-before manual work is net-negative.</div>
+            <span class="learn-badge lb-half">2 / 4 participants</span>
+          </div>
+        </div>
+        <div class="learn-card">
+          <div class="learn-icon green">📊</div>
+          <div class="learn-content">
+            <div class="learn-title">Data provenance — prerequisite for trust, not a nice-to-have</div>
+            <div class="learn-text">P03 asked "where does this data come from?" multiple times. Operators won't act on numbers they can't trace. Unanchored projections (e.g., "$847 monthly recovery") erode trust — every estimate needs an auditable basis operators can independently verify.</div>
+            <span class="learn-badge lb-half">2 / 4 participants</span>
+          </div>
+        </div>
+        <div class="learn-card">
+          <div class="learn-icon purple">📣</div>
+          <div class="learn-content">
+            <div class="learn-title">Post-publish coordination — cognitive overhead that follows every price change</div>
+            <div class="learn-text">Approving a change is not the last step. Staff notifications, website updates, social posts, kitchen reprints — operators carry these mentally and manage them manually. A downstream checklist with deep-links into Toast tools addresses real cognitive overhead.</div>
+            <span class="learn-badge lb-half">2 / 4 participants</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3: DESIGN FEEDBACK ══ -->
+    <div class="slide s-design" data-index="3">
+      <div class="slide-header">
+        <div class="slide-eyebrow">03 — Design Feedback</div>
+        <div class="slide-title">What the Prototype Revealed</div>
+        <div class="slide-sub">Specific reactions to the UI and interaction model across sessions</div>
+      </div>
+      <div class="design-body">
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">⛔</span>
+            <span class="d-card-title">Credits gate at highest-intent moment</span>
+            <span class="d-tag dt-friction">Friction</span>
+          </div>
+          <div class="d-card-text">The paywall appears exactly when the operator has decided to act. P04 described a complete workflow abandonment rather than spend without seeing ROI. The placement breaks the trust loop at its most critical point.</div>
+          <div class="d-quote">"I'd just do the research myself rather than pay for something I'm not sure about." — P04</div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">🪄</span>
+            <span class="d-card-title">Unanchored projections erode trust</span>
+            <span class="d-tag dt-friction">Friction</span>
+          </div>
+          <div class="d-card-text">P03 found the $847 monthly recovery implausible — not because it was wrong, but because it wasn't tied to anything falsifiable. The fix is simple: show the unit sales assumption the number rests on. "If you sold 847 units last month, here's what that means."</div>
+          <div class="d-quote">"Where does this number come from? Show me the math." — P03</div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">🗂️</span>
+            <span class="d-card-title">No persistent draft / review state</span>
+            <span class="d-tag dt-gap">Gap</span>
+          </div>
+          <div class="d-card-text">The current prototype presents a recommendation and asks for immediate confirmation. All three operators who require sign-off have no place to park the decision for later review or delegation. The workflow needs a durable "draft" state that survives sessions and routes to the right approver.</div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">🔗</span>
+            <span class="d-card-title">Modifier cascade not surfaced before confirm</span>
+            <span class="d-tag dt-gap">Gap</span>
+          </div>
+          <div class="d-card-text">P04 had a live revenue incident caused by a base price change that silently broke modifier pricing. The prototype shows only the primary item change. The agent must map and display every downstream entity affected — modifier groups, add-ons, bundles — before the confirm affordance appears.</div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">✅</span>
+            <span class="d-card-title">Concept legibility and progressive disclosure</span>
+            <span class="d-tag dt-positive">Positive</span>
+          </div>
+          <div class="d-card-text">P02 understood and articulated the agentic shift unprompted. The two-tier card format (headline visible, detail on expand) worked well — P01 and P04 appreciated the headline-first approach and noted they rarely needed the full detail to decide.</div>
+        </div>
+        <div class="d-card">
+          <div class="d-card-head">
+            <span class="d-card-icon">🌅</span>
+            <span class="d-card-title">Timing and cadence mismatch</span>
+            <span class="d-tag dt-friction">Friction</span>
+          </div>
+          <div class="d-card-text">P02's "effective tomorrow" reaction exposed a key issue: urgency framing is calibrated for high-volatility cost environments, not QSR quarterly pricing cycles. Recommendation timing must be derived from the operator's actual cadence, not hardcoded into the template.</div>
+          <div class="d-quote">"We don't change prices like that — we do it quarterly." — P02</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4: CONCEPT FEEDBACK ══ -->
+    <div class="slide s-concept" data-index="4">
+      <div class="slide-header">
+        <div class="slide-eyebrow">04 — Concept Feedback</div>
+        <div class="slide-title">How Each Operator Received the Agent</div>
+        <div class="slide-sub">Four distinct mental models, one shared conclusion</div>
+      </div>
+      <div class="concept-body">
+        <div class="p-card">
+          <div class="p-card-top">
+            <span class="p-badge pb-p01">P01</span>
+            <span class="p-card-role">Owner · FSR Independent</span>
+          </div>
+          <div class="p-card-title">Agent as smarter notepad</div>
+          <div class="p-card-text">Does pricing math on paper today. The agent slots directly into that workflow. High trust, low conceptual friction — blocked only by stale recipe data in Toast. Receptivity 5/5.</div>
+          <div class="p-card-quote">"I'd use it in a rush and trust it — but I'd want my staff in the loop too."</div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-top">
+            <span class="p-badge pb-p02">P02</span>
+            <span class="p-card-role">Menu &amp; Ops Manager · QSR Chain</span>
+          </div>
+          <div class="p-card-title">Agent as upgrade from Q&amp;A</div>
+          <div class="p-card-text">Already uses Toast IQ daily. Immediately articulated the agentic shift unprompted — clearest validation in the study. Blocked operationally by Menu Masters gap and delivery tier pricing. Receptivity 4/5.</div>
+          <div class="p-card-quote">"You're asking it to do something for you instead of just asking a question."</div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-top">
+            <span class="p-badge pb-p03">P03</span>
+            <span class="p-card-role">Owner · FSR Multi-Concept</span>
+          </div>
+          <div class="p-card-title">Agent as co-pilot with permission gate</div>
+          <div class="p-card-text">Shaped by Uber Eats auto-publishing his menu descriptions without approval. Didn't reject the concept — rejected the assumption of autonomy. Ideal agent proposes, never acts unilaterally. Receptivity 4/5.</div>
+          <div class="p-card-quote">"I want to see where the numbers come from before I trust them."</div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-top">
+            <span class="p-badge pb-p04">P04</span>
+            <span class="p-card-role">Operator · FSR Burger/Bar</span>
+          </div>
+          <div class="p-card-title">Agent as daily brief tool</div>
+          <div class="p-card-text">Wants intelligence bundled into a single daily check-in, not always-on interruption. Hardest monetization veto — would abandon the tool over credits. Modifier cascade concern stems from a real revenue incident. Receptivity 4/5.</div>
+          <div class="p-card-quote">"Give me a morning news brief — not constant pings."</div>
+        </div>
+        <div class="concept-theme">
+          <div class="concept-theme-label">Shared Conclusion</div>
+          <div class="concept-theme-text">All four operators understand and want the concept. None are waiting for it to improve. <strong style="color:white">They're waiting for the execution to catch up to what they already believe is possible.</strong> The research shows no attitudinal barrier — only structural ones.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 5: RECOMMENDATIONS ══ -->
+    <div class="slide s-recs" data-index="5">
+      <div class="slide-header">
+        <div class="slide-eyebrow">05 — Recommendations</div>
+        <div class="slide-title">What to Fix Before Shipping</div>
+        <div class="slide-sub">Ranked by blocking severity — must-fix to ship vs. high-value improvements</div>
+      </div>
+      <div class="recs-body">
+        <div class="rec-item">
+          <div class="rec-priority rp-1">
+            <span class="rp-label">Must</span>
+            <span class="rp-num">1</span>
+          </div>
+          <div class="rec-content">
+            <div class="rec-title">Replace credits gate with ROI-first reveal</div>
+            <div class="rec-text">Show per-credit dollar value and projected revenue recovery before the confirm gate. Consider a free first-use or bundled-usage model for the initial rollout. The current placement suppresses the highest-intent operators.</div>
+            <div class="rec-how">Fix: surface cost transparency before commitment → consider bundled credits in base plan</div>
+          </div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-priority rp-1">
+            <span class="rp-label">Must</span>
+            <span class="rp-num">2</span>
+          </div>
+          <div class="rec-content">
+            <div class="rec-title">Build persistent draft / reviewer-assignment state</div>
+            <div class="rec-text">The agent must support a durable draft that survives sessions and routes to a designated approver role (owner, operator, manager) — not just the initiating user. Auto-apply must not exist at any trust level at launch.</div>
+            <div class="rec-how">Fix: propose → draft → review → publish pipeline with role-based routing</div>
+          </div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-priority rp-1">
+            <span class="rp-label">Must</span>
+            <span class="rp-num">3</span>
+          </div>
+          <div class="rec-content">
+            <div class="rec-title">Surface full modifier cascade before confirm</div>
+            <div class="rec-text">Every pricing change must show all affected modifiers, add-ons, substitutions, and bundles with their current and post-change values before the confirm affordance appears. This is a trust signal, not a nice-to-have — P04's incident shows the real revenue risk.</div>
+            <div class="rec-how">Fix: cascade_mapper runs on every change skill before recommendation renders</div>
+          </div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-priority rp-2">
+            <span class="rp-label">High</span>
+            <span class="rp-num">4</span>
+          </div>
+          <div class="rec-content">
+            <div class="rec-title">Anchor every projection to a verifiable unit assumption</div>
+            <div class="rec-text">Never show a dollar or percentage estimate without the unit sales assumption it rests on. "Based on 847 units sold last month" makes the number falsifiable — operators can check the math against their own knowledge of their business.</div>
+            <div class="rec-how">Fix: AnchoredProjection component required for all estimates — no raw numbers</div>
+          </div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-priority rp-3">
+            <span class="rp-label">Next</span>
+            <span class="rp-num">5</span>
+          </div>
+          <div class="rec-content">
+            <div class="rec-title">Add publish scope selector + Menu Masters integration</div>
+            <div class="rec-text">Multi-location operators need to choose which locations a change applies to at the confirm step. Without Menu Masters integration, 4-location operators must repeat the workflow per store, making the agent net-negative for their segment.</div>
+            <div class="rec-how">Fix: scope selector at draft creation; Menu Masters API for chain menus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 6: OPPORTUNITIES ══ -->
+    <div class="slide s-opps" data-index="6">
+      <div class="slide-header">
+        <div class="slide-eyebrow">06 — Opportunities</div>
+        <div class="slide-title">Unmet Needs Worth Pursuing</div>
+        <div class="slide-sub">Problems operators articulated unprompted — not addressed by the current prototype</div>
+      </div>
+      <div class="opps-body">
+        <div class="opp-card highlight">
+          <div class="opp-top">
+            <span class="opp-icon">🧲</span>
+            <span class="opp-title">Supplier alternatives — protect margin, don't just raise prices</span>
+            <span class="opp-size os-big">Highest signal</span>
+          </div>
+          <div class="opp-text">P01's "magic wand": when ingredient costs spike, find a cheaper supplier at the original price instead of recommending a price hike. This reframes the entire cost-spike use case from reactive pricing to proactive margin protection — a fundamentally different and potentially stickier value prop.</div>
+          <div class="opp-evidence">Source: P01 · unprompted · single-location FSR owner</div>
+        </div>
+        <div class="opp-card highlight">
+          <div class="opp-top">
+            <span class="opp-icon">🕸️</span>
+            <span class="opp-title">Modifier cascade awareness as a trust anchor</span>
+            <span class="opp-size os-big">Highest signal</span>
+          </div>
+          <div class="opp-text">P04 had a real revenue incident from a base price change that silently created modifier arbitrage. He now does this analysis manually before every change. An agent that automatically maps downstream impact would eliminate a manual step that currently carries real business risk.</div>
+          <div class="opp-evidence">Source: P04 · live incident · multi-location FSR operator</div>
+        </div>
+        <div class="opp-card">
+          <div class="opp-top">
+            <span class="opp-icon">📍</span>
+            <span class="opp-title">Competitive benchmarking as a distinct module</span>
+            <span class="opp-size os-medium">Strong signal</span>
+          </div>
+          <div class="opp-text">P02 asked for regional competitive pricing as a promotional strategy input. P03 described manually researching nearby restaurant prices today. Neither was prompted. Both framed automation as a genuine upgrade to a regular operational task — not a vanity feature.</div>
+          <div class="opp-evidence">Source: P02 + P03 · independently surfaced · different segments</div>
+        </div>
+        <div class="opp-card">
+          <div class="opp-top">
+            <span class="opp-icon">🌅</span>
+            <span class="opp-title">Daily brief format as an autonomy entry point</span>
+            <span class="opp-size os-medium">Strong signal</span>
+          </div>
+          <div class="opp-text">P04's unprompted "morning news brief" framing is the most nuanced model for agentic UX: intelligence bundled into one daily check-in that fits around existing routines. This is a low-friction path to autonomy — the agent acts overnight, the operator reviews in the morning.</div>
+          <div class="opp-evidence">Source: P04 · unprompted · aligns with Phase 4 autonomy pattern</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 7: WHAT'S NEXT ══ -->
+    <div class="slide s-next" data-index="7">
+      <div class="slide-header">
+        <div class="slide-eyebrow">07 — What's Next</div>
+        <div class="slide-title">Path Forward</div>
+        <div class="slide-sub">From research to product — near-term and medium-term</div>
+      </div>
+      <div class="next-body">
+        <div class="next-col">
+          <div class="next-card dark-card">
+            <div class="next-phase">Now — Must-fix before next test</div>
+            <div class="next-title">Resolve the 3 blockers</div>
+            <ul class="next-list">
+              <li>Redesign credits reveal — show ROI before the gate, not after</li>
+              <li>Build draft/review pipeline with role-based approver routing</li>
+              <li>Surface modifier cascade map on every pricing recommendation</li>
+            </ul>
+          </div>
+          <div class="next-card">
+            <div class="next-phase">Near-term — Structural improvements</div>
+            <div class="next-title">Close the workflow gaps</div>
+            <ul class="next-list">
+              <li>Add publish scope selector (this location / all / select)</li>
+              <li>Anchor all projections to unit sales assumptions</li>
+              <li>Calibrate urgency language per operator pricing cadence</li>
+              <li>Post-publish downstream checklist with deep-links</li>
+            </ul>
+          </div>
+        </div>
+        <div class="next-col">
+          <div class="next-card">
+            <div class="next-phase">Medium-term — Product expansion</div>
+            <div class="next-title">Build toward the opportunities</div>
+            <ul class="next-list">
+              <li>Supplier alternatives module — proactive margin protection</li>
+              <li>Competitive benchmarking signal or standalone module</li>
+              <li>Menu Masters integration for chain operators</li>
+              <li>Daily brief format as Phase 4 autonomy entry point</li>
+            </ul>
+          </div>
+          <div class="next-card">
+            <div class="next-phase">Research — Continue building evidence</div>
+            <div class="next-title">Next round of testing</div>
+            <ul class="next-list">
+              <li>Re-test revised credits model with P04-type power users</li>
+              <li>Test draft/review flow with owner + manager pairs</li>
+              <li>Validate cascade map concept with multi-location operators</li>
+              <li>Broader QSR sample — urgency cadence variation</li>
+            </ul>
+          </div>
+        </div>
+        <div class="next-closing">
+          <div style="font-size:28px">🏁</div>
+          <div class="next-closing-text"><strong>The concept is validated.</strong> Operators understand it, want it, and are ready for it. None of the blockers are attitudinal — they are structural gaps in the product. The research gives us a clear, prioritized list of what needs to be built to move from "interesting prototype" to "tool operators actually adopt."</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end viewport -->
+
+  <!-- NAV BAR -->
+  <div class="nav">
+    <button class="nav-prev" onclick="navigate(-1)">‹</button>
+    <div class="nav-dots" id="dots"></div>
+    <button class="nav-next" onclick="navigate(1)">›</button>
+  </div>
+
+</div><!-- end deck -->
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsContainer = document.getElementById('dots');
+let current = 0;
+
+// Build dots
+slides.forEach((_, i) => {
+  const d = document.createElement('button');
+  d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsContainer.appendChild(d);
+});
+
+function goTo(n) {
+  const dots = document.querySelectorAll('.nav-dot');
+  slides[current].classList.remove('active');
+  slides[current].classList.add('prev');
+  setTimeout(() => slides[current].classList.remove('prev'), 450);
+  dots[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, slides.length - 1));
+  slides[current].classList.add('active');
+  dots[current].classList.add('active');
+  document.querySelector('.nav-prev').disabled = current === 0;
+  document.querySelector('.nav-next').disabled = current === slides.length - 1;
+}
+
+function navigate(dir) { goTo(current + dir); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+// Init state
+document.querySelector('.nav-prev').disabled = true;
+goTo(0);
+</script>
+</body>
+</html>
