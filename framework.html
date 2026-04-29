@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Path to Agentic UX · Toast IQ Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:100px}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-back{color:rgba(255,255,255,0.55);font-size:12px;transition:color .15s}
+.topbar-back:hover{color:#f97316}
+.topbar-sep{color:rgba(255,255,255,0.15);font-size:12px}
+.topbar-brand{color:#f97316;font-size:11px;font-weight:800;margin-left:auto}
+
+/* ── HERO ── */
+.hero{background:#1e1e1e;padding:48px 40px 40px;max-width:100%}
+.hero-inner{max-width:900px;margin:0 auto}
+.hero-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:12px}
+.hero-title{font-size:32px;font-weight:800;color:white;line-height:1.2;margin-bottom:10px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:560px;margin-bottom:32px}
+
+/* progression arc */
+.arc{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.arc-step{display:flex;align-items:center;flex-shrink:0}
+.arc-node{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;border:1.5px solid}
+.arc-node.active{background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.5);color:#fb923c}
+.arc-node.future{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.35)}
+.arc-arrow{color:rgba(255,255,255,0.2);font-size:14px;margin:0 6px;flex-shrink:0}
+.arc-legend{display:flex;gap:16px;margin-top:14px}
+.arc-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,0.4)}
+.arc-legend-dot{width:8px;height:8px;border-radius:50%}
+.arc-legend-dot.active{background:#f97316}
+.arc-legend-dot.future{background:rgba(255,255,255,0.2)}
+
+/* ── CONTAINER ── */
+.container{max-width:900px;margin:0 auto;padding:0 24px}
+
+/* ── STRATEGY STRIP ── */
+.strategy-strip{margin:28px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.strategy-card{background:white;border:1px solid #ede8e0;border-radius:10px;padding:18px 20px}
+.strategy-card.dark{background:#1e1e1e;border-color:#333}
+.strategy-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:8px}
+.strategy-card.dark .strategy-label{color:rgba(249,115,22,0.8)}
+.strategy-text{font-size:13px;color:#444;line-height:1.7}
+.strategy-card.dark .strategy-text{color:rgba(255,255,255,0.7)}
+.strategy-quote{font-style:italic;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;border-left:2px solid #f97316;padding-left:12px;margin-top:10px}
+
+/* ── READINESS TABLE ── */
+.readiness-wrap{margin-top:28px;background:white;border:1px solid #ede8e0;border-radius:10px;overflow:hidden}
+.readiness-header{padding:14px 20px;border-bottom:1px solid #ede8e0;display:flex;align-items:center;justify-content:space-between}
+.readiness-title{font-size:13px;font-weight:700;color:#1a1a1a}
+.readiness-sub{font-size:11px;color:#aaa}
+.readiness-table{width:100%;border-collapse:collapse}
+.readiness-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;padding:10px 16px;text-align:left;border-bottom:1px solid #f5f0ea;background:#faf8f5}
+.readiness-table td{padding:12px 16px;font-size:12px;color:#444;border-bottom:1px solid #f5f0ea;vertical-align:top;line-height:1.5}
+.readiness-table tr:last-child td{border-bottom:none}
+.readiness-table td:first-child{font-weight:700;color:#1a1a1a;font-size:13px;white-space:nowrap}
+.phase-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.pb1{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.pb2{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.pb3{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.pb-blocked{background:#fff5f5;color:#c0390b;border:1px solid #fde0dc}
+.blocker-text{font-size:11px;color:#888;line-height:1.5}
+
+/* ── SECTION TITLE ── */
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin:36px 0 14px}
+.section-title-row{display:flex;align-items:baseline;gap:10px}
+.section-title-divider{flex:1;height:1px;background:#ede8e0}
+
+/* ── PHASE CARDS ── */
+.phase-card{border-radius:12px;overflow:hidden;margin-bottom:16px;border:1.5px solid}
+.phase-card.ph1{border-color:#bfdbfe;background:white}
+.phase-card.ph2{border-color:#ddd6fe;background:white}
+.phase-card.ph3{border-color:#fed7aa;background:white}
+.phase-card.ph4{border-color:#fde8c8;background:white}
+.phase-card.ph5{border-color:#bbf7d0;background:white}
+.phase-card.future-phase{border-style:dashed;background:#fafaf9}
+
+.phase-head{padding:18px 20px 16px;display:flex;gap:16px;align-items:flex-start;cursor:pointer}
+.phase-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;margin-top:1px}
+.ph1 .phase-num{background:#eff6ff;color:#1d6db5}
+.ph2 .phase-num{background:#f5f3ff;color:#7c3aed}
+.ph3 .phase-num{background:#fff7ed;color:#ea580c}
+.ph4 .phase-num{background:#fffbeb;color:#d97706}
+.ph5 .phase-num{background:#f0fdf4;color:#16a34a}
+.future-phase .phase-num{background:#f4f4f4;color:#aaa}
+
+.phase-meta{flex:1;min-width:0}
+.phase-layer{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.ph1 .phase-layer{color:#1d6db5}
+.ph2 .phase-layer{color:#7c3aed}
+.ph3 .phase-layer{color:#ea580c}
+.ph4 .phase-layer{color:#d97706}
+.ph5 .phase-layer{color:#16a34a}
+.future-phase .phase-layer{color:#aaa}
+
+.phase-name{font-size:17px;font-weight:800;color:#1a1a1a;margin-bottom:4px;line-height:1.2}
+.phase-role-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.phase-role{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+.ph1 .phase-role{background:#eff6ff;color:#1d6db5}
+.ph2 .phase-role{background:#f5f3ff;color:#7c3aed}
+.ph3 .phase-role{background:#fff7ed;color:#ea580c}
+.ph4 .phase-role{background:#fffbeb;color:#d97706}
+.ph5 .phase-role{background:#f0fdf4;color:#16a34a}
+.future-phase .phase-role{background:#f4f4f4;color:#888}
+.phase-tagline{font-size:12px;color:#888;line-height:1.4}
+
+.phase-chevron{font-size:14px;color:#ccc;flex-shrink:0;margin-top:8px;transition:transform .2s}
+.phase-card.open .phase-chevron{transform:rotate(90deg)}
+
+.phase-body{display:none;padding:0 20px 20px;border-top:1px solid}
+.ph1 .phase-body{border-color:#e8f2ff}
+.ph2 .phase-body{border-color:#ede9ff}
+.ph3 .phase-body{border-color:#fff1e0}
+.ph4 .phase-body{border-color:#fef3c7}
+.ph5 .phase-body{border-color:#dcfce7}
+.future-phase .phase-body{border-color:#ede8e0}
+.phase-card.open .phase-body{display:block}
+
+.phase-desc{font-size:13px;color:#555;line-height:1.7;margin-top:16px;margin-bottom:18px}
+
+/* skill rows */
+.skills-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:8px}
+.skill-row{border:1px solid #ede8e0;border-radius:7px;overflow:hidden;margin-bottom:6px;cursor:pointer;transition:border-color .15s;background:white}
+.skill-row:hover{border-color:#f97316}
+.skill-row.open{border-color:#f97316}
+.skill-head{padding:10px 14px;display:flex;align-items:center;gap:10px}
+.skill-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ph1 .skill-dot{background:#1d6db5}
+.ph2 .skill-dot{background:#7c3aed}
+.ph3 .skill-dot{background:#ea580c}
+.ph4 .skill-dot{background:#d97706}
+.ph5 .skill-dot{background:#16a34a}
+.future-phase .skill-dot{background:#aaa}
+.skill-name{font-size:12px;font-weight:700;color:#1a1a1a;flex:1}
+.skill-hook{font-size:11px;color:#888;flex:2;line-height:1.4}
+.skill-arrow{font-size:11px;color:#ccc;flex-shrink:0;transition:transform .2s}
+.skill-row.open .skill-arrow{transform:rotate(90deg)}
+.skill-body{display:none;padding:0 14px 12px 31px;font-size:12px;color:#555;line-height:1.6;border-top:1px solid #f9f6f2}
+.skill-row.open .skill-body{display:block}
+.skill-trust{margin-top:8px;padding:8px 10px;background:#faf8f5;border-radius:5px;border-left:2px solid}
+.ph1 .skill-trust{border-color:#1d6db5}
+.ph2 .skill-trust{border-color:#7c3aed}
+.ph3 .skill-trust{border-color:#ea580c}
+.ph4 .skill-trust{border-color:#d97706}
+.ph5 .skill-trust{border-color:#16a34a}
+.skill-trust-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:3px}
+.skill-trust-text{font-size:11px;color:#555;line-height:1.5}
+
+/* interaction pattern */
+.pattern-wrap{margin-top:14px;padding:12px 14px;border-radius:7px;border:1px dashed #ddd6ca;background:#fdfcfb}
+.pattern-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:5px}
+.pattern-text{font-size:12px;color:#555;line-height:1.6}
+
+/* future phases note */
+.future-note{font-size:12px;color:#aaa;font-style:italic;margin-top:14px;line-height:1.6;padding:12px 14px;background:#faf8f5;border-radius:6px}
+
+/* ── EMBEDDED SKILLS ── */
+.skills-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:4px}
+.embedded-skill{background:white;border:1px solid #ede8e0;border-radius:9px;padding:16px 18px;cursor:pointer;transition:border-color .15s}
+.embedded-skill:hover{border-color:#f97316}
+.embedded-skill.open{border-color:#f97316}
+.es-icon{width:32px;height:32px;border-radius:8px;background:#fff7ed;color:#f97316;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px}
+.es-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.es-hook{font-size:12px;color:#888;line-height:1.4}
+.es-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #f5f0ea;font-size:12px;color:#555;line-height:1.6}
+.embedded-skill.open .es-body{display:block}
+
+/* ── PRINCIPLES ── */
+.principles-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.principle{background:white;border:1px solid #ede8e0;border-radius:8px;padding:14px 16px}
+.principle-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#f97316;margin-bottom:5px}
+.principle-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:5px}
+.principle-text{font-size:12px;color:#666;line-height:1.6}
+
+/* ── FOUNDATIONAL BET ── */
+.foundational-bet{background:#1e1e1e;border-radius:12px;padding:28px 32px;margin-top:10px}
+.fb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:12px}
+.fb-text{font-size:16px;color:rgba(255,255,255,0.85);line-height:1.75;font-style:italic}
+.fb-source{margin-top:16px;font-size:11px;color:rgba(255,255,255,0.35);padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)}
+
+/* ── FOCUS BANNER ── */
+.focus-banner{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start;margin-top:28px}
+.focus-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.focus-text{font-size:12px;color:#7c2d12;line-height:1.6}
+.focus-text strong{color:#c2410c}
+
+@media(max-width:700px){
+  .hero{padding:32px 20px 28px}
+  .strategy-strip{grid-template-columns:1fr}
+  .skills-grid{grid-template-columns:1fr}
+  .principles-grid{grid-template-columns:1fr}
+  .skill-hook{display:none}
+  .container{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-back">← Research Report</a>
+  <span class="topbar-sep">|</span>
+  <a href="combined.html" class="topbar-back">Combined Summary</a>
+  <span class="topbar-sep">|</span>
+  <a href="full-report.html" class="topbar-back">Full Report</a>
+  <span class="topbar-brand">Toast IQ Research</span>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Strategic Framework</div>
+    <div class="hero-title">Path to Agentic UX</div>
+    <div class="hero-sub">Operators aren't resisting agents — they're resisting unearned autonomy. Each phase earns the trust capital that unlocks the next.</div>
+
+    <div class="arc">
+      <div class="arc-step"><div class="arc-node active">Observe</div></div>
+      <div class="arc-arrow">→</div>
+      <div class="arc-step"><div class="arc-node active">Explain</div></div>
+      <div class="arc-arrow">→</div>
+      <div class="arc-step"><div class="arc-node active">Propose</div></div>
+      <div class="arc-arrow">→</div>
+      <div class="arc-step"><div class="arc-node active">Draft</div></div>
+      <div class="arc-arrow">→</div>
+      <div class="arc-step"><div class="arc-node future">Execute (approval)</div></div>
+      <div class="arc-arrow">→</div>
+      <div class="arc-step"><div class="arc-node future">Execute autonomously</div></div>
+    </div>
+    <div class="arc-legend">
+      <div class="arc-legend-item"><div class="arc-legend-dot active"></div>Current design focus (Phase 1–3)</div>
+      <div class="arc-legend-item"><div class="arc-legend-dot future"></div>Future phases — unlock after trust is earned</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ══ STRATEGY NOTES ══ -->
+  <div class="strategy-strip">
+    <div class="strategy-card dark">
+      <div class="strategy-label">The Non-Negotiable Rule</div>
+      <div class="strategy-text" style="color:rgba(255,255,255,0.8)">Phase ordering cannot be skipped. The temptation is to jump to Phase 3 because that's where the product demo lives — but without Phase 1 earning data trust, operators arrive at the draft screen already skeptical of the numbers inside it.</div>
+      <div class="strategy-quote">The fastest path to full autonomy is paradoxically the most conservative one. Build skills that demonstrate the agent is right before building skills that let it act.</div>
+    </div>
+    <div class="strategy-card">
+      <div class="strategy-label">Where Most Products Stall</div>
+      <div class="strategy-text">Moving from "agent prepares, human approves" to "agent acts, human reviews summary" requires trust capital that can't be manufactured through UX alone — it has to be accumulated through repeated, accurate, unremarkable Phase 3 behavior.</div>
+      <div class="strategy-text" style="margin-top:10px;">Design implication: Phase 3 should be explicitly built to <strong>generate</strong> that trust signal — outcome tracking, accuracy scores, and closed-loop feedback. Without it, operators have no evidence base to expand into Phase 4.</div>
+    </div>
+  </div>
+
+  <!-- readiness table -->
+  <div class="readiness-wrap">
+    <div class="readiness-header">
+      <div class="readiness-title">Participant Readiness Map</div>
+      <div class="readiness-sub">Where each operator is today — and what's blocking advancement</div>
+    </div>
+    <table class="readiness-table">
+      <thead>
+        <tr>
+          <th>Participant</th>
+          <th>Current readiness</th>
+          <th>What's blocking advancement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="p01.html" style="color:#f97316">P01</a></td>
+          <td><span class="phase-badge pb1">Ready for Phase 3</span></td>
+          <td><div class="blocker-text">Recipe data staleness — inputs need to be trustworthy before recommendations can be acted on</div></td>
+        </tr>
+        <tr>
+          <td><a href="p02.html" style="color:#f97316">P02</a></td>
+          <td><span class="phase-badge pb2">Phase 3 with blockers</span></td>
+          <td><div class="blocker-text">Menu Masters and delivery tier gaps make the workflow net-negative without them</div></td>
+        </tr>
+        <tr>
+          <td><a href="p03.html" style="color:#f97316">P03</a></td>
+          <td><span class="phase-badge pb2">Phase 2</span></td>
+          <td><div class="blocker-text">Data provenance and anchored projections must be resolved before draft trust is possible</div></td>
+        </tr>
+        <tr>
+          <td><a href="p04.html" style="color:#f97316">P04</a></td>
+          <td><span class="phase-badge pb-blocked">Phase 2</span></td>
+          <td><div class="blocker-text">Monetization model and modifier cascade coverage are the prerequisites</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="focus-banner">
+    <div class="focus-icon">🎯</div>
+    <div class="focus-text"><strong>Current design focus: Phase 1–3.</strong> No participant is at Phase 4 yet. All four operators need the foundational trust-earning phases before expanded autonomy is viable. Phase 4+ design work is premature until Phase 3 behavior has been demonstrated.</div>
+  </div>
+
+  <!-- ══ PHASES ══ -->
+  <div class="section-title-row" style="margin-top:36px;margin-bottom:14px">
+    <div class="section-title" style="margin:0">The Five Phases</div>
+    <div class="section-title-divider"></div>
+    <div style="font-size:11px;color:#aaa;flex-shrink:0">Click any phase to expand</div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase-card ph1" id="phase1">
+    <div class="phase-head" onclick="togglePhase(this)">
+      <div class="phase-num">1</div>
+      <div class="phase-meta">
+        <div class="phase-layer">Phase 1 · Intelligence Layer</div>
+        <div class="phase-name">Sensing &amp; Surfacing</div>
+        <div class="phase-role-row">
+          <span class="phase-role">Agent role: Observer</span>
+          <span class="phase-tagline">No actions. Only signals. Earns the right to be noticed.</span>
+        </div>
+      </div>
+      <div class="phase-chevron">›</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-desc">This phase is about the agent earning the right to be noticed. Operators need to experience the agent being <em>right</em> before they trust it to <em>act</em>. The interaction pattern is purely informational — the agent surfaces signals without asking anything of the operator.</div>
+
+      <div class="skills-label">Foundational skills to build now</div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Data Audit</div><div class="skill-hook">Before any recommendation, checks whether underlying data is current and flags gaps</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Before surfacing any recommendation, the agent silently checks whether the underlying data (recipes, costs, menu structure) is current and complete. Gaps are flagged with a "data health card" — the recommendation is withheld until inputs are trustworthy.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's blocker: stale recipe data meant she couldn't trust the numbers. An audit skill makes inputs trustworthy before outputs are shown — decoupling data trust from recommendation trust.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Anomaly Detection</div><div class="skill-hook">Monitors cost spikes, sales drops, margin compression in the background — surfaces contextually in the menu editor</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Monitors cost spikes, sales drops, and margin compression continuously. Surfaces them contextually — in the menu editor, not in a separate tool — so operators encounter insights where work is already happening.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Operators learn the agent is watching things they aren't. Each accurate alert is a trust deposit. This builds ambient trust before any recommendation is ever shown.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Data Provenance Labeling</div><div class="skill-hook">Every number shown includes a plain-language source label — "Based on regional Toast restaurant averages"</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Every number shown to the operator includes a plain-language explanation of its source: "Based on your invoicing data via ExtraChef" or "Based on regional Toast restaurant averages (340 comparable restaurants)."
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core ask — asked "where are you getting your data from?" multiple times. Without provenance labels, operators disengage before acting. Labels make claims falsifiable and verifiable.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Competitive Benchmarking Signal</div><div class="skill-hook">Surfaces local market pricing context alongside menu items — not a recommendation, just a signal</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Surfaces local market pricing context alongside menu items as a passive signal — not a call to action. "Nearby restaurants in your category are charging $18–22 for a comparable dish. You're at $16.49."
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02 and P03 both do this manually today. Automating it earns immediate credibility — the agent is doing something they already value but find time-consuming.</div></div>
+        </div>
+      </div>
+
+      <div class="pattern-wrap">
+        <div class="pattern-label">Interaction pattern</div>
+        <div class="pattern-text">Passive contextual cards. Appear where work is already happening (menu editor, product mix report). Dismissable. No CTA beyond "learn more." No credits consumed at this stage.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase-card ph2" id="phase2">
+    <div class="phase-head" onclick="togglePhase(this)">
+      <div class="phase-num">2</div>
+      <div class="phase-meta">
+        <div class="phase-layer">Phase 2 · Recommendation Layer</div>
+        <div class="phase-name">Propose &amp; Explain</div>
+        <div class="phase-role-row">
+          <span class="phase-role">Agent role: Advisor</span>
+          <span class="phase-tagline">Proposes, never acts. Full reasoning visible. Operator still owns execution.</span>
+        </div>
+      </div>
+      <div class="phase-chevron">›</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-desc">Once the agent has demonstrated it sees things accurately (Phase 1), it earns the right to make recommendations. The pattern shifts from surfacing signals to presenting a complete case: here's what I see, here's why it matters, here's what I suggest, here's what I expect will happen.</div>
+
+      <div class="skills-label">Skills to build</div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Anchored Projection</div><div class="skill-hook">Ties every dollar estimate to a verifiable unit sales assumption — "Based on 847 units sold last month..."</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Every dollar projection is tied to a verifiable unit sales assumption. Shows the math explicitly: "Based on your 847 units sold last month, a $1.50 price increase recovers ~$1,270/month." Operators can sanity-check against their own knowledge.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core ask: "Even just one number, if you sold 100 items this month, this is what your increase would be." Unanchored projections ($847/month with no unit basis) erode trust rather than build it — big unverifiable numbers feel fabricated.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Confidence Scoring</div><div class="skill-hook">Shows certainty level per recommendation with brief reasoning — "High confidence, based on 6 months of your sales data"</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Each recommendation shows a confidence level with a brief explanation of why: "High confidence — based on 6 months of your own sales data + 340 comparable Toast restaurants." Operators apply their own judgment on top of a confidence signal rather than accepting or rejecting blindly.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02's explicit request. Habitual verify-and-match operators need a confidence signal they can reason about — not just a number, but a brief explanation of what's behind it.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Modifier Cascade Preview</div><div class="skill-hook">When a base item price changes, surfaces every affected modifier, add-on, and substitution with downstream pricing impact</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">When a base item price change is proposed, the agent surfaces every modifier, add-on, and substitution that would be affected and shows the downstream pricing impact — including whether any existing modifiers would become arbitrage opportunities.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04's live incident: a base price change exposed modifier arbitrage (customers ordering a cheap dog patty to avoid paying for a double burger). The agent preventing that incident once earns more trust than any onboarding flow.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Alternatives Generation</div><div class="skill-hook">For cost-spike recommendations, proposes multiple response paths: raise price, find alternative supplier, reduce portion</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">For cost-spike recommendations, the agent proposes multiple response paths — raise the price, find an alternative supplier at the original cost, or reduce portion size. The operator chooses the response that fits their context.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's "magic wand" — wants the agent to find a cheaper supplier instead of always recommending a price increase. Reframes the agent from "price optimizer" to "margin protector" — a meaningfully different and stickier value proposition.</div></div>
+        </div>
+      </div>
+
+      <div class="pattern-wrap">
+        <div class="pattern-label">Interaction pattern</div>
+        <div class="pattern-text">Recommendation cards with progressive disclosure. Default view: headline recommendation + expected outcome. Expanded view: full reasoning, data sources, confidence, alternatives. Operator reads, decides, acts manually. No draft yet — operator still owns execution.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase-card ph3" id="phase3">
+    <div class="phase-head" onclick="togglePhase(this)">
+      <div class="phase-num">3</div>
+      <div class="phase-meta">
+        <div class="phase-layer">Phase 3 · Draft Layer</div>
+        <div class="phase-name">Prepare &amp; Preview</div>
+        <div class="phase-role-row">
+          <span class="phase-role">Agent role: Preparer</span>
+          <span class="phase-tagline">Builds the complete change package. Human reviews and approves.</span>
+        </div>
+      </div>
+      <div class="phase-chevron">›</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-desc">The agent transitions from advisor to co-worker. It doesn't just recommend — it prepares everything needed to execute: the price change, affected modifiers, the downstream checklist, and the staff notification draft. The operator's job becomes review-and-approve, not build-and-execute.</div>
+
+      <div class="skills-label">Skills to build</div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Draft State Management</div><div class="skill-hook">Creates a persistent, named draft that survives sessions and can be shared with owners for sign-off</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Creates a persistent, named draft that survives browser sessions and can be shared with other owners for sign-off before publishing. The draft is a first-class object — not a transient state.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04, P02, and P03 all require owner approval before any pricing change goes live. Draft persistence makes the agent compatible with how multi-stakeholder restaurants actually make decisions — the approver isn't always the person who interacted with the agent.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Scope Selector</div><div class="skill-hook">At draft creation, operator sets scope: this location, all locations, or select locations</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">At draft creation, the operator sets scope: this location, all locations, or a selection of locations. The draft is scoped accordingly and Menu Masters / cross-location sync tools are invoked appropriately.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P04 and P02's hard requirement — both operate 4 locations with shared menus. Without scope selection, the workflow forces them to repeat the approval process per store, making it net-negative.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Downstream Package Builder</div><div class="skill-hook">Automatically assembles the post-publish checklist — staff notification, website update prompt, social template</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Automatically assembles the post-publish coordination package as part of the draft: staff notification draft, website update prompt, social post template, and a list of affected menu sections that need reprinting. Approval triggers publish + downstream coordination in one step.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01 and P04's downstream coordination need. P01 wants an automatic staff note; P04 wants deep-link redirects to staff announcements and social tools. The package builder addresses both patterns without requiring the operator to remember what to do after approving.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Sandbox Preview</div><div class="skill-hook">Shows exactly what the menu will look like after the draft is applied — before committing</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Shows the operator exactly what the menu will look like after the draft is applied — modified items, affected modifiers, updated pricing — before any live change is committed. The sandbox is a read-only preview, not a staging environment.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P01's explicit request. Eliminates the fear of "what will this look like live." Operators with printed menus (P03) especially need to see the final state before approving, since a wrong approval has physical consequences.</div></div>
+        </div>
+      </div>
+
+      <div class="pattern-wrap">
+        <div class="pattern-label">Interaction pattern</div>
+        <div class="pattern-text">Draft workspace. Operator reviews a complete change package — not a list of recommendations to manually implement, but a ready-to-publish bundle. Approve, reject, or modify individual items. Approval triggers publish + downstream coordination in one step.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase-card ph4 future-phase" id="phase4">
+    <div class="phase-head" onclick="togglePhase(this)">
+      <div class="phase-num">4</div>
+      <div class="phase-meta">
+        <div class="phase-layer">Phase 4 · Supervised Autonomy</div>
+        <div class="phase-name">Execute &amp; Report</div>
+        <div class="phase-role-row">
+          <span class="phase-role">Agent role: Executor with guardrails</span>
+          <span class="phase-tagline">Acts within operator-defined rules. Reports every action. Future phase.</span>
+        </div>
+      </div>
+      <div class="phase-chevron">›</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-desc">The agent now executes, but only within operator-defined rules. The operator sets the guardrails; the agent operates within them. Every action is logged with a full audit trail and is reversible within a defined window.</div>
+
+      <div class="skills-label">Skills to build (future)</div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Guardrail Definition</div><div class="skill-hook">Operator sets rules: "Never increase any item by more than 15%." Agent operates within them without prompting.</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Operator sets explicit rules: "Never increase any item by more than 15%." "Never change prices at more than 2 locations simultaneously." "Always require my approval for items over $25." The agent operates within these without prompting unless a boundary is approached.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Operators feel in control of the envelope even when the agent is acting inside it. The guardrail definition interface is itself a trust-building interaction — it forces operators to articulate their own constraints.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Audit Trail</div><div class="skill-hook">Every agent action logged with timestamp, reasoning, data source, and expected outcome</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Every agent action is logged with timestamp, reasoning, data source, and expected outcome. The operator can review the log at any time. The log is the paper receipt of agent actions — it makes the agent's behavior legible and contestable.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P03's core concern: "I need to know what's happening." An audit trail is the paper receipt of agent actions — it makes autonomous behavior legible and gives operators something to point to when something goes wrong.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Reversibility Window</div><div class="skill-hook">Any agent-executed change can be rolled back within 24 hours with one click</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">Any agent-executed change can be rolled back within 24 hours with one click, with a full explanation of what will be restored. The rollback is itself logged and does not require approval.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">Removes the fear of irreversible mistakes. Operators take more risks when they know there's an undo. The presence of a rollback option is not a failure state — it's a trust signal that accelerates adoption.</div></div>
+        </div>
+      </div>
+
+      <div class="skill-row" onclick="this.classList.toggle('open')">
+        <div class="skill-head"><div class="skill-dot"></div><div class="skill-name">Cadence Awareness</div><div class="skill-hook">Agent learns the operator's actual pricing cadence and stops surfacing "act now" urgency to quarterly-change operators</div><div class="skill-arrow">›</div></div>
+        <div class="skill-body">The agent learns from operator behavior and aligns recommendation timing to their actual pricing cadence — quarterly for QSR, monthly for FSR, event-driven for farm-to-table. Stops surfacing "act now" urgency to operators who batch changes.
+          <div class="skill-trust"><div class="skill-trust-label">Why it builds trust</div><div class="skill-trust-text">P02's pricing cadence mismatch — "we change prices quarterly at most." An agent that learns when not to push builds more trust than one that's always urgent. Irrelevant urgency erodes the overall signal-to-noise ratio.</div></div>
+        </div>
+      </div>
+
+      <div class="pattern-wrap">
+        <div class="pattern-label">Interaction pattern</div>
+        <div class="pattern-text">Exception-based. Agent acts silently within guardrails and surfaces a daily summary of what it did and why. Operator reviews the summary, not each individual action. Intervention required only when an action approaches a guardrail boundary.</div>
+      </div>
+
+      <div class="future-note">This phase requires trust capital accumulated through repeated, accurate, unremarkable Phase 3 behavior. It cannot be designed or UX'd into existence — it must be earned.</div>
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase-card ph5 future-phase" id="phase5">
+    <div class="phase-head" onclick="togglePhase(this)">
+      <div class="phase-num">5</div>
+      <div class="phase-meta">
+        <div class="phase-layer">Phase 5 · Full Autonomy</div>
+        <div class="phase-name">Monitor &amp; Self-Correct</div>
+        <div class="phase-role-row">
+          <span class="phase-role">Agent role: Domain operator</span>
+          <span class="phase-tagline">Owns a domain end-to-end. Reports outcomes, not actions. Far-future phase.</span>
+        </div>
+      </div>
+      <div class="phase-chevron">›</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-desc">The agent now owns a domain — margin protection, competitive pricing, menu performance — and manages it end-to-end. The operator sets the objective; the agent handles the execution loop including monitoring outcomes and adjusting. This phase is only reachable after the preceding phases have accumulated sufficient trust capital.</div>
+
+      <div class="pattern-wrap">
+        <div class="pattern-label">What unlocks this phase</div>
+        <div class="pattern-text">Operator has seen the agent be right enough times to trust its judgment (Phase 1–2). Operator has reviewed and approved enough drafts to trust its execution (Phase 3). Operator has watched the agent act within guardrails without incident long enough to expand the envelope (Phase 4). All four of these prerequisites must be present — none can be skipped.</div>
+      </div>
+
+      <div class="future-note">No participant in this study is anywhere near Phase 5 readiness. Design work targeting this phase is premature until Phase 3 is stable and trusted across a meaningful operator cohort.</div>
+    </div>
+  </div>
+
+  <!-- ══ EMBEDDED SKILLS ══ -->
+  <div class="section-title-row" style="margin-top:40px;margin-bottom:14px">
+    <div class="section-title" style="margin:0">Always-On Skills</div>
+    <div class="section-title-divider"></div>
+    <div style="font-size:11px;color:#aaa;flex-shrink:0">Present from Phase 1 through Phase 5</div>
+  </div>
+  <div style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.6">Three embedded skills that must be present from day one because they underpin every phase. They don't belong to any single phase — removing them at any point makes the next phase harder to adopt.</div>
+
+  <div class="skills-grid">
+    <div class="embedded-skill" onclick="this.classList.toggle('open')">
+      <div class="es-icon">💬</div>
+      <div class="es-name">Explainability</div>
+      <div class="es-hook">Every recommendation, projection, and action surfaces its reasoning in plain language — not just a score</div>
+      <div class="es-body">Not just a confidence score — an actual sentence: "I'm recommending this because your pork belly cost increased 23% in the last 60 days while comparable restaurants in your area have already adjusted prices upward." This skill is what makes data trust possible. Without it, every other skill is harder to adopt. Operators don't trust black boxes — they trust agents that show their work.</div>
+    </div>
+    <div class="embedded-skill" onclick="this.classList.toggle('open')">
+      <div class="es-icon">⚕️</div>
+      <div class="es-name">Data Health</div>
+      <div class="es-hook">Before any recommendation is shown, silently checks data completeness and freshness — surfaces a health card if inputs are stale</div>
+      <div class="es-body">Before any recommendation is shown, the agent silently checks data completeness and freshness. If data is stale or missing, it surfaces a data health card first — not the recommendation. This decouples data trust from recommendation trust. Operators stop doubting the agent's logic when they know the agent itself is checking its own inputs. P01's stale recipe data is the canonical example of why this skill is load-bearing.</div>
+    </div>
+    <div class="embedded-skill" onclick="this.classList.toggle('open')">
+      <div class="es-icon">🛑</div>
+      <div class="es-name">Human Override</div>
+      <div class="es-hook">At every phase, every agent action has a visible, immediate override — not buried in settings, but in the primary workflow</div>
+      <div class="es-body">At every phase, every agent action has a visible and immediate override. Not buried in settings — surfaced in the primary workflow. The presence of an override is not a failure state; it's a trust signal. P03's Uber Eats trauma is the canonical example: the moment she felt she couldn't override descriptions, she disengaged entirely. Operators adopt agents faster when they know the off switch is always one tap away.</div>
+    </div>
+  </div>
+
+  <!-- ══ DESIGN PRINCIPLES ══ -->
+  <div class="section-title-row" style="margin-top:40px;margin-bottom:14px">
+    <div class="section-title" style="margin:0">Design Principles</div>
+    <div class="section-title-divider"></div>
+  </div>
+
+  <div class="principles-grid">
+    <div class="principle">
+      <div class="principle-num">01</div>
+      <div class="principle-title">Contextual surfacing over dedicated surfaces</div>
+      <div class="principle-text">Recommendations should appear where operators already work, not in a separate "AI" section. The agent comes to the operator; the operator doesn't navigate to the agent.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">02</div>
+      <div class="principle-title">Progressive disclosure — never lead with complexity</div>
+      <div class="principle-text">Default view is always the headline and recommended action. Reasoning, data, and alternatives are one level deeper. Complexity available on demand, invisible by default.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">03</div>
+      <div class="principle-title">Show the math — every projection is falsifiable</div>
+      <div class="principle-text">Operators with decades of experience will spot a bad number immediately — and will trust the agent more after they've tested it and found it correct. Unverifiable projections erode trust faster than any UI issue.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">04</div>
+      <div class="principle-title">Respect the pricing cadence</div>
+      <div class="principle-text">Urgency language is segment-specific. What's "act now" for a farm-to-table is "noted for Q3 review" for a QSR. An agent that learns when not to push builds more trust than one that's always urgent.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">05</div>
+      <div class="principle-title">Build for the owner, design for the GM</div>
+      <div class="principle-text">The final approver and the daily user are often different people. The skill architecture must support both — the GM interacts with the agent daily; the owner reviews drafts and sets guardrails.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">06</div>
+      <div class="principle-title">Propose, never act unilaterally</div>
+      <div class="principle-text">Draft/review is non-negotiable until Phase 4 guardrails are in place and trusted. Any UI pattern that shortcuts the human review step — including "auto-apply" — is a trust destroyer regardless of accuracy rate.</div>
+    </div>
+  </div>
+
+  <!-- ══ FOUNDATIONAL BET ══ -->
+  <div class="section-title-row" style="margin-top:40px;margin-bottom:14px">
+    <div class="section-title" style="margin:0">The Foundational Bet</div>
+    <div class="section-title-divider"></div>
+  </div>
+  <div class="foundational-bet">
+    <div class="fb-label">Strategic framing</div>
+    <div class="fb-text">"Operators are not waiting for a better UI. They're waiting for an agent that earns trust through accuracy, transparency, and restraint before it earns the right to act. The fastest path to full autonomy is paradoxically the most conservative one — build skills that demonstrate the agent is right before building skills that let it act. Every phase of trust earned is a phase of friction removed from the next."</div>
+    <div class="fb-source">From agentic_framework_notes.md · Ops Agent Interview Research · April 2026</div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+function togglePhase(headEl) {
+  headEl.closest('.phase-card').classList.toggle('open');
+}
+</script>
+</body>
+</html>
