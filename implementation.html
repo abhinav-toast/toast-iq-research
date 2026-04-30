@@ -240,6 +240,188 @@ a{color:inherit;text-decoration:none}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
 .tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
 
+
+/* ── COMPONENT PREVIEW SHELL ── */
+.comp-preview{background:#f0f0f0;border-radius:8px;padding:12px 14px;margin:10px 0 12px;border:1px solid rgba(0,0,0,0.09)}
+.cp-shell{background:white;border-radius:8px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+
+/* preview: SignalCard */
+.pv-sc{background:white;border-radius:8px;border:1px solid #E0DCEF;overflow:hidden}
+.pv-sc-head{padding:8px 11px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#513699}
+.pv-sc-sparkline{height:24px;overflow:hidden}
+.pv-sc-stats{display:flex}
+.pv-sc-stat{flex:1;padding:6px 8px;text-align:center;border-right:1px solid #f0ecff}
+.pv-sc-stat:last-child{border-right:none}
+.pv-sc-val{font-size:13px;font-weight:800;color:#513699}
+.pv-sc-lbl{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+
+/* preview: ProvenanceLabel */
+.pv-prov{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#7B5DB5;background:#F5F3FF;border:1px solid #E0DCEF;border-radius:6px;padding:3px 9px}
+
+/* preview: DataHealthCard */
+.pv-dhc{background:white;border-radius:8px;border:1.5px solid #fcd9d2;overflow:hidden}
+.pv-dhc-head{padding:8px 11px;background:#fff4f2;display:flex;align-items:center;gap:6px;border-bottom:1px solid #fcd9d2}
+.pv-dhc-title{font-size:11px;font-weight:800;color:#c0390b;flex:1}
+.pv-dhc-badge{font-size:9px;font-weight:700;background:#c0390b;color:white;padding:1px 5px;border-radius:4px}
+.pv-dhc-body{padding:8px 11px}
+.pv-dhc-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;padding:3px 0}
+
+/* preview: BenchmarkBand */
+.pv-bench-wrap{background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4}
+.pv-bench-label{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px}
+.pv-bench-track{position:relative;height:10px;background:#f0f0f0;border-radius:5px;margin:6px 0}
+.pv-bench-range{position:absolute;height:10px;border-radius:5px;background:linear-gradient(90deg,#bbf7d0,#86efac)}
+.pv-bench-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#FF4C00;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.2);top:-2px;transform:translateX(-50%)}
+.pv-bench-labels{display:flex;justify-content:space-between;font-size:9px;color:#aaa;margin-top:4px}
+.pv-bench-you{font-size:10px;font-weight:700;color:#FF4C00;margin-top:4px}
+
+/* preview: RecommendationCard */
+.pv-rec-gw{padding:2px;border-radius:12px;background:conic-gradient(from var(--pv-ga,0deg),#FF4C00,#E35EA3,#B1D4FF,#FF4C00);animation:pv-spin 3s linear infinite}
+@property --pv-ga{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes pv-spin{to{--pv-ga:360deg}}
+.pv-rec-inner{background:white;border-radius:10px;overflow:hidden}
+.pv-rec-head{padding:10px 12px;background:linear-gradient(135deg,#F5F3FF 0%,#fff 100%);border-bottom:1px solid #E0DCEF;display:flex;align-items:flex-start;gap:8px}
+.pv-rec-title{font-size:12px;font-weight:800;color:#1e1e1e;flex:1;line-height:1.3}
+.pv-rec-urg{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.pv-rec-body{padding:10px 12px;font-size:11px;color:#555;line-height:1.55}
+.pv-rec-actions{display:flex;gap:6px;padding:8px 12px;border-top:1px solid #f0ecff}
+.pv-rec-btn{flex:1;padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;text-align:center}
+.pv-rec-btn.p{background:#FF4C00;color:white}
+.pv-rec-btn.s{background:#f5f5f5;color:#444;border:1px solid #e4ddd4}
+
+/* preview: AnchoredProjection */
+.pv-ap-num{font-size:24px;font-weight:900;color:#c0390b;line-height:1}
+.pv-ap-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.pv-ap-lbl{font-size:11px;color:#888}
+.pv-ap-delta{font-size:11px;font-weight:700;color:#c0390b;background:#fff4f2;padding:1px 6px;border-radius:4px}
+.pv-ap-bar{height:6px;background:#f0ecff;border-radius:3px;margin:6px 0 3px;overflow:hidden}
+.pv-ap-fill{height:6px;border-radius:3px;background:linear-gradient(90deg,#7B5DB5,#E35EA3)}
+.pv-ap-range{display:flex;justify-content:space-between;font-size:9px;color:#bbb}
+
+/* preview: ConfidenceIndicator */
+.pv-conf{display:flex;align-items:center;gap:8px;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4}
+.pv-conf-dots{display:flex;gap:3px}
+.pv-conf-dot{width:8px;height:8px;border-radius:50%;background:#e4ddd4}
+.pv-conf-dot.on{background:#7B5DB5}
+.pv-conf-lbl{font-size:12px;font-weight:700;color:#7B5DB5}
+.pv-conf-why{font-size:11px;color:#888;margin-left:4px}
+
+/* preview: CascadeMap */
+.pv-cas{background:white;border-radius:8px;border:1px solid #E0DCEF;overflow:hidden}
+.pv-cas-head{padding:7px 10px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;font-size:11px;font-weight:800;color:#513699}
+.pv-cas-tree{padding:8px 10px}
+.pv-cas-node{display:flex;align-items:flex-start;gap:6px;padding:3px 0;font-size:11px;color:#444}
+.pv-cas-node.c1{padding-left:16px}
+.pv-cas-node.c2{padding-left:32px}
+.pv-cas-node .ico{flex-shrink:0}
+.pv-cas-impact{font-size:10px;color:#c0390b;font-weight:700}
+
+/* preview: AlternativesPanel */
+.pv-alt{background:white;border-radius:8px;border:1px solid #e4ddd4;overflow:hidden}
+.pv-alt-head{padding:7px 10px;font-size:11px;font-weight:800;color:#444;border-bottom:1px solid #e4ddd4;background:#faf8f5}
+.pv-alt-item{padding:8px 10px;border-bottom:1px solid #f5f5f5;display:flex;align-items:flex-start;gap:7px}
+.pv-alt-item:last-child{border-bottom:none}
+.pv-alt-item.sel{background:#fcfaff}
+.pv-alt-radio{width:13px;height:13px;border-radius:50%;border:2px solid #bbb;flex-shrink:0;margin-top:2px}
+.pv-alt-item.sel .pv-alt-radio{border-color:#7B5DB5;background:#7B5DB5;box-shadow:inset 0 0 0 2px white}
+.pv-alt-title{font-size:11px;font-weight:700;color:#1e1e1e}
+.pv-alt-desc{font-size:10px;color:#888;margin-top:1px}
+.pv-alt-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;display:inline-block;margin-top:2px}
+.pv-alt-tag.s{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.pv-alt-tag.r{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+.pv-alt-tag.n{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+
+/* preview: UrgencyBadge */
+.pv-urg-wrap{display:flex;gap:8px;align-items:center}
+.pv-urg{font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;white-space:nowrap}
+.pv-urg.h{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+.pv-urg.m{background:#fffbf0;color:#b45309;border:1px solid #fce9c0}
+.pv-urg.l{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.pv-urg-desc{font-size:11px;color:#888}
+
+/* preview: DraftWorkspace */
+.pv-draft{background:white;border-radius:8px;border:1.5px solid #E0DCEF;overflow:hidden}
+.pv-draft-head{padding:8px 10px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:6px}
+.pv-draft-title{font-size:11px;font-weight:800;color:#513699;flex:1}
+.pv-draft-status{font-size:9px;font-weight:700;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:2px 5px;border-radius:4px}
+.pv-draft-body{padding:9px 10px}
+.pv-draft-fl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:3px}
+.pv-draft-fv{font-size:11px;color:#1e1e1e;font-weight:600;margin-bottom:8px}
+.pv-draft-foot{display:flex;gap:5px;padding:7px 10px;border-top:1px solid #f0ecff}
+.pv-draft-btn{flex:1;padding:5px 6px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:none;text-align:center}
+.pv-draft-btn.p{background:#7B5DB5;color:white}
+.pv-draft-btn.s{background:#f5f5f5;color:#444;border:1px solid #e4ddd4}
+
+/* preview: ScopeSelector */
+.pv-scope{display:flex;gap:5px;flex-wrap:wrap;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4}
+.pv-chip{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid transparent}
+.pv-chip.on{background:#7B5DB5;color:white;border-color:#7B5DB5}
+.pv-chip.off{background:#f5f3ff;color:#7B5DB5;border-color:#E0DCEF}
+
+/* preview: ReviewerAssignment */
+.pv-rev{display:flex;align-items:center;gap:8px;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4}
+.pv-rev-avatar{width:26px;height:26px;border-radius:50%;background:#2B4FB9;color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pv-rev-name{font-size:12px;font-weight:700;color:#1e1e1e}
+.pv-rev-role{font-size:10px;color:#aaa}
+.pv-rev-status{margin-left:auto;font-size:10px;font-weight:700;color:#ea580c;background:#fff7ed;border:1px solid #fed7aa;padding:2px 6px;border-radius:4px}
+
+/* preview: SandboxPreview */
+.pv-sand{background:white;border-radius:8px;border:1.5px solid #7B5DB5;overflow:hidden}
+.pv-sand-head{padding:7px 10px;background:linear-gradient(90deg,#F5F3FF,#fff);border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:6px}
+.pv-sand-title{font-size:11px;font-weight:800;color:#7B5DB5;flex:1}
+.pv-sand-tag{font-size:9px;font-weight:700;background:#F5F3FF;color:#7B5DB5;border:1px solid #E0DCEF;padding:1px 5px;border-radius:4px}
+.pv-sand-body{padding:9px 10px}
+.pv-sand-row{margin-bottom:7px}
+.pv-sand-lbl{display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px}
+.pv-sand-lbl span:first-child{color:#555;font-weight:600}
+.pv-sand-lbl span:last-child{font-weight:800;color:#7B5DB5}
+.pv-sand-track{height:7px;background:#f0ecff;border-radius:3px;overflow:hidden}
+.pv-sand-fill{height:7px;border-radius:3px;background:linear-gradient(90deg,#7B5DB5,#E35EA3)}
+
+/* preview: DownstreamChecklist */
+.pv-cl{background:white;border-radius:8px;border:1px solid #e4ddd4;overflow:hidden}
+.pv-cl-head{padding:7px 10px;background:#faf8f5;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444}
+.pv-cl-item{display:flex;align-items:flex-start;gap:6px;padding:6px 10px;border-bottom:1px solid #f5f5f5;font-size:11px;color:#444}
+.pv-cl-item:last-child{border-bottom:none}
+.pv-cl-cb{width:13px;height:13px;border-radius:3px;border:1.5px solid #bbb;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:white}
+.pv-cl-cb.ok{background:#16a34a;border-color:#16a34a}
+.pv-cl-cb.warn{background:#b45309;border-color:#b45309}
+.pv-cl-note{font-size:10px;color:#888;margin-top:1px}
+
+/* preview: ReversibilityIndicator */
+.pv-ri{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 12px;border-radius:7px}
+.pv-ri.high{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.pv-ri.med{background:#fffbf0;color:#b45309;border:1px solid #fce9c0}
+.pv-ri.low{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+
+/* preview: GuardrailStatus */
+.pv-gs{background:white;border-radius:8px;border:1.5px solid #bbf7d0;padding:10px 12px}
+.pv-gs-header{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#16a34a;margin-bottom:8px}
+.pv-gs-rule{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0fdf4;font-size:11px;color:#444}
+.pv-gs-rule:last-child{border-bottom:none}
+.pv-gs-val{font-weight:700;color:#16a34a}
+.pv-gs-warn{font-weight:700;color:#b45309}
+
+/* preview: DailySummary */
+.pv-ds{background:white;border-radius:8px;border:1px solid #e4ddd4;overflow:hidden}
+.pv-ds-head{padding:7px 10px;background:#faf8f5;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444;display:flex;align-items:center;gap:5px}
+.pv-ds-item{display:flex;gap:7px;padding:5px 10px;border-bottom:1px solid #f5f5f5;align-items:flex-start}
+.pv-ds-item:last-child{border-bottom:none}
+.pv-ds-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.pv-ds-text{font-size:11px;color:#444;line-height:1.4}
+.pv-ds-text strong{font-weight:700;color:#1e1e1e}
+
+/* preview: AuditEntry */
+.pv-ae{background:white;border-radius:8px;border:1px solid #e4ddd4;overflow:hidden}
+.pv-ae-head{padding:7px 10px;background:#faf8f5;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444}
+.pv-ae-row{display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid #f5f5f5;align-items:flex-start}
+.pv-ae-row:last-child{border-bottom:none}
+.pv-ae-ts{font-size:10px;color:#bbb;font-family:monospace;white-space:nowrap;margin-top:1px}
+.pv-ae-text{font-size:11px;color:#555;line-height:1.4}
+.pv-ae-actor{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
+.pv-ae-actor.h{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.pv-ae-actor.a{background:#F5F3FF;color:#7B5DB5;border:1px solid #E0DCEF}
+
 </style>
 </head>
 <body>
@@ -256,6 +438,8 @@ a{color:inherit;text-decoration:none}
     <a href="implementation.html" class="tb-link active">Implementation</a>
     <span class="tb-sep">·</span>
     <a href="deck.html" class="tb-link">Presentation</a>
+    <span class="tb-sep">·</span>
+    <a href="chat-vision.html" class="tb-link">Chat Vision</a>
   </nav>
   <div class="tb-right">
     <span class="tb-meta">Implementation</span>
@@ -825,6 +1009,21 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-sc">
+    <div class="pv-sc-head"><span style="font-size:13px">🐔</span> Chicken Breast — Cost per lb</div>
+    <div class="pv-sc-sparkline">
+      <svg width="100%" height="24" viewBox="0 0 200 24" preserveAspectRatio="none">
+        <polyline points="0,20 40,17 80,14 120,9 160,5 200,3" fill="rgba(192,57,11,0.08)" stroke="#c0390b" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="pv-sc-stats">
+      <div class="pv-sc-stat"><div class="pv-sc-val">$4.82</div><div class="pv-sc-lbl">Today</div></div>
+      <div class="pv-sc-stat"><div class="pv-sc-val">$4.08</div><div class="pv-sc-lbl">30d avg</div></div>
+      <div class="pv-sc-stat"><div class="pv-sc-val" style="color:#c0390b">+18.1%</div><div class="pv-sc-lbl">Change</div></div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Base unit of Phase 1. Surfaces an anomaly, trend, or benchmark signal contextually — inside the menu editor, product mix view, or wherever the operator already is. No CTA for action. No credits consumed.</div>
             <div class="comp-schema">
               <div class="comp-schema-label">Schema</div>
@@ -844,6 +1043,13 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div style="background:white;border-radius:8px;padding:12px 14px;border:1px solid #e4ddd4">
+    <div style="font-size:12px;color:#444;margin-bottom:8px">Cost per lb: <strong style="color:#c0390b">$4.82</strong></div>
+    <span class="pv-prov">🔗 Source: Sysco invoice #INV-2024-8812 · verified</span>
+    <div style="margin-top:8px"><span class="pv-prov">📊 Comparable avg: Toast network, n=340 restaurants</span></div>
+  </div>
+</div>
             <div class="comp-desc">Inline, always visible alongside any data-derived number. Not a tooltip — a persistent label. Two formats: compact ("Toast network avg, n=340") and expanded (full plain-language methodology). Used inside every other component that contains a number. <strong>Cannot be removed for space or aesthetic reasons — load-bearing.</strong></div>
           </div>
         </div>
@@ -854,6 +1060,21 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-dhc">
+    <div class="pv-dhc-head">
+      <span style="font-size:13px">🔍</span>
+      <span class="pv-dhc-title">Data Quality Check</span>
+      <span class="pv-dhc-badge">2 issues</span>
+    </div>
+    <div class="pv-dhc-body">
+      <div class="pv-dhc-row">⚠️ Inventory sync last updated 14h ago</div>
+      <div class="pv-dhc-row">⚠️ 3 supplier invoices unmatched</div>
+      <div class="pv-dhc-row">✅ POS sales data complete (100%)</div>
+      <div style="margin-top:7px;font-size:11px;font-weight:700;color:#c0390b;cursor:pointer">→ Continue with partial data</div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Shown instead of a RecommendationCard when prerequisite data is stale or missing. Contains: which data is unhealthy, why it matters for this recommendation, and a direct action to fix it. Designed to feel helpful, not punishing — the agent is being honest about its own limitations.</div>
           </div>
         </div>
@@ -864,6 +1085,17 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct1">Phase 1</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-bench-wrap">
+    <div class="pv-bench-label">Chicken Sandwich — Local Market Range</div>
+    <div class="pv-bench-track">
+      <div class="pv-bench-range" style="left:20%;width:55%"></div>
+      <div class="pv-bench-dot" style="left:38%"></div>
+    </div>
+    <div class="pv-bench-labels"><span>$10</span><span>$12.50</span><span>$15</span><span>$17.50</span></div>
+    <div class="pv-bench-you">● You: $12.99 &nbsp;·&nbsp; Market: $11.50–$15.25</div>
+  </div>
+</div>
             <div class="comp-desc">Visual positioning of an item's current price relative to local market range. Shows where the operator sits in the distribution without prescribing action. Used in Phase 1 to build ambient awareness; reused in Phase 2 as context inside the RecommendationCard.</div>
           </div>
         </div>
@@ -885,6 +1117,22 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-rec-gw">
+    <div class="pv-rec-inner">
+      <div class="pv-rec-head">
+        <span style="font-size:16px">💡</span>
+        <div class="pv-rec-title">Raise Chicken Sandwich price by $1.25</div>
+        <div class="pv-rec-urg">High urgency</div>
+      </div>
+      <div class="pv-rec-body">At $4.82/lb, current $12.99 price yields 31.4% food cost — 3.4pp above 28% target. A $1.25 increase restores margin without exceeding market range.</div>
+      <div class="pv-rec-actions">
+        <button class="pv-rec-btn p">Apply Price Change</button>
+        <button class="pv-rec-btn s">Alternatives</button>
+      </div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Primary Phase 2 component. Two-tier structure — summary always visible, detail on expand. Summary: headline, expected outcome, UrgencyBadge. Detail: ConfidenceIndicator, reasoning, ProvenanceLabel per source, AnchoredProjection, AlternativesPanel, CascadeMap preview. The only action affordance is "Create draft" — not "Approve," not "Apply."</div>
           </div>
         </div>
@@ -895,6 +1143,20 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4">
+    <div class="pv-ap-row">
+      <div class="pv-ap-num">+$1,247</div>
+      <div>
+        <div class="pv-ap-lbl">projected monthly margin recovery</div>
+        <span class="pv-ap-delta">+$41/day</span>
+      </div>
+    </div>
+    <div class="pv-ap-bar"><div class="pv-ap-fill" style="width:72%"></div></div>
+    <div class="pv-ap-range"><span>$900 low</span><span>$1,247 base</span><span>$1,520 high</span></div>
+    <div style="font-size:10px;color:#aaa;margin-top:6px">Based on 127 units/day avg (last 30 days)</div>
+  </div>
+</div>
             <div class="comp-desc">Renders any dollar or percentage projection. Always shows: the number, the unit sales assumption it rests on, and an expandable "show the math" panel. Never renders an unanchored number — if basis is unavailable, renders a range with explicit uncertainty bounds instead.</div>
             <div class="comp-schema">
               <div class="comp-schema-label">Schema</div>
@@ -914,6 +1176,15 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-conf">
+    <div class="pv-conf-dots">
+      <div class="pv-conf-dot on"></div><div class="pv-conf-dot on"></div><div class="pv-conf-dot on"></div><div class="pv-conf-dot on"></div><div class="pv-conf-dot"></div>
+    </div>
+    <span class="pv-conf-lbl">High confidence</span>
+    <span class="pv-conf-why">· 30d sales + 2 supplier quotes</span>
+  </div>
+</div>
             <div class="comp-desc">Score (High / Medium / Low) with a one-line reason. "High — based on your 6-month sales history and 340 comparable Toast restaurants." The reason is what matters — the score alone is not enough. P02's explicit ask.</div>
           </div>
         </div>
@@ -924,6 +1195,17 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-cas">
+    <div class="pv-cas-head">⛓ Downstream Impact</div>
+    <div class="pv-cas-tree">
+      <div class="pv-cas-node"><span class="ico">📋</span><span><strong>Menu price update</strong> (this change)</span></div>
+      <div class="pv-cas-node c1"><span class="ico">🔗</span><span><strong>Online ordering</strong> — auto-syncs in 15min</span></div>
+      <div class="pv-cas-node c1"><span class="ico">🔗</span><span><strong>3rd party apps</strong> (DoorDash, Uber Eats)<div class="pv-cas-impact">Manual update required · 2–4hr delay</div></span></div>
+      <div class="pv-cas-node c2"><span class="ico">⚠️</span><span>Price mismatch window until synced</span></div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Visualizes every entity affected by a proposed change: base item → modifier groups → modifiers → substitutions → bundles → delivery menu items. Shows current and proposed values side by side. Highlights potential arbitrage or pricing inconsistencies. Renders before the confirm affordance — always. Not on expand — upfront.</div>
             <div class="comp-schema">
               <div class="comp-schema-label">Schema</div>
@@ -942,6 +1224,23 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-alt">
+    <div class="pv-alt-head">3 alternatives · ranked by margin impact</div>
+    <div class="pv-alt-item sel">
+      <div class="pv-alt-radio"></div>
+      <div><div class="pv-alt-title">Raise price $1.25 → $14.24</div><div class="pv-alt-desc">Full margin recovery, within market range</div><span class="pv-alt-tag s">Recommended</span></div>
+    </div>
+    <div class="pv-alt-item">
+      <div class="pv-alt-radio"></div>
+      <div><div class="pv-alt-title">Switch to thigh meat blend</div><div class="pv-alt-desc">-$0.62/lb saving, slight flavor change</div><span class="pv-alt-tag n">Partial fix</span></div>
+    </div>
+    <div class="pv-alt-item">
+      <div class="pv-alt-radio"></div>
+      <div><div class="pv-alt-title">Absorb cost temporarily</div><div class="pv-alt-desc">-$1,247/mo margin impact</div><span class="pv-alt-tag r">Not recommended</span></div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">When the skill generates multiple response paths (raise price / find supplier / reduce portion), renders them as selectable options with projected outcomes per option. Operator chooses which path to draft. Implements P01's "magic wand" pattern — the agent offers paths, the operator chooses.</div>
           </div>
         </div>
@@ -952,6 +1251,13 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct2">Phase 2</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4;display:flex;flex-direction:column;gap:8px">
+    <div class="pv-urg-wrap"><span class="pv-urg h">High urgency</span><span class="pv-urg-desc">Cost spike, ~$41/day ongoing impact</span></div>
+    <div class="pv-urg-wrap"><span class="pv-urg m">Consider for Q3 review</span><span class="pv-urg-desc">Low volume, low sensitivity</span></div>
+    <div class="pv-urg-wrap"><span class="pv-urg l">When convenient</span><span class="pv-urg-desc">Marginal opportunity identified</span></div>
+  </div>
+</div>
             <div class="comp-desc">Derived from <code>recommendation_timing</code>. Visual weight varies with sensitivity × cadence intersection. Never uses hardcoded strings — always generated from the timing object. High-sensitivity issue for a quarterly-cadence operator renders as "Consider for Q3 menu review" not "Act now."</div>
           </div>
         </div>
@@ -973,6 +1279,19 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-draft">
+    <div class="pv-draft-head"><span style="font-size:12px">✏️</span><span class="pv-draft-title">Price Change Draft</span><span class="pv-draft-status">Draft</span></div>
+    <div class="pv-draft-body">
+      <div class="pv-draft-fl">Item</div><div class="pv-draft-fv">Chicken Sandwich</div>
+      <div class="pv-draft-fl">New Price</div><div class="pv-draft-fv">$14.24 <span style="color:#16a34a;font-size:10px">(was $12.99)</span></div>
+    </div>
+    <div class="pv-draft-foot">
+      <button class="pv-draft-btn p">Submit for Review</button>
+      <button class="pv-draft-btn s">Edit</button>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Primary Phase 3 surface. Contains the complete change package: primary change, CascadeMap (full, not preview), ScopeSelector, ReviewerAssignment, DownstreamChecklist, SandboxPreview toggle, and approve/reject/modify affordances. Persists across sessions. Designed to be shareable with an owner who didn't initiate the workflow.</div>
           </div>
         </div>
@@ -983,6 +1302,17 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:7px">Apply change to</div>
+    <div class="pv-scope" style="background:transparent;padding:0;border:none">
+      <div class="pv-chip on">POS</div>
+      <div class="pv-chip on">Online Order</div>
+      <div class="pv-chip off">Kiosk</div>
+      <div class="pv-chip off">3rd Party Apps</div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Appears at draft creation and is locked once the draft enters review. Options: this location / all locations / select locations. The scope is visible throughout the draft — the reviewer always knows what they're approving.</div>
           </div>
         </div>
@@ -993,6 +1323,16 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-rev">
+    <div class="pv-rev-avatar">JR</div>
+    <div>
+      <div class="pv-rev-name">Jamie R.</div>
+      <div class="pv-rev-role">GM · approves menu changes</div>
+    </div>
+    <div class="pv-rev-status">Pending</div>
+  </div>
+</div>
             <div class="comp-desc">Routes the draft to a role, not a user. "This draft requires owner approval before publishing." Shows who in that role has been notified and when. Draft status is <code>pending_review</code> until someone in the reviewer role acts — it cannot auto-advance.</div>
           </div>
         </div>
@@ -1003,6 +1343,25 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-sand">
+    <div class="pv-sand-head"><span style="font-size:11px">🧪</span><span class="pv-sand-title">Sandbox: Impact Preview</span><span class="pv-sand-tag">Simulated · not live</span></div>
+    <div class="pv-sand-body">
+      <div class="pv-sand-row">
+        <div class="pv-sand-lbl"><span>Food cost % now</span><span style="color:#c0390b">34.1%</span></div>
+        <div class="pv-sand-track"><div class="pv-sand-fill" style="width:68%;background:#c0390b"></div></div>
+      </div>
+      <div class="pv-sand-row">
+        <div class="pv-sand-lbl"><span>Food cost % after</span><span>29.8%</span></div>
+        <div class="pv-sand-track"><div class="pv-sand-fill" style="width:55%"></div></div>
+      </div>
+      <div class="pv-sand-row" style="margin-bottom:0">
+        <div class="pv-sand-lbl"><span>Target</span><span style="color:#16a34a">28.0%</span></div>
+        <div class="pv-sand-track"><div class="pv-sand-fill" style="width:50%;background:#16a34a"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Renders the menu exactly as it will appear after the draft is applied. Toggle between current state and post-change state. P01's explicit request — eliminates the fear of publishing something unexpected.</div>
           </div>
         </div>
@@ -1013,6 +1372,17 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-cl">
+    <div class="pv-cl-head">📋 Before publishing</div>
+    <div class="pv-cl-item"><div class="pv-cl-cb ok">✓</div><div>Recipe cost card reviewed</div></div>
+    <div class="pv-cl-item"><div class="pv-cl-cb ok">✓</div><div>GM approval obtained</div></div>
+    <div class="pv-cl-item">
+      <div class="pv-cl-cb warn">!</div>
+      <div>3rd party app prices<div class="pv-cl-note">Update DoorDash + Uber Eats manually</div></div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Generated as part of the draft, not after publish. Contains the post-publish action list specific to this change: reprint menus, update website, notify staff (with draft notification text pre-written), social post (with draft copy). P01 and P04's downstream coordination need — built into the draft, not an afterthought.</div>
           </div>
         </div>
@@ -1023,6 +1393,13 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct3">Phase 3</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div style="background:white;border-radius:8px;padding:10px 12px;border:1px solid #e4ddd4;display:flex;flex-direction:column;gap:7px">
+    <span class="pv-ri high">↩ Reversible — undo anytime in Menu Manager</span>
+    <span class="pv-ri med">↩ Reversible for 48h — then requires manual rollback</span>
+    <span class="pv-ri low">⚠ Not reversible — contact support to undo</span>
+  </div>
+</div>
             <div class="comp-desc">Present on every DraftWorkspace and every ConfirmationFrame. Shows: what can be rolled back, for how long, and what the rollback restores. Rendered prominently — not buried. Its visibility is the trust signal. <strong>Cannot be removed for space or aesthetic reasons — load-bearing.</strong></div>
           </div>
         </div>
@@ -1044,6 +1421,14 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-gs">
+    <div class="pv-gs-header">🛡️ Active Guardrails</div>
+    <div class="pv-gs-rule"><span>Max price change per item</span><span class="pv-gs-val">≤15% · This rec: 9.6% ✓</span></div>
+    <div class="pv-gs-rule"><span>Require approval above</span><span class="pv-gs-val">$50 impact · This rec: $41/day ✓</span></div>
+    <div class="pv-gs-rule"><span>Monthly menu changes</span><span class="pv-gs-warn">3 of 5 used this month</span></div>
+  </div>
+</div>
             <div class="comp-desc">Visual display of the operator's defined rules and where the agent is currently operating relative to them. "Price changes: max 15% — current recommendation: 8%." Shows the envelope; shows where the agent is within it. Not a dashboard — a contextual status shown when the agent is about to act.</div>
           </div>
         </div>
@@ -1054,6 +1439,14 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-ds">
+    <div class="pv-ds-head">🌅 Tuesday Overnight Summary</div>
+    <div class="pv-ds-item"><div class="pv-ds-dot" style="background:#16a34a"></div><div class="pv-ds-text"><strong>Price change published</strong> at 11:42pm by Jamie R.</div></div>
+    <div class="pv-ds-item"><div class="pv-ds-dot" style="background:#FF4C00"></div><div class="pv-ds-text"><strong>DoorDash still at $12.99</strong> — manual update needed</div></div>
+    <div class="pv-ds-item"><div class="pv-ds-dot" style="background:#7B5DB5"></div><div class="pv-ds-text"><strong>14 chicken sandwiches</strong> sold at new price, no drop-off</div></div>
+  </div>
+</div>
             <div class="comp-desc">P04's morning news brief, implemented. One card per day: actions taken (with audit links) / recommendations pending / approaching guardrail boundaries. Designed to be reviewed in under 60 seconds — not a report, a brief.</div>
           </div>
         </div>
@@ -1064,6 +1457,19 @@ a{color:inherit;text-decoration:none}
             <div style="display:flex;align-items:center;gap:6px"><span class="comp-tag ct4">Phase 4</span><span class="comp-chevron">▼</span></div>
           </div>
           <div class="comp-body">
+            <div class="comp-preview">
+  <div class="pv-ae">
+    <div class="pv-ae-head">🔒 Agent Activity Log</div>
+    <div class="pv-ae-row">
+      <div class="pv-ae-ts">11:41pm</div>
+      <div class="pv-ae-text"><span class="pv-ae-actor a">IQ Agent</span> drafted price change — no write access</div>
+    </div>
+    <div class="pv-ae-row">
+      <div class="pv-ae-ts">11:42pm</div>
+      <div class="pv-ae-text"><span class="pv-ae-actor h">Jamie R.</span> approved and published → $14.24</div>
+    </div>
+  </div>
+</div>
             <div class="comp-desc">Every agent action creates one. Contains: timestamp, action taken, reasoning summary, data sources, expected outcome, rollback token + expiry. Always accessible — reachable from any DailySummary card, not buried in settings logs.</div>
           </div>
         </div>

@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Vision · Toast IQ Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
+/* ── TOPBAR (shared) ── */
+.tb{position:sticky;top:0;z-index:200;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.tb-logo{color:#f97316;font-size:13px;font-weight:800;letter-spacing:-.2px;text-decoration:none;white-space:nowrap}
+.tb-divider{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 16px;flex-shrink:0}
+.tb-nav{display:flex;align-items:center;gap:4px}
+.tb-link{color:rgba(255,255,255,0.45);font-size:12px;text-decoration:none;padding:4px 9px;border-radius:5px;transition:color .15s,background .15s;white-space:nowrap}
+.tb-link:hover{color:white;background:rgba(255,255,255,0.07)}
+.tb-link.active{color:#f97316;background:rgba(249,115,22,0.1)}
+.tb-sep{color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
+
+/* ── TODAY / VISION TOGGLE ── */
+.mode-toggle{display:flex;align-items:center;gap:0;background:rgba(255,255,255,0.08);border-radius:6px;padding:2px;margin-right:4px}
+.mt-btn{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.4);transition:all .2s;white-space:nowrap}
+.mt-btn.active{background:#FF4C00;color:white}
+.mt-divider{width:1px;height:12px;background:rgba(255,255,255,0.12)}
+
+/* ── OUTER LAYOUT ── */
+.outer{display:flex;flex-direction:column;height:calc(100vh - 44px);overflow:hidden}
+.page-scroll{flex:1;overflow-y:auto;background:#1e1e1e}
+
+/* ── SHELL ── */
+.shell{display:flex;flex-direction:column;height:calc(100vh - 44px);min-height:600px}
+
+/* TOAST APP HEADER */
+.app-header{height:64px;background:white;border-bottom:1px solid rgba(0,0,0,0.12);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:relative;z-index:10}
+.app-logo{font-size:20px;font-weight:900;color:#FF4C00;letter-spacing:-1px}
+.app-logo span{color:#2B4FB9}
+.app-nav{display:flex;gap:2px;margin-left:8px}
+.app-nav-item{padding:6px 12px;font-size:13px;color:#555;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s}
+.app-nav-item:hover{background:#f5f5f5}
+.app-nav-item.active{background:#fff4ee;color:#FF4C00;font-weight:700}
+.app-header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.app-avatar{width:30px;height:30px;border-radius:50%;background:#2B4FB9;color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.app-notif{width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+
+/* BODY ROW */
+.app-body{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.app-sidebar{width:220px;flex-shrink:0;background:white;border-right:1px solid rgba(0,0,0,0.12);overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-section{padding:16px 12px 8px}
+.sidebar-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#bbb;padding:0 8px;margin-bottom:6px}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;font-size:13px;color:#444;cursor:pointer;transition:all .15s}
+.sidebar-item:hover{background:#f5f5f5}
+.sidebar-item.active{background:#fff4ee;color:#FF4C00;font-weight:600}
+.sidebar-item-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-badge{margin-left:auto;background:#FF4C00;color:white;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px}
+
+/* DASHBOARD MAIN */
+.app-main{flex:1;overflow-y:auto;background:#f0f0f0;padding:28px;position:relative}
+.app-main.dimmed{filter:brightness(0.6)}
+
+/* IQ RIDEALONG PANEL */
+.iq-panel{width:clamp(300px,25vw,420px);flex-shrink:0;background:white;border-left:1px solid rgba(0,0,0,0.12);display:flex;flex-direction:column;height:100%;overflow:hidden}
+.iq-panel-header{padding:14px 16px;border-bottom:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.iq-logo{font-size:12px;font-weight:800;color:#7B5DB5}
+.iq-logo-sub{font-size:11px;color:#aaa;font-weight:400}
+.iq-panel-status{margin-left:auto;font-size:10px;color:#16a34a;font-weight:700;background:#f0fdf4;padding:2px 7px;border-radius:10px;border:1px solid #bbf7d0}
+.iq-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.iq-input-row{padding:12px 14px;border-top:1px solid rgba(0,0,0,0.08);flex-shrink:0}
+.iq-input-wrap{display:flex;align-items:center;gap:8px;background:#f8f6ff;border:1.5px solid #E0DCEF;border-radius:10px;padding:8px 12px;transition:border-color .2s}
+.iq-input-wrap:focus-within{border-color:#7B5DB5}
+.iq-input{flex:1;border:none;background:transparent;font-size:13px;color:#1e1e1e;outline:none;font-family:inherit}
+.iq-input::placeholder{color:#bbb}
+.iq-send{background:#7B5DB5;color:white;border:none;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0;transition:background .15s}
+.iq-send:hover{background:#513699}
+
+/* ── MESSAGES ── */
+.msg{display:flex;flex-direction:column;gap:4px}
+.msg-user{align-items:flex-end}
+.msg-bubble{padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;max-width:85%}
+.msg-user .msg-bubble{background:#2B4FB9;color:white;border-bottom-right-radius:4px}
+.msg-iq .msg-bubble{background:#F5F3FF;color:#1e1e1e;border-bottom-left-radius:4px;border:1px solid #E0DCEF}
+.msg-meta{font-size:10px;color:#bbb}
+.msg-user .msg-meta{text-align:right}
+
+/* ── IQ TYPING ── */
+.iq-typing{display:flex;gap:3px;align-items:center;padding:10px 14px;background:#F5F3FF;border-radius:10px;border:1px solid #E0DCEF;width:fit-content}
+.iq-dot{width:5px;height:5px;border-radius:50%;background:#7B5DB5;animation:bounce .9s ease-in-out infinite}
+.iq-dot:nth-child(2){animation-delay:.15s}
+.iq-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+/* ── COMPONENT WRAPPER (badge container) ── */
+.cv-component{position:relative;margin:4px 0}
+.cv-badge{position:absolute;top:-9px;right:6px;background:#FF4C00;color:white;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;white-space:nowrap;letter-spacing:.2px;pointer-events:none;z-index:10}
+body.today .cv-badge{display:none}
+
+/* ── DATA HEALTH CARD ── */
+.dhc{background:white;border-radius:10px;border:1.5px solid #fcd9d2;overflow:hidden;margin:6px 0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.dhc-head{padding:10px 13px;background:#fff4f2;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fcd9d2}
+.dhc-icon{font-size:14px}
+.dhc-title{font-size:12px;font-weight:800;color:#c0390b;flex:1}
+.dhc-badge{font-size:9px;font-weight:700;background:#c0390b;color:white;padding:2px 6px;border-radius:6px}
+.dhc-body{padding:10px 13px}
+.dhc-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px;color:#555}
+.dhc-row-icon{font-size:11px;width:14px;text-align:center}
+.dhc-action{margin-top:8px;font-size:11px;font-weight:700;color:#c0390b;cursor:pointer;display:flex;align-items:center;gap:4px}
+/* today version */
+body.today .dhc{border-color:#e4ddd4;background:#faf8f5}
+body.today .dhc-head{background:#f5f5f5;border-color:#e4ddd4}
+body.today .dhc-title{color:#444}
+body.today .dhc-badge{background:#888}
+body.today .dhc-action{color:#2B4FB9}
+
+/* ── SIGNAL CARD ── */
+.sc{background:white;border-radius:10px;border:1px solid #E0DCEF;overflow:hidden;margin:6px 0}
+.sc-head{padding:10px 13px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:8px}
+.sc-title{font-size:12px;font-weight:800;color:#513699;flex:1}
+.sc-sparkline{height:28px;overflow:hidden}
+.sc-sparkline svg{display:block}
+.sc-stats{display:flex;gap:0;border-top:1px solid #f0ecff}
+.sc-stat{flex:1;padding:8px 10px;text-align:center;border-right:1px solid #f0ecff}
+.sc-stat:last-child{border-right:none}
+.sc-stat-val{font-size:14px;font-weight:800;color:#513699}
+.sc-stat-label{font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+/* today */
+body.today .sc{border-color:#e4ddd4}
+body.today .sc-head{background:#faf8f5;border-color:#e4ddd4}
+body.today .sc-title{color:#444}
+body.today .sc-stat-val{color:#2B4FB9}
+
+/* ── PROVENANCE LABEL ── */
+.prov{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#7B5DB5;background:#F5F3FF;border:1px solid #E0DCEF;border-radius:6px;padding:2px 7px;margin:4px 0}
+.prov-icon{font-size:9px}
+body.today .prov{display:none}
+
+/* ── RECOMMENDATION CARD ── */
+.rec-card{background:white;border-radius:12px;border:1.5px solid #E0DCEF;overflow:hidden;margin:6px 0;box-shadow:0 2px 8px rgba(123,93,181,0.1)}
+
+/* gradient border wrapper */
+.rec-card-gradient-wrap{padding:2px;border-radius:14px;background:conic-gradient(from var(--ga,0deg),#FF4C00,#E35EA3,#B1D4FF,#FF4C00);animation:spin-grad 3s linear infinite}
+@property --ga{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes spin-grad{to{--ga:360deg}}
+body.today .rec-card-gradient-wrap{background:none;padding:0;animation:none}
+body.today .rec-card-gradient-wrap .rec-card{border-color:#e4ddd4;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+
+.rec-card-inner{background:white;border-radius:12px;overflow:hidden}
+.rec-head{padding:12px 15px;background:linear-gradient(135deg,#F5F3FF 0%,#fff 100%);border-bottom:1px solid #E0DCEF;display:flex;align-items:flex-start;gap:10px}
+.rec-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.rec-title{font-size:13px;font-weight:800;color:#1e1e1e;line-height:1.3;flex:1}
+.rec-urgency{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.rec-urgency.high{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+.rec-urgency.medium{background:#fffbf0;color:#b45309;border:1px solid #fce9c0}
+.rec-body{padding:12px 15px}
+.rec-desc{font-size:12px;color:#444;line-height:1.6;margin-bottom:10px}
+
+/* anchored projection */
+.ap-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.ap-number{font-size:22px;font-weight:900;color:#c0390b;line-height:1}
+.ap-label{font-size:11px;color:#888}
+.ap-delta{font-size:11px;font-weight:700;color:#c0390b;background:#fff4f2;padding:1px 6px;border-radius:4px}
+.ap-bar-wrap{height:6px;background:#f0ecff;border-radius:3px;margin:8px 0 4px;overflow:hidden}
+.ap-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,#7B5DB5,#E35EA3)}
+.ap-range{display:flex;justify-content:space-between;font-size:9px;color:#bbb}
+
+/* confidence */
+.conf-row{display:flex;align-items:center;gap:6px;margin:8px 0;font-size:11px;color:#555}
+.conf-dots{display:flex;gap:2px}
+.conf-dot{width:7px;height:7px;border-radius:50%;background:#e4ddd4}
+.conf-dot.filled{background:#7B5DB5}
+.conf-label{font-size:10px;color:#7B5DB5;font-weight:700}
+
+/* benchmark band */
+.bench{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 11px;margin:8px 0;display:flex;align-items:center;gap:8px}
+.bench-icon{font-size:12px}
+.bench-text{font-size:11px;color:#16a34a;line-height:1.4}
+.bench-text strong{font-weight:800}
+
+.rec-actions{display:flex;gap:6px;padding:10px 15px;border-top:1px solid #f0ecff}
+.rec-btn{flex:1;padding:7px 10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;text-align:center}
+.rec-btn.primary{background:#FF4C00;color:white}
+.rec-btn.primary:hover{background:#e04300}
+.rec-btn.secondary{background:#f5f5f5;color:#444;border:1px solid #e4ddd4}
+.rec-btn.secondary:hover{background:#eee}
+body.today .rec-urgency{display:none}
+body.today .ap-bar-wrap,.ap-range,.conf-row,.bench{display:flex}
+body.today .rec-card-gradient-wrap .rec-card{box-shadow:none}
+
+/* ── ALTERNATIVES PANEL ── */
+.alt-panel{background:#faf8f5;border:1px solid #e4ddd4;border-radius:10px;margin:6px 0;overflow:hidden}
+.alt-panel-head{padding:9px 13px;font-size:11px;font-weight:800;color:#444;border-bottom:1px solid #e4ddd4;background:white}
+.alt-item{padding:9px 13px;border-bottom:1px solid #f0ece8;display:flex;align-items:flex-start;gap:8px;cursor:pointer;transition:background .12s}
+.alt-item:last-child{border-bottom:none}
+.alt-item:hover{background:#fff}
+.alt-radio{width:14px;height:14px;border-radius:50%;border:2px solid #bbb;flex-shrink:0;margin-top:2px;transition:border-color .15s}
+.alt-item.selected .alt-radio{border-color:#7B5DB5;background:#7B5DB5;box-shadow:inset 0 0 0 2px white}
+.alt-item.selected{background:#fcfaff}
+.alt-title{font-size:12px;font-weight:700;color:#1e1e1e}
+.alt-desc{font-size:11px;color:#888;margin-top:1px;line-height:1.4}
+.alt-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:3px;display:inline-block}
+.alt-tag.safe{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.alt-tag.risky{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+.alt-tag.neutral{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+body.today .alt-panel{background:white}
+
+/* ── CASCADE MAP ── */
+.cascade-wrap{background:white;border:1px solid #E0DCEF;border-radius:10px;overflow:hidden;margin:6px 0}
+.cascade-head{padding:9px 13px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;font-size:11px;font-weight:800;color:#513699;display:flex;align-items:center;gap:6px}
+.cascade-tree{padding:10px 13px}
+.cascade-node{display:flex;align-items:flex-start;gap:8px;padding:4px 0}
+.cascade-node.child{padding-left:20px}
+.cascade-node.grandchild{padding-left:40px}
+.cascade-icon{font-size:11px;margin-top:2px;flex-shrink:0}
+.cascade-label{font-size:11px;color:#444;line-height:1.4}
+.cascade-label strong{font-weight:700;color:#1e1e1e}
+.cascade-impact{font-size:10px;color:#c0390b;font-weight:700;margin-top:1px}
+body.today .cascade-wrap{border-color:#e4ddd4}
+body.today .cascade-head{background:#faf8f5;border-color:#e4ddd4;color:#444}
+
+/* ── DRAFT WORKSPACE ── */
+.draft-wrap{background:white;border-radius:10px;border:1.5px solid #E0DCEF;overflow:hidden;margin:6px 0}
+.draft-head{padding:9px 13px;background:#F5F3FF;border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:8px}
+.draft-title{font-size:11px;font-weight:800;color:#513699;flex:1}
+.draft-status{font-size:9px;font-weight:700;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:2px 6px;border-radius:6px}
+.draft-body{padding:11px 13px}
+.draft-field-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:4px}
+.draft-field-value{font-size:12px;color:#1e1e1e;font-weight:600;margin-bottom:10px}
+.draft-scope{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.scope-chip{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.scope-chip.selected{background:#7B5DB5;color:white;border-color:#7B5DB5}
+.scope-chip.unselected{background:#f5f3ff;color:#7B5DB5;border-color:#E0DCEF}
+.draft-reviewer{display:flex;align-items:center;gap:6px;background:#f8f6ff;border-radius:7px;padding:7px 10px}
+.draft-reviewer-avatar{width:22px;height:22px;border-radius:50%;background:#2B4FB9;color:white;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.draft-reviewer-name{font-size:11px;font-weight:700;color:#1e1e1e}
+.draft-reviewer-role{font-size:10px;color:#aaa}
+.draft-footer{display:flex;gap:6px;padding:8px 13px;border-top:1px solid #f0ecff}
+.draft-btn{flex:1;padding:6px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;text-align:center;transition:all .15s}
+.draft-btn.primary{background:#7B5DB5;color:white}
+.draft-btn.secondary{background:#f5f5f5;color:#444;border:1px solid #e4ddd4}
+body.today .draft-wrap{border-color:#e4ddd4}
+body.today .draft-head{background:#faf8f5;border-color:#e4ddd4;color:#444}
+body.today .draft-title{color:#444}
+body.today .draft-reviewer{background:#f5f5f5}
+body.today .draft-btn.primary{background:#2B4FB9}
+
+/* ── DOWNSTREAM CHECKLIST ── */
+.checklist-wrap{background:white;border:1px solid #e4ddd4;border-radius:10px;overflow:hidden;margin:6px 0}
+.checklist-head{padding:8px 12px;background:#faf8f5;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444;display:flex;align-items:center;gap:6px}
+.checklist-items{padding:8px 12px}
+.checklist-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.checklist-item:last-child{border-bottom:none}
+.checklist-cb{width:14px;height:14px;border-radius:3px;border:1.5px solid #bbb;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:white}
+.checklist-cb.checked{background:#16a34a;border-color:#16a34a}
+.checklist-cb.warn{background:#b45309;border-color:#b45309}
+.checklist-text{font-size:11px;color:#444;line-height:1.4}
+.checklist-note{font-size:10px;color:#888;margin-top:1px}
+.rev-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:1px 5px;border-radius:4px;margin-top:3px}
+body.today .checklist-wrap{display:none}
+
+/* ── REVERSIBILITY INDICATOR ── */
+.rev-ind{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:7px;margin:4px 0}
+.rev-ind.high{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.rev-ind.medium{background:#fffbf0;color:#b45309;border:1px solid #fce9c0}
+.rev-ind.low{background:#fff4f2;color:#c0390b;border:1px solid #fcd9d2}
+body.today .rev-ind{display:none}
+
+/* ── SANDBOX PREVIEW ── */
+.sandbox-wrap{background:white;border-radius:10px;border:1.5px solid #7B5DB5;overflow:hidden;margin:6px 0;box-shadow:0 0 0 3px rgba(123,93,181,0.1)}
+.sandbox-head{padding:9px 13px;background:linear-gradient(90deg,#F5F3FF,#fff);border-bottom:1px solid #E0DCEF;display:flex;align-items:center;gap:7px}
+.sandbox-title{font-size:11px;font-weight:800;color:#7B5DB5;flex:1}
+.sandbox-tag{font-size:9px;font-weight:700;background:#F5F3FF;color:#7B5DB5;border:1px solid #E0DCEF;padding:2px 6px;border-radius:5px}
+.sandbox-body{padding:12px 13px}
+.sandbox-bar-row{margin-bottom:8px}
+.sandbox-bar-label{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
+.sandbox-bar-name{color:#555;font-weight:600}
+.sandbox-bar-val{color:#7B5DB5;font-weight:800}
+.sandbox-track{height:8px;background:#f0ecff;border-radius:4px;overflow:hidden}
+.sandbox-fill{height:8px;border-radius:4px;background:linear-gradient(90deg,#7B5DB5,#E35EA3)}
+.sandbox-footer{display:flex;align-items:center;gap:6px;padding:8px 13px;border-top:1px solid #f0ecff;font-size:11px;color:#888}
+.sandbox-apply{margin-left:auto;background:#7B5DB5;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer}
+body.today .sandbox-wrap{display:none}
+
+/* ── DAILY SUMMARY ── */
+.summary-wrap{background:white;border-radius:10px;border:1px solid #e4ddd4;overflow:hidden;margin:6px 0}
+.summary-head{padding:9px 13px;background:#faf8f5;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444;display:flex;align-items:center;gap:6px}
+.summary-head .sum-icon{font-size:13px}
+.summary-items{padding:8px 13px}
+.sum-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5;align-items:flex-start}
+.sum-item:last-child{border-bottom:none}
+.sum-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.sum-dot.orange{background:#FF4C00}
+.sum-dot.green{background:#16a34a}
+.sum-dot.blue{background:#2B4FB9}
+.sum-dot.purple{background:#7B5DB5}
+.sum-text{font-size:11px;color:#444;line-height:1.4}
+.sum-text strong{font-weight:700;color:#1e1e1e}
+
+/* ── AUDIT ENTRY ── */
+.audit-wrap{background:#faf8f5;border:1px solid #e4ddd4;border-radius:10px;overflow:hidden;margin:6px 0}
+.audit-head{padding:8px 12px;background:white;border-bottom:1px solid #e4ddd4;font-size:11px;font-weight:800;color:#444;display:flex;align-items:center;gap:6px}
+.audit-entry{padding:8px 12px;border-bottom:1px solid #f0ece8}
+.audit-entry:last-child{border-bottom:none}
+.audit-row{display:flex;gap:8px;align-items:flex-start}
+.audit-ts{font-size:10px;color:#bbb;white-space:nowrap;font-family:monospace;margin-top:1px}
+.audit-text{font-size:11px;color:#555;line-height:1.4}
+.audit-text strong{font-weight:700;color:#1e1e1e}
+.audit-actor{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
+.audit-actor.human{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.audit-actor.agent{background:#F5F3FF;color:#7B5DB5;border:1px solid #E0DCEF}
+body.today .audit-wrap{display:none}
+
+/* ── GUARDRAIL STATUS ── */
+.guardrail-wrap{background:white;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 13px;margin:6px 0;display:flex;align-items:flex-start;gap:8px}
+.guardrail-icon{font-size:16px;flex-shrink:0}
+.guardrail-text{font-size:11px;color:#444;line-height:1.5}
+.guardrail-text strong{font-weight:800;color:#16a34a}
+body.today .guardrail-wrap{display:none}
+
+/* ── PLAIN TEXT VERSIONS (Today) ── */
+.today-only{display:none}
+body.today .today-only{display:block}
+.vision-only{}
+body.today .vision-only{display:none}
+
+/* ── DASHBOARD WIDGETS ── */
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.dash-card{background:white;border-radius:10px;border:1px solid rgba(0,0,0,0.08);padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.dash-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:6px}
+.dash-val{font-size:26px;font-weight:900;color:#1e1e1e;line-height:1}
+.dash-delta{font-size:11px;margin-top:4px;font-weight:700}
+.dash-delta.neg{color:#c0390b}
+.dash-delta.pos{color:#16a34a}
+.dash-delta.warn{color:#b45309}
+.dash-wide{background:white;border-radius:10px;border:1px solid rgba(0,0,0,0.08);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.dash-chart-placeholder{height:60px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;margin-top:10px}
+.dash-title{font-size:13px;font-weight:800;color:#1e1e1e;margin-bottom:2px}
+.dash-sub{font-size:11px;color:#aaa}
+.dash-alert{background:#fff4f2;border:1px solid #fcd9d2;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer}
+.dash-alert-icon{font-size:14px}
+.dash-alert-text{font-size:12px;color:#c0390b;font-weight:600;flex:1}
+.dash-alert-arrow{font-size:12px;color:#c0390b}
+
+/* ── COMPONENT INDEX ── */
+.ci-section{background:white;border-top:1px solid rgba(0,0,0,0.12)}
+.ci-header{padding:24px 28px 16px;border-bottom:1px solid rgba(0,0,0,0.08)}
+.ci-title{font-size:20px;font-weight:800;color:#1e1e1e;margin-bottom:4px}
+.ci-sub{font-size:13px;color:#888}
+.ci-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:20px 28px 40px}
+.ci-card{background:#faf8f5;border:1px solid #e4ddd4;border-radius:10px;padding:14px 16px}
+.ci-card-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.ci-badge{font-size:9px;font-weight:800;background:#FF4C00;color:white;padding:2px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.ci-name{font-size:13px;font-weight:800;color:#1e1e1e;font-family:'SF Mono','Fira Mono',monospace;font-size:12px}
+.ci-desc{font-size:12px;color:#555;line-height:1.55}
+.ci-phase{font-size:9px;font-weight:700;margin-top:6px;display:inline-block;padding:2px 7px;border-radius:5px}
+.ci-phase.p1{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.ci-phase.p2{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.ci-phase.p3{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.ci-phase.p4{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.ci-link{font-size:11px;color:#2B4FB9;text-decoration:none;margin-top:6px;display:inline-block;font-weight:600}
+.ci-link:hover{text-decoration:underline}
+
+/* ── HALO GLOW on focused IQ panel ── */
+.iq-panel-focus .iq-panel{box-shadow:0 0 0 2px #FF4C00,0 8px 30px rgba(255,76,0,0.12);}
+
+/* ── SCROLL HINT BELOW FOLD ── */
+.scroll-hint{text-align:center;padding:10px;font-size:11px;color:rgba(255,255,255,0.3);background:#1e1e1e;letter-spacing:.3px}
+
+</style>
+</head>
+<body class="vision">
+
+<!-- TOPBAR -->
+<div class="tb">
+  <a href="index.html" class="tb-logo">Toast IQ</a>
+  <div class="tb-divider"></div>
+  <nav class="tb-nav">
+    <a href="combined.html" class="tb-link">Combined Summary</a>
+    <span class="tb-sep">·</span>
+    <a href="framework.html" class="tb-link">Framework</a>
+    <span class="tb-sep">·</span>
+    <a href="implementation.html" class="tb-link">Implementation</a>
+    <span class="tb-sep">·</span>
+    <a href="deck.html" class="tb-link">Presentation</a>
+    <span class="tb-sep">·</span>
+    <a href="chat-vision.html" class="tb-link active">Chat Vision</a>
+  </nav>
+  <div class="tb-right">
+    <!-- Today / Vision toggle -->
+    <div class="mode-toggle">
+      <button class="mt-btn" id="btn-today" onclick="setMode('today')">Today</button>
+      <div class="mt-divider"></div>
+      <button class="mt-btn active" id="btn-vision" onclick="setMode('vision')">Vision</button>
+    </div>
+    <span class="tb-meta">Chat Vision</span>
+  </div>
+</div>
+
+<!-- SHELL: full viewport below topbar -->
+<div class="shell">
+
+  <!-- TOAST APP HEADER -->
+  <div class="app-header">
+    <div class="app-logo">toast<span>.</span></div>
+    <nav class="app-nav">
+      <div class="app-nav-item active">Dashboard</div>
+      <div class="app-nav-item">Menu</div>
+      <div class="app-nav-item">Reports</div>
+      <div class="app-nav-item">Labor</div>
+      <div class="app-nav-item">Inventory</div>
+    </nav>
+    <div class="app-header-right">
+      <div class="app-notif">🔔</div>
+      <div class="app-avatar">MG</div>
+    </div>
+  </div>
+
+  <!-- BODY ROW: sidebar + main + IQ panel -->
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <div class="app-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Overview</div>
+        <div class="sidebar-item active"><span class="sidebar-item-icon">📊</span> Dashboard</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">📈</span> Sales</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">🍽️</span> Menu Performance</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Operations</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">📦</span> Inventory <span class="sidebar-badge">!</span></div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">👥</span> Labor</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">🧾</span> Orders</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Intelligence</div>
+        <div class="sidebar-item"><span class="sidebar-item-icon" style="color:#7B5DB5">✦</span> <span style="color:#7B5DB5;font-weight:600">IQ Insights</span></div>
+        <div class="sidebar-item"><span class="sidebar-item-icon">📋</span> Reports</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD MAIN (dimmed to focus attention on chat) -->
+    <div class="app-main dimmed">
+      <div class="dash-alert">
+        <span class="dash-alert-icon">⚠️</span>
+        <span class="dash-alert-text">Chicken sandwich ingredient costs up 18% — IQ has a recommendation →</span>
+        <span class="dash-alert-arrow">›</span>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-label">Net Sales</div>
+          <div class="dash-val">$4,218</div>
+          <div class="dash-delta pos">↑ 6.2% vs last week</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-label">Covers</div>
+          <div class="dash-val">312</div>
+          <div class="dash-delta pos">↑ 11 vs last Tue</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-label">Food Cost %</div>
+          <div class="dash-val">34.1%</div>
+          <div class="dash-delta neg">↑ 3.4pp this week</div>
+        </div>
+      </div>
+      <div class="dash-wide">
+        <div class="dash-title">Sales by Hour — Today</div>
+        <div class="dash-sub">Lunch peak 11:30–1:30pm</div>
+        <div class="dash-chart-placeholder">[ bar chart ]</div>
+      </div>
+      <div class="dash-wide">
+        <div class="dash-title">Top Items by Revenue</div>
+        <div class="dash-sub">Chicken Sandwich is #1 seller</div>
+        <div class="dash-chart-placeholder">[ horizontal bar chart ]</div>
+      </div>
+    </div>
+
+    <!-- IQ RIDEALONG PANEL -->
+    <div class="iq-panel">
+      <div class="iq-panel-header">
+        <span style="font-size:14px">✦</span>
+        <span class="iq-logo">Toast IQ</span>
+        <span class="iq-logo-sub">Ridealong</span>
+        <span class="iq-panel-status">● Live</span>
+      </div>
+
+      <div class="iq-messages" id="iq-messages">
+
+        <!-- Turn 1: User -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">Chicken sandwich ingredient costs spiked — what should I do?</div>
+          <div class="msg-meta">Marcus G · just now</div>
+        </div>
+
+        <!-- Turn 2: IQ + DataHealthCard -->
+        <div class="msg msg-iq">
+          <div class="msg-bubble">Before I run the numbers, let me verify the data I'm working with.</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">DataHealthCard</span>
+          <div class="dhc">
+            <div class="dhc-head">
+              <span class="dhc-icon">🔍</span>
+              <span class="dhc-title">Data Quality Check</span>
+              <span class="dhc-badge">2 issues</span>
+            </div>
+            <div class="dhc-body">
+              <div class="dhc-row"><span class="dhc-row-icon">⚠️</span> Inventory sync last updated 14h ago</div>
+              <div class="dhc-row"><span class="dhc-row-icon">⚠️</span> 3 supplier invoices unmatched</div>
+              <div class="dhc-row"><span class="dhc-row-icon">✅</span> POS sales data complete (100%)</div>
+              <div class="dhc-row"><span class="dhc-row-icon">✅</span> Recipe cost card up to date</div>
+              <div class="dhc-action">→ Continue with partial data</div>
+            </div>
+          </div>
+        </div>
+        <!-- Today version -->
+        <div class="msg msg-iq today-only">
+          <div class="msg-bubble" style="background:#fff4f2;border:1px solid #fcd9d2;color:#c0390b">⚠️ Heads up: inventory sync is 14h old. Continuing with best available data.</div>
+        </div>
+
+        <!-- Turn 3: User -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">Go ahead, I know inventory is stale.</div>
+        </div>
+
+        <!-- Turn 4: IQ + SignalCard + ProvenanceLabel -->
+        <div class="msg msg-iq">
+          <div class="msg-bubble">Here's what the data shows over the last 30 days:</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">SignalCard</span>
+          <div class="sc">
+            <div class="sc-head">
+              <span style="font-size:13px">🐔</span>
+              <span class="sc-title">Chicken Breast — Cost per lb</span>
+            </div>
+            <div class="sc-sparkline">
+              <svg width="100%" height="28" viewBox="0 0 200 28" preserveAspectRatio="none">
+                <polyline points="0,22 30,20 60,18 90,15 120,12 150,7 180,4 200,3" fill="none" stroke="#c0390b" stroke-width="2"/>
+                <polyline points="0,22 30,20 60,18 90,15 120,12 150,7 180,4 200,3" fill="rgba(192,57,11,0.08)" stroke="none"/>
+              </svg>
+            </div>
+            <div class="sc-stats">
+              <div class="sc-stat"><div class="sc-stat-val">$4.82</div><div class="sc-stat-label">Today</div></div>
+              <div class="sc-stat"><div class="sc-stat-val">$4.08</div><div class="sc-stat-label">30d avg</div></div>
+              <div class="sc-stat"><div class="sc-stat-val sc-stat-val" style="color:#c0390b">+18.1%</div><div class="sc-stat-label">Change</div></div>
+            </div>
+          </div>
+          <span class="prov"><span class="prov-icon">🔗</span> Source: Sysco invoice #INV-2024-8812 · verified</span>
+        </div>
+        <!-- Today version -->
+        <div class="msg msg-iq today-only">
+          <div class="msg-bubble">Chicken breast cost is up from $4.08 → $4.82/lb over 30 days, a +18.1% increase based on your latest Sysco invoice.</div>
+        </div>
+
+        <!-- Turn 5: IQ + RecommendationCard (full) -->
+        <div class="msg msg-iq">
+          <div class="msg-bubble">Based on this, here's my recommendation:</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">RecommendationCard</span>
+          <div class="rec-card-gradient-wrap">
+            <div class="rec-card-inner">
+              <div class="rec-card">
+                <div class="rec-head">
+                  <span class="rec-icon">💡</span>
+                  <div style="flex:1">
+                    <div class="rec-title">Raise Chicken Sandwich price by $1.25</div>
+                  </div>
+                  <div class="rec-urgency high">High urgency</div>
+                </div>
+                <div class="rec-body">
+                  <div class="rec-desc">At $4.82/lb, your current $12.99 price yields a 31.4% food cost — 3.4pp above your 28% target. A $1.25 increase to $14.24 restores margin without exceeding comparable market pricing.</div>
+
+                  <div class="cv-component vision-only" style="margin:0">
+                    <span class="cv-badge" style="top:-6px;font-size:8px">AnchoredProjection</span>
+                    <div class="ap-row">
+                      <div class="ap-number">+$1,247</div>
+                      <div style="flex:1">
+                        <div class="ap-label">projected monthly margin recovery</div>
+                        <div class="ap-delta">+$41/day</div>
+                      </div>
+                    </div>
+                    <div class="ap-bar-wrap">
+                      <div class="ap-bar" style="width:74%"></div>
+                    </div>
+                    <div class="ap-range"><span>$900 low</span><span>$1,247 base</span><span>$1,520 high</span></div>
+                  </div>
+
+                  <div class="cv-component vision-only" style="margin:8px 0 0">
+                    <span class="cv-badge" style="top:-6px;font-size:8px">ConfidenceIndicator</span>
+                    <div class="conf-row">
+                      <div class="conf-dots">
+                        <div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot filled"></div><div class="conf-dot"></div>
+                      </div>
+                      <span class="conf-label">High confidence</span>
+                      <span style="font-size:10px;color:#aaa">· 30d sales + 2 supplier quotes</span>
+                    </div>
+                  </div>
+
+                  <div class="cv-component vision-only" style="margin:0">
+                    <span class="cv-badge" style="top:-6px;font-size:8px">BenchmarkBand</span>
+                    <div class="bench">
+                      <span class="bench-icon">📊</span>
+                      <div class="bench-text">Comparable QSR sandwiches in your market: <strong>$13.49–$15.75</strong>. Your proposed $14.24 is within range.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rec-actions">
+                  <button class="rec-btn primary">Apply Price Change</button>
+                  <button class="rec-btn secondary">See Alternatives</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Today version of rec -->
+        <div class="msg msg-iq today-only">
+          <div class="msg-bubble">Recommendation: raise the Chicken Sandwich to $14.24 (+$1.25). This recovers ~$1,247/month in margin. Comparable sandwiches nearby run $13.49–$15.75, so you're within range.</div>
+        </div>
+
+        <!-- Turn 6: User + AlternativesPanel -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">What are my other options?</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">AlternativesPanel</span>
+          <div class="alt-panel">
+            <div class="alt-panel-head">3 alternatives · ranked by margin impact</div>
+            <div class="alt-item selected">
+              <div class="alt-radio"></div>
+              <div>
+                <div class="alt-title">Raise price $1.25 → $14.24</div>
+                <div class="alt-desc">Full margin recovery, within market range</div>
+                <span class="alt-tag safe">Recommended</span>
+              </div>
+            </div>
+            <div class="alt-item">
+              <div class="alt-radio"></div>
+              <div>
+                <div class="alt-title">Switch to thigh meat blend</div>
+                <div class="alt-desc">-$0.62/lb ingredient saving, slight flavor change</div>
+                <span class="alt-tag neutral">Partial fix</span>
+              </div>
+            </div>
+            <div class="alt-item">
+              <div class="alt-title" style="padding-left:22px">Absorb the cost temporarily</div>
+              <div style="padding-left:22px">
+                <div class="alt-desc">-$1,247/mo margin impact if cost stays elevated</div>
+                <span class="alt-tag risky">Not recommended</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Today -->
+        <div class="msg msg-iq today-only">
+          <div class="msg-bubble">Options: (1) raise price $1.25 — recommended; (2) switch to thigh blend, saves $0.62/lb; (3) absorb the cost — not recommended, $1,247/mo impact.</div>
+        </div>
+
+        <!-- Turn 7: User + Cascade + Draft + Checklist + Rev -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">Let's go with option 1. Can you draft the price change?</div>
+        </div>
+        <div class="msg msg-iq">
+          <div class="msg-bubble">Sure — before I draft, here's what this change touches:</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">CascadeMap</span>
+          <div class="cascade-wrap">
+            <div class="cascade-head">⛓ Downstream Impact</div>
+            <div class="cascade-tree">
+              <div class="cascade-node">
+                <span class="cascade-icon">📋</span>
+                <div><div class="cascade-label"><strong>Menu price update</strong> (this change)</div></div>
+              </div>
+              <div class="cascade-node child">
+                <span class="cascade-icon">🔗</span>
+                <div><div class="cascade-label"><strong>Online ordering</strong> — auto-syncs in 15min</div></div>
+              </div>
+              <div class="cascade-node child">
+                <span class="cascade-icon">🔗</span>
+                <div><div class="cascade-label"><strong>3rd party apps</strong> (DoorDash, Uber Eats)</div><div class="cascade-impact">Manual update required · 2–4hr delay</div></div>
+              </div>
+              <div class="cascade-node grandchild">
+                <span class="cascade-icon">⚠️</span>
+                <div><div class="cascade-label">Price mismatch window until synced</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">DraftWorkspace</span>
+          <div class="draft-wrap">
+            <div class="draft-head">
+              <span class="draft-title">Price Change Draft</span>
+              <span class="draft-status">Draft</span>
+            </div>
+            <div class="draft-body">
+              <div class="draft-field-label">Item</div>
+              <div class="draft-field-value">Chicken Sandwich</div>
+              <div class="draft-field-label">New Price</div>
+              <div class="draft-field-value">$14.24 <span style="color:#16a34a;font-size:11px">(was $12.99)</span></div>
+              <div class="draft-field-label">Scope</div>
+              <div class="draft-scope">
+                <div class="scope-chip selected">POS</div>
+                <div class="scope-chip selected">Online Order</div>
+                <div class="scope-chip unselected">Kiosk</div>
+                <div class="scope-chip unselected">3rd Party Apps</div>
+              </div>
+              <div class="draft-field-label">Send to reviewer</div>
+              <div class="draft-reviewer">
+                <div class="draft-reviewer-avatar">JR</div>
+                <div>
+                  <div class="draft-reviewer-name">Jamie R.</div>
+                  <div class="draft-reviewer-role">GM · approves menu changes</div>
+                </div>
+              </div>
+            </div>
+            <div class="draft-footer">
+              <button class="draft-btn primary">Submit for Review</button>
+              <button class="draft-btn secondary">Edit</button>
+            </div>
+          </div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">DownstreamChecklist</span>
+          <div class="checklist-wrap">
+            <div class="checklist-head">📋 Before publishing</div>
+            <div class="checklist-items">
+              <div class="checklist-item">
+                <div class="checklist-cb checked">✓</div>
+                <div><div class="checklist-text">Recipe cost card reviewed</div></div>
+              </div>
+              <div class="checklist-item">
+                <div class="checklist-cb checked">✓</div>
+                <div><div class="checklist-text">GM approval obtained</div><span class="rev-badge">Reviewer: Jamie R.</span></div>
+              </div>
+              <div class="checklist-item">
+                <div class="checklist-cb warn">!</div>
+                <div><div class="checklist-text">3rd party app prices</div><div class="checklist-note">Update DoorDash + Uber Eats manually after publish</div></div>
+              </div>
+            </div>
+          </div>
+          <span class="rev-ind high">↩ Reversible — undo price change anytime in Menu Manager</span>
+        </div>
+        <!-- Today -->
+        <div class="msg msg-iq today-only">
+          <div class="msg-bubble">Price change drafted: Chicken Sandwich → $14.24. Note: DoorDash and Uber Eats require manual update after publishing. Ready to publish?</div>
+        </div>
+        <div class="today-only" style="margin:4px 0">
+          <button class="rec-btn primary" style="width:100%;padding:8px">Publish Now</button>
+        </div>
+
+        <!-- Turn 8: User + SandboxPreview -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">Show me how this affects my overall food cost.</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">SandboxPreview</span>
+          <div class="sandbox-wrap">
+            <div class="sandbox-head">
+              <span style="font-size:12px">🧪</span>
+              <span class="sandbox-title">Sandbox: Price Impact Preview</span>
+              <span class="sandbox-tag">Simulated · not live</span>
+            </div>
+            <div class="sandbox-body">
+              <div class="sandbox-bar-row">
+                <div class="sandbox-bar-label"><span class="sandbox-bar-name">Food Cost % (current)</span><span class="sandbox-bar-val" style="color:#c0390b">34.1%</span></div>
+                <div class="sandbox-track"><div class="sandbox-fill" style="width:68%;background:#c0390b"></div></div>
+              </div>
+              <div class="sandbox-bar-row">
+                <div class="sandbox-bar-label"><span class="sandbox-bar-name">Food Cost % (after change)</span><span class="sandbox-bar-val">29.8%</span></div>
+                <div class="sandbox-track"><div class="sandbox-fill" style="width:55%"></div></div>
+              </div>
+              <div class="sandbox-bar-row">
+                <div class="sandbox-bar-label"><span class="sandbox-bar-name">Target</span><span class="sandbox-bar-val" style="color:#16a34a">28.0%</span></div>
+                <div class="sandbox-track"><div class="sandbox-fill" style="width:50%;background:#16a34a"></div></div>
+              </div>
+            </div>
+            <div class="sandbox-footer">
+              <span>Based on 30d avg volume (127 sandwiches/day)</span>
+              <button class="sandbox-apply">Apply Change</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Turn 9: Next morning + DailySummary -->
+        <div style="text-align:center;padding:12px 0 6px;font-size:10px;color:#bbb;font-weight:700;letter-spacing:.4px;text-transform:uppercase">— Next morning —</div>
+        <div class="msg msg-iq">
+          <div class="msg-bubble">Good morning Marcus. Here's what happened while you were away:</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">DailySummary</span>
+          <div class="summary-wrap">
+            <div class="summary-head"><span class="sum-icon">🌅</span> Tuesday Overnight Summary</div>
+            <div class="summary-items">
+              <div class="sum-item"><div class="sum-dot green"></div><div class="sum-text"><strong>Price change published</strong> at 11:42pm by Jamie R.</div></div>
+              <div class="sum-item"><div class="sum-dot orange"></div><div class="sum-text"><strong>DoorDash still at $12.99</strong> — update needed to avoid margin loss on delivery</div></div>
+              <div class="sum-item"><div class="sum-dot blue"></div><div class="sum-text"><strong>3 new invoices matched</strong> — inventory data now current</div></div>
+              <div class="sum-item"><div class="sum-dot purple"></div><div class="sum-text">Early sales: <strong>14 chicken sandwiches</strong> at new price, no drop-off vs Tuesday avg</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Turn 10: AuditEntry + GuardrailStatus -->
+        <div class="msg msg-user">
+          <div class="msg-bubble">What exactly did IQ change on my account?</div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">AuditEntry</span>
+          <div class="audit-wrap">
+            <div class="audit-head">🔒 Agent Activity Log</div>
+            <div class="audit-entry">
+              <div class="audit-row">
+                <div class="audit-ts">11:41pm</div>
+                <div class="audit-text"><span class="audit-actor agent">IQ Agent</span> drafted price change for Chicken Sandwich — <strong>no write access</strong></div>
+              </div>
+            </div>
+            <div class="audit-entry">
+              <div class="audit-row">
+                <div class="audit-ts">11:42pm</div>
+                <div class="audit-text"><span class="audit-actor human">Jamie R.</span> approved and published price change → $14.24</div>
+              </div>
+            </div>
+            <div class="audit-entry">
+              <div class="audit-row">
+                <div class="audit-ts">11:42pm</div>
+                <div class="audit-text"><span class="audit-actor agent">IQ Agent</span> sent DoorDash reminder notification to Marcus G.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cv-component vision-only">
+          <span class="cv-badge">GuardrailStatus</span>
+          <div class="guardrail-wrap">
+            <span class="guardrail-icon">🛡️</span>
+            <div class="guardrail-text"><strong>IQ never writes without approval.</strong> All changes above required a human to confirm. Agent access is read-only until you explicitly publish.</div>
+          </div>
+        </div>
+
+      </div><!-- /iq-messages -->
+
+      <div class="iq-input-row">
+        <div class="iq-input-wrap">
+          <input class="iq-input" placeholder="Ask IQ anything…" />
+          <button class="iq-send">↑</button>
+        </div>
+      </div>
+    </div><!-- /iq-panel -->
+
+  </div><!-- /app-body -->
+</div><!-- /shell -->
+
+<!-- COMPONENT INDEX (below fold) -->
+<div class="ci-section">
+  <div class="ci-header">
+    <div class="ci-title">Component Index</div>
+    <div class="ci-sub">Every component shown above — what it is, why it exists, and where to build it. Toggle "Today" above to see the current prototype baseline.</div>
+  </div>
+  <div class="ci-grid">
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 2</span><span class="ci-name">DataHealthCard</span></div>
+      <div class="ci-desc">Shows data quality issues before running analysis. Surfaces stale syncs, unmatched invoices, missing data. Prevents false confidence in recommendations.</div>
+      <span class="ci-phase p1">Phase 1 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 4</span><span class="ci-name">SignalCard</span></div>
+      <div class="ci-desc">Time-series sparkline with key stat comparisons. Shows the trend, not just the number. Paired with ProvenanceLabel to show where data came from.</div>
+      <span class="ci-phase p1">Phase 1 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 4</span><span class="ci-name">ProvenanceLabel</span></div>
+      <div class="ci-desc">Small pill under a signal or claim showing the source document/invoice. Builds trust by making every data point traceable.</div>
+      <span class="ci-phase p1">Phase 1 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 5</span><span class="ci-name">RecommendationCard</span></div>
+      <div class="ci-desc">The primary output component. Gradient border signals AI origin. Contains title, description, AnchoredProjection, ConfidenceIndicator, BenchmarkBand, and action buttons.</div>
+      <span class="ci-phase p1">Phase 1 · Core</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 5</span><span class="ci-name">AnchoredProjection</span></div>
+      <div class="ci-desc">Financial impact estimate shown as a large number with a confidence range bar. Anchored to real volume data, not hypothetical.</div>
+      <span class="ci-phase p1">Phase 1 · Core</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 5</span><span class="ci-name">ConfidenceIndicator</span></div>
+      <div class="ci-desc">5-dot rating showing how confident the model is, with a short explanation (e.g., "30d sales + 2 quotes"). Prevents over-trust in thin data.</div>
+      <span class="ci-phase p1">Phase 1 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 5</span><span class="ci-name">BenchmarkBand</span></div>
+      <div class="ci-desc">Shows market comparisons (competitor price ranges) as context for a recommendation. Answers "is this normal?" without the operator having to look it up.</div>
+      <span class="ci-phase p1">Phase 1 · Context</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 5</span><span class="ci-name">UrgencyBadge</span></div>
+      <div class="ci-desc">High / Medium / Low pill in the rec card header. Set by the agent based on financial stakes and time-sensitivity. Drives operator attention triage.</div>
+      <span class="ci-phase p1">Phase 1 · Core</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 6</span><span class="ci-name">AlternativesPanel</span></div>
+      <div class="ci-desc">Ranked list of 2–3 alternatives when user asks for options. Each item has a radio, title, description, and a safety/risk tag. Replaces open-ended "here are your options" text.</div>
+      <span class="ci-phase p2">Phase 2 · Decisions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">CascadeMap</span></div>
+      <div class="ci-desc">Tree diagram showing what else will change if this action is taken. Surfaces hidden consequences (e.g., 3rd party app price lag) before the operator commits.</div>
+      <span class="ci-phase p2">Phase 2 · Decisions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">DraftWorkspace</span></div>
+      <div class="ci-desc">Structured editable form for a pending action — item, new value, scope selector, reviewer assignment. Shows human-in-the-loop before anything is published.</div>
+      <span class="ci-phase p3">Phase 3 · Actions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">ScopeSelector</span></div>
+      <div class="ci-desc">Chip group inside DraftWorkspace letting operator choose which channels the change applies to (POS / Online / Kiosk / 3rd Party). Default is narrowest safe scope.</div>
+      <span class="ci-phase p3">Phase 3 · Actions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">ReviewerAssignment</span></div>
+      <div class="ci-desc">Shows who will approve this change, their name and role. Pre-populated from store hierarchy. Makes the approval chain visible before submission.</div>
+      <span class="ci-phase p3">Phase 3 · Actions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">DownstreamChecklist</span></div>
+      <div class="ci-desc">Pre-flight list of items to verify before publishing. Checked/warned states. Ensures operators don't miss manual steps (e.g., update 3rd party apps).</div>
+      <span class="ci-phase p3">Phase 3 · Actions</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 7</span><span class="ci-name">ReversibilityIndicator</span></div>
+      <div class="ci-desc">Small pill showing whether an action can be undone and how. Reduces anxiety around committing to agent recommendations.</div>
+      <span class="ci-phase p2">Phase 2 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 8</span><span class="ci-name">SandboxPreview</span></div>
+      <div class="ci-desc">Simulated impact preview — shows what metrics would look like if the action were applied, clearly labeled "Simulated · not live." Answers "what if" without risk.</div>
+      <span class="ci-phase p2">Phase 2 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 9</span><span class="ci-name">DailySummary</span></div>
+      <div class="ci-desc">Morning briefing card summarizing overnight agent activity, open items, and early sales signals. Replaces the need to dig through logs or notifications.</div>
+      <span class="ci-phase p4">Phase 4 · Proactive</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 10</span><span class="ci-name">AuditEntry</span></div>
+      <div class="ci-desc">Timestamped log of every action the agent took vs. what humans approved. Distinguishes agent reads from human writes. Essential for accountability.</div>
+      <span class="ci-phase p4">Phase 4 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+    <div class="ci-card">
+      <div class="ci-card-header"><span class="ci-badge">Turn 10</span><span class="ci-name">GuardrailStatus</span></div>
+      <div class="ci-desc">Persistent reassurance banner confirming the agent never writes without human approval. Answers the "what did the AI do to my account?" anxiety from user interviews.</div>
+      <span class="ci-phase p4">Phase 4 · Trust</span>
+      <a href="implementation.html" class="ci-link">→ See in Implementation Guide</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setMode(mode) {
+  document.body.className = mode;
+  document.getElementById('btn-today').classList.toggle('active', mode === 'today');
+  document.getElementById('btn-vision').classList.toggle('active', mode === 'vision');
+}
+</script>
+</body>
+</html>
