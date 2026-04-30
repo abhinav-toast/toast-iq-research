@@ -241,6 +241,68 @@ a{color:inherit;text-decoration:none}
 .tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
 
 
+/* ── SKILL TRANSFORMER ── */
+.st-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;align-items:start}
+.st-panel{display:flex;flex-direction:column;gap:0}
+.st-panel-head{background:#1e1e1e;border-radius:10px 10px 0 0;padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333}
+.st-panel-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.5px;flex:1}
+.st-panel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.25)}
+.st-textarea{width:100%;min-height:320px;resize:vertical;background:#1a1a1a;border:1px solid #333;border-top:none;border-radius:0 0 0 0;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;outline:none;transition:border-color .15s;box-sizing:border-box}
+.st-textarea:focus{border-color:#f97316}
+.st-textarea::placeholder{color:#555}
+.st-input-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px}
+.st-btn{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.st-btn.primary{background:#f97316;color:white}
+.st-btn.primary:hover{background:#ea6a0a}
+.st-btn.ghost{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid #333}
+.st-btn.ghost:hover{background:rgba(255,255,255,0.1);color:white}
+.st-btn.copy{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid #333;padding:5px 12px;font-size:11px}
+.st-btn.copy:hover{background:rgba(255,255,255,0.1);color:white}
+.st-btn.copy.copied{background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3)}
+.st-hint{font-size:11px;color:#555;flex:1}
+
+/* output panel */
+.st-output-body{background:#1a1a1a;border:1px solid #333;border-top:none;min-height:320px;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;overflow-x:auto;white-space:pre;border-radius:0}
+.st-output-body.empty{display:flex;align-items:center;justify-content:center;color:#444;font-family:inherit;white-space:normal;text-align:center;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.st-output-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* annotation pills */
+.st-annotations{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.st-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:9999px;cursor:pointer;transition:opacity .15s;border:1px solid transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.st-pill:hover{opacity:.8}
+.st-pill.present{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0}
+.st-pill.added{background:#fff7ed;color:#ea580c;border-color:#fed7aa}
+.st-pill.warn{background:#fffbf0;color:#b45309;border-color:#fce9c0}
+.st-pill.missing{background:#fff5f5;color:#c0390b;border-color:#fde0dc}
+.st-pill-icon{font-size:10px}
+
+/* output syntax highlights */
+.st-added{color:#f97316}        /* newly injected field */
+.st-comment{color:#6b7280}      /* // ADDED comments */
+.st-key{color:#9cdcfe}          /* json keys */
+.st-str{color:#ce9178}          /* strings */
+.st-num{color:#b5cea8}          /* numbers */
+.st-kw{color:#c084fc}           /* keywords / mode values */
+
+/* checks row */
+.st-checks{display:grid;grid-template-columns:1fr 1fr;gap:0;background:white;border:1px solid #ede8e0;border-radius:10px;overflow:hidden;margin-top:14px}
+.st-check-item{padding:10px 14px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid #f5f0ea;border-right:1px solid #f5f0ea}
+.st-check-item:nth-child(2n){border-right:none}
+.st-check-item:nth-last-child(-n+2){border-bottom:none}
+.st-check-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0;margin-top:1px}
+.st-check-dot.ok{background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0}
+.st-check-dot.added{background:#fff7ed;color:#ea580c;border:1.5px solid #fed7aa}
+.st-check-dot.warn{background:#fffbf0;color:#b45309;border:1.5px solid #fce9c0}
+.st-check-dot.missing{background:#fff5f5;color:#c0390b;border:1.5px solid #fde0dc}
+.st-check-name{font-size:12px;font-weight:700;color:#1a1a1a;line-height:1.3}
+.st-check-desc{font-size:11px;color:#888;margin-top:1px;line-height:1.4}
+
+/* prompt preview */
+.st-prompt-preview{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:18px 20px;margin-top:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.st-prompt-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#f97316;margin-bottom:10px}
+.st-prompt-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;white-space:pre-wrap}
+.st-prompt-text em{color:rgba(255,255,255,0.25);font-style:normal}
+
 /* ── COMPONENT PREVIEW SHELL ── */
 .comp-preview{background:#f0f0f0;border-radius:8px;padding:12px 14px;margin:10px 0 12px;border:1px solid rgba(0,0,0,0.09)}
 .cp-shell{background:white;border-radius:8px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
@@ -473,6 +535,7 @@ a{color:inherit;text-decoration:none}
   <div class="page-tabs">
     <div class="page-tab active" onclick="switchTab('skills',this)">Skill Design</div>
     <div class="page-tab" onclick="switchTab('components',this)">Component Library</div>
+    <div class="page-tab" onclick="switchTab('transformer',this)">Skill Transformer</div>
   </div>
 
   <!-- ═══════════════════════════════════════ TAB: SKILLS ═══════════════════════════════════════ -->
@@ -1721,6 +1784,101 @@ a{color:inherit;text-decoration:none}
 
   </div><!-- end tab-components -->
 
+  <!-- ══════════════════════════════════ TAB: SKILL TRANSFORMER ══════════════════════════════════ -->
+  <div id="tab-transformer" class="tab-pane">
+
+    <div class="section-title-row" style="margin-top:32px">
+      <span class="section-title" style="margin:0">Skill Transformer</span>
+      <div class="section-title-divider"></div>
+    </div>
+
+    <div class="callout orange" style="margin-top:14px">
+      <div class="callout-label">How it works</div>
+      <div class="callout-text">Paste your existing skill definition below — JSON, YAML, or pseudocode. The transformer detects which of the 9 research-derived requirements are present, adds missing fields with inline annotations, and generates a ready-to-copy LLM prompt you can feed to any model to get back the full improved skill.</div>
+    </div>
+
+    <div class="st-layout">
+
+      <!-- LEFT: INPUT -->
+      <div class="st-panel">
+        <div class="st-panel-head">
+          <span class="st-panel-title">Your Skill</span>
+          <span class="st-panel-badge" id="st-format-badge">Paste to detect format</span>
+        </div>
+        <textarea class="st-textarea" id="st-input" placeholder='Paste your skill here. Examples:
+
+{
+  "name": "price_recommendation",
+  "input": { "item_id": "string" },
+  "output": {
+    "recommendation": "string",
+    "new_price": "number"
+  },
+  "action": "publish_price_change"
+}
+
+— or pseudocode —
+
+skill price_recommendation(item_id):
+  cost = get_latest_cost(item_id)
+  new_price = cost * 1.3
+  publish(item_id, new_price)
+  return "Price updated"' oninput="stOnInput()"></textarea>
+        <div class="st-input-footer">
+          <span class="st-hint" id="st-input-hint">Supports JSON, YAML, or freeform pseudocode</span>
+          <button class="st-btn ghost" onclick="stClear()">Clear</button>
+          <button class="st-btn primary" onclick="stTransform()">Transform →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: OUTPUT -->
+      <div class="st-panel">
+        <div class="st-panel-head">
+          <span class="st-panel-title">Transformed Output</span>
+          <button class="st-btn copy" id="st-copy-output-btn" onclick="stCopyOutput()" style="display:none">Copy skill</button>
+        </div>
+        <div class="st-output-body empty" id="st-output">Paste your skill and click Transform →</div>
+        <div class="st-output-footer" id="st-output-footer" style="display:none">
+          <button class="st-btn copy" id="st-copy-prompt-btn" onclick="stCopyPrompt()">Copy LLM prompt</button>
+          <span class="st-hint" id="st-output-hint"></span>
+        </div>
+      </div>
+
+    </div><!-- /st-layout -->
+
+    <!-- ANALYSIS ROW (appears after transform) -->
+    <div id="st-analysis" style="display:none;margin-top:20px">
+
+      <div class="section-title-row" style="margin-top:0">
+        <span class="section-title" style="margin:0">Analysis</span>
+        <div class="section-title-divider"></div>
+      </div>
+
+      <div class="st-checks" id="st-checks-grid" style="margin-top:14px"></div>
+
+      <div class="section-title-row" style="margin-top:24px">
+        <span class="section-title" style="margin:0">LLM Prompt</span>
+        <div class="section-title-divider"></div>
+      </div>
+      <div class="callout blue" style="margin-top:14px">
+        <div class="callout-label">How to use</div>
+        <div class="callout-text">Copy the prompt below and paste it into any LLM (Claude, GPT-4, Gemini). It contains your original skill, the full transformation spec from the research, and precise instructions for what to change. The model will return the improved skill with annotations.</div>
+      </div>
+      <div class="st-prompt-preview" id="st-prompt-preview">
+        <div class="st-prompt-label">Generated prompt</div>
+        <div class="st-prompt-text" id="st-prompt-text"></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="st-btn primary" onclick="stCopyPrompt()" id="st-copy-prompt-btn-2">Copy LLM Prompt</button>
+        <span style="font-size:11px;color:#aaa;align-self:center">Paste into any model to get back the fully improved skill</span>
+      </div>
+
+    </div><!-- /st-analysis -->
+
+    <div style="height:60px"></div>
+
+  </div><!-- end tab-transformer -->
+
 </div><!-- end container -->
 
 <script>
@@ -1729,6 +1887,343 @@ function switchTab(id, el) {
   document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
   el.classList.add('active');
+}
+
+/* ── SKILL TRANSFORMER LOGIC ── */
+
+const ST_CHECKS = [
+  {
+    id: 'mode',
+    name: 'Behavioral mode',
+    desc: 'propose → draft → execute decomposition',
+    detect: s => /\b(propose|draft|execute|mode)\b/i.test(s),
+    inject_json: `  "mode": "propose",  // ADDED: declare mode. Options: "propose" | "draft" | "execute". Never default to "execute".\n`,
+    inject_pseudo: `// ADDED: declare mode = "propose" | "draft" | "execute"\n// This skill should run in propose mode first. Draft and execute are separate phases.\n`
+  },
+  {
+    id: 'provenance',
+    name: 'Provenance',
+    desc: 'plain-language source attribution for every number',
+    detect: s => /\bprovenance\b/i.test(s),
+    inject_json: `  "provenance": "string",  // ADDED: plain-language description of where each data point came from\n`,
+    inject_pseudo: `// ADDED: include provenance = plain-language source for every data-derived value\n`
+  },
+  {
+    id: 'basis',
+    name: 'Projection basis',
+    desc: 'the assumption behind any $ or % estimate',
+    detect: s => /\bbasis\b/i.test(s),
+    inject_json: `  "basis": "string",  // ADDED: the unit/volume assumption the projection rests on, e.g. "Based on 847 units sold in March"\n`,
+    inject_pseudo: `// ADDED: include basis = the assumption behind any projection (e.g. "based on N units sold")\n`
+  },
+  {
+    id: 'affected_entities',
+    name: 'Affected entities',
+    desc: 'cascade map of downstream items touched',
+    detect: s => /\b(affected|cascade|downstream|entities|modifiers)\b/i.test(s),
+    inject_json: `  "affected_entities": [],  // ADDED: array of downstream items, modifiers, bundles impacted by this change\n`,
+    inject_pseudo: `// ADDED: before recommending, run cascade_mapper(entity_id) to find affected_entities\n`
+  },
+  {
+    id: 'rollback',
+    name: 'Rollback token',
+    desc: 'reversibility handle for every state-modifying action',
+    detect: s => /\b(rollback|revert|undo|reversib)\b/i.test(s),
+    inject_json: `  "rollback_token": null,  // ADDED: null for read-only skills; return a rollback handle for any state-modifying action\n`,
+    inject_pseudo: `// ADDED: return rollback_token — null if read-only, a handle if this skill modifies state\n`
+  },
+  {
+    id: 'data_health',
+    name: 'Data health check',
+    desc: 'prerequisite validation before surfacing a recommendation',
+    detect: s => /\b(data.health|health.check|stale|prerequisites|data_prereq)\b/i.test(s),
+    inject_json: `  "data_prerequisites": {  // ADDED: run data_health_check before surfacing recommendation\n    "dependencies": [],  // list data deps, e.g. ["recipe_costs", "sales_history"]\n    "on_failure": "show_data_health_card"  // never show recommendation when data is unhealthy\n  },\n`,
+    inject_pseudo: `// ADDED: run data_health_check(dependencies) first\n// If any dependency is stale/missing → return DataHealthCard, not recommendation\n`
+  },
+  {
+    id: 'urgency',
+    name: 'Urgency timing',
+    desc: 'operator-cadence-derived label, not hardcoded "act now"',
+    detect: s => /\brecommendation_timing\b/i.test(s),
+    warn: s => /\b(act now|effective immediately|effective tomorrow|urgent|asap)\b/i.test(s),
+    inject_json: `  "recommendation_timing": {  // ADDED: derive urgency from operator cadence, never hardcode\n    "sensitivity": "high",\n    "operator_cadence": "immediate",  // read from operator config\n    "urgency_label": ""  // generated from sensitivity × cadence — not a static string\n  },\n`,
+    inject_pseudo: `// ADDED: recommendation_timing object — derive urgency_label from sensitivity × operator_cadence\n// Never hardcode "act now" or "effective immediately"\n`
+  },
+  {
+    id: 'reviewer',
+    name: 'Reviewer role',
+    desc: 'route draft to a role, not just the initiating user',
+    detect: s => /\b(reviewer|reviewer_role|approver|approval)\b/i.test(s),
+    inject_json: `  "reviewer_role": "owner",  // ADDED: route draft to a role (owner/manager/operator), not just the initiating user\n`,
+    inject_pseudo: `// ADDED: reviewer_role = "owner" | "manager" | "operator"\n// Draft must route to this role — do not auto-resolve to initiating user\n`
+  },
+  {
+    id: 'disclosure',
+    name: 'Summary / detail tiers',
+    desc: 'two-tier output structure for progressive disclosure',
+    detect: s => /\b(summary|detail|headline|disclosure|tiers)\b/i.test(s),
+    inject_json: `  "output": {  // ADDED: two-tier structure for progressive disclosure\n    "summary": {\n      "headline": "string",\n      "recommendation": "string",\n      "expected_outcome": "string"\n    },\n    "detail": {\n      "reasoning": "string",\n      "data_sources": [],\n      "alternatives": [],\n      "projection_basis": "string"\n    }\n  },\n`,
+    inject_pseudo: `// ADDED: return two-tier output:\n//   summary: { headline, recommendation, expected_outcome }  — always shown\n//   detail:  { reasoning, data_sources, alternatives, projection_basis }  — shown on expand\n`
+  }
+];
+
+const LLM_PROMPT_TEMPLATE = (skillText, missing, warned) => `You are an expert AI systems architect. Your task is to improve an existing agent skill definition based on user research findings about what makes operator-facing AI skills trustworthy and adoptable.
+
+## Research findings summary
+
+Operators distrust AI agents that:
+- Take actions without an intermediate review step
+- Return projections without showing the underlying assumption
+- Do not disclose what other items or modifiers a change will affect
+- Use hardcoded urgency language that doesn't match their operating cadence
+- Assume the person who ran the skill is the right person to approve it
+
+## Required improvements
+
+Apply ALL of the following changes to the skill. For each change, add an inline comment starting with "// ADDED:" explaining what was changed and why.
+
+${missing.map((c,i) => `${i+1}. **${c.name}**: ${c.desc}`).join('\n')}${warned.length ? `\n\nAlso fix these existing issues:\n${warned.map((c,i) => `${missing.length+i+1}. **${c.name} (WARNING)**: ${c.desc} — detected hardcoded urgency language, replace with a \`recommendation_timing\` object`).join('\n')}` : ''}
+
+## Structural rules
+
+- The skill must declare a \`mode\` of "propose", "draft", or "execute". It must NEVER default to "execute".
+- "propose" and "draft" and "execute" are structurally separate phases — not the same skill with a confirmation dialog.
+- Any skill that modifies state must go through draft → reviewer approval → execute. Never one step.
+- \`data_health_check\` runs as a silent prerequisite before any recommendation surface. If it fails, surface a DataHealthCard instead of the recommendation.
+- \`cascade_mapper\` must run before any recommendation that touches a priced entity.
+- Projections must always include \`basis\` (the unit/volume assumption). Never render an unanchored number.
+- Urgency language must be derived from \`recommendation_timing\` (sensitivity × operator_cadence), never hardcoded.
+- The output must be structured in two tiers: \`summary\` (always shown) and \`detail\` (shown on expand).
+- \`rollback_token\` is required for any state-modifying skill. Return null for read-only skills.
+- \`reviewer_role\` routes the draft to a role (owner/manager/operator), not to the initiating user.
+
+## Your task
+
+Return the improved skill with:
+1. All required fields added with "// ADDED:" comments
+2. Anti-patterns removed or replaced
+3. A brief summary at the top listing what you changed and why
+
+## Original skill
+
+\`\`\`
+${skillText}
+\`\`\``;
+
+let _currentPrompt = '';
+let _currentOutput = '';
+
+function stDetectFormat(text) {
+  const t = text.trim();
+  if (!t) return null;
+  if (t.startsWith('{') || t.startsWith('[')) return 'JSON';
+  if (/^[a-z_]+:\s/m.test(t) && !t.includes('(')) return 'YAML';
+  return 'Pseudocode';
+}
+
+function stOnInput() {
+  const val = document.getElementById('st-input').value.trim();
+  const fmt = stDetectFormat(val);
+  const badge = document.getElementById('st-format-badge');
+  const hint = document.getElementById('st-input-hint');
+  if (!fmt) {
+    badge.textContent = 'Paste to detect format';
+    badge.style.background = 'rgba(249,115,22,0.15)';
+    badge.style.color = '#f97316';
+  } else {
+    badge.textContent = fmt + ' detected';
+    badge.style.background = fmt === 'JSON' ? 'rgba(34,197,94,0.12)' : 'rgba(99,179,237,0.12)';
+    badge.style.color = fmt === 'JSON' ? '#4ade80' : '#93c5fd';
+    badge.style.borderColor = fmt === 'JSON' ? 'rgba(34,197,94,0.25)' : 'rgba(99,179,237,0.25)';
+    hint.textContent = fmt === 'Pseudocode'
+      ? 'Pseudocode detected — transformer will annotate and generate an LLM prompt'
+      : fmt + ' detected — transformer will inject missing fields directly';
+  }
+}
+
+function stClear() {
+  document.getElementById('st-input').value = '';
+  document.getElementById('st-output').className = 'st-output-body empty';
+  document.getElementById('st-output').textContent = 'Paste your skill and click Transform →';
+  document.getElementById('st-output-footer').style.display = 'none';
+  document.getElementById('st-copy-output-btn').style.display = 'none';
+  document.getElementById('st-analysis').style.display = 'none';
+  document.getElementById('st-format-badge').textContent = 'Paste to detect format';
+  stOnInput();
+}
+
+function stRunChecks(text) {
+  return ST_CHECKS.map(c => {
+    const present = c.detect(text);
+    const hasWarn = c.warn ? c.warn(text) : false;
+    return { ...c, present, hasWarn };
+  });
+}
+
+function stInjectIntoJSON(text, results) {
+  let out = text.trim();
+  // Strip outer braces to inject fields
+  const hasOuterBrace = out.startsWith('{');
+  if (hasOuterBrace) {
+    out = out.slice(1, out.lastIndexOf('}')).trimEnd();
+  }
+  // Remove trailing comma from last field if present
+  out = out.replace(/,(\s*)$/, '$1');
+  const injections = results
+    .filter(r => !r.present && r.inject_json)
+    .map(r => '  ' + r.inject_json.trim())
+    .join('\n');
+  if (injections) {
+    out = out.trimEnd() + ',\n\n  // ── ADDED BY TRANSFORMER ──\n' + injections;
+  }
+  if (hasOuterBrace) out = '{\n' + out + '\n}';
+  return out;
+}
+
+function stInjectIntoPseudo(text, results) {
+  const header = results
+    .filter(r => !r.present && r.inject_pseudo)
+    .map(r => r.inject_pseudo.trim())
+    .join('\n');
+  return (header ? header + '\n\n' : '') + text;
+}
+
+function stColorizeOutput(text, format, results) {
+  // Simple tokenizer — highlight added comment lines and JSON keys
+  const lines = text.split('\n');
+  return lines.map(line => {
+    const trimmed = line.trim();
+    // Added comment lines
+    if (trimmed.startsWith('// ADDED') || trimmed.startsWith('// ──')) {
+      return `<span class="st-comment">${esc(line)}</span>`;
+    }
+    if (trimmed.startsWith('//')) {
+      return `<span class="st-comment">${esc(line)}</span>`;
+    }
+    // JSON key: value lines — color key orange if it's a newly added field
+    const addedIds = results.filter(r => !r.present).map(r => r.id);
+    const addedNames = addedIds.flatMap(id => {
+      const c = ST_CHECKS.find(x => x.id === id);
+      // Extract the first word from inject_json as the key name
+      const m = c?.inject_json?.match(/"(\w+)":/);
+      return m ? [m[1]] : [];
+    });
+    // Check if line contains an added key
+    const keyMatch = line.match(/^(\s*)"(\w+)":/);
+    if (keyMatch && addedNames.includes(keyMatch[2])) {
+      return line.replace(/"(\w+)":/, (_, k) => `<span class="st-added">"${k}":</span>`);
+    }
+    // Standard JSON key coloring
+    if (format === 'JSON') {
+      return line
+        .replace(/"(\w+)":/g, (_, k) => `<span class="st-key">"${k}":</span>`)
+        .replace(/: ?"([^"]*)"/, (_, v) => `: <span class="st-str">"${v}"</span>`)
+        .replace(/: ?(\d+\.?\d*)([,}\]]?)$/, (_, n, s) => `: <span class="st-num">${n}</span>${s}`);
+    }
+    return esc(line);
+  }).join('\n');
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function stBuildChecksHTML(results) {
+  return results.map(r => {
+    let dotClass, dotIcon, descText;
+    if (r.present && r.hasWarn) {
+      dotClass = 'warn'; dotIcon = '⚠'; descText = r.desc + ' — hardcoded urgency detected, needs fix';
+    } else if (r.present) {
+      dotClass = 'ok'; dotIcon = '✓'; descText = r.desc;
+    } else {
+      dotClass = 'added'; dotIcon = '+'; descText = r.desc + ' — injected by transformer';
+    }
+    return `<div class="st-check-item">
+      <div class="st-check-dot ${dotClass}">${dotIcon}</div>
+      <div>
+        <div class="st-check-name">${r.name}</div>
+        <div class="st-check-desc">${descText}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function stTransform() {
+  const raw = document.getElementById('st-input').value.trim();
+  if (!raw) return;
+
+  const format = stDetectFormat(raw) || 'Pseudocode';
+  const results = stRunChecks(raw);
+  const missing = results.filter(r => !r.present);
+  const warned  = results.filter(r => r.present && r.hasWarn);
+  const present = results.filter(r => r.present && !r.hasWarn);
+
+  // Build output text
+  let outputText;
+  if (format === 'JSON') {
+    outputText = stInjectIntoJSON(raw, results);
+  } else {
+    outputText = stInjectIntoPseudo(raw, results);
+  }
+  _currentOutput = outputText;
+
+  // Build LLM prompt
+  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, missing, warned);
+
+  // Render output panel
+  const outEl = document.getElementById('st-output');
+  outEl.className = 'st-output-body';
+  outEl.innerHTML = stColorizeOutput(outputText, format, results);
+
+  // Footer
+  const footerEl = document.getElementById('st-output-footer');
+  footerEl.style.display = 'flex';
+  document.getElementById('st-output-hint').textContent =
+    `${missing.length} field${missing.length !== 1 ? 's' : ''} added · ${present.length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
+
+  // Copy output button
+  const copyBtn = document.getElementById('st-copy-output-btn');
+  copyBtn.style.display = 'inline-flex';
+
+  // Analysis section
+  const analysisEl = document.getElementById('st-analysis');
+  analysisEl.style.display = 'block';
+
+  // Checks grid
+  document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(results);
+
+  // Prompt preview (truncated for display)
+  const previewLines = _currentPrompt.split('\n').slice(0, 28).join('\n');
+  document.getElementById('st-prompt-text').innerHTML =
+    esc(previewLines) + '\n<em>... [paste your full skill + all transformation rules — ' + _currentPrompt.split('\n').length + ' lines total]</em>';
+
+  // Scroll to analysis
+  setTimeout(() => analysisEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function stCopyOutput() {
+  if (!_currentOutput) return;
+  navigator.clipboard.writeText(_currentOutput).then(() => {
+    const btn = document.getElementById('st-copy-output-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function stCopyPrompt() {
+  if (!_currentPrompt) return;
+  navigator.clipboard.writeText(_currentPrompt).then(() => {
+    ['st-copy-prompt-btn','st-copy-prompt-btn-2'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    });
+  });
 }
 </script>
 </body>
