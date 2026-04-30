@@ -17,14 +17,7 @@
   html { scroll-behavior: smooth; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
 
-  /* topbar */
-  .topbar { background: #111; padding: 0 28px; height: 48px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; }
-  .topbar-left { display: flex; align-items: center; gap: 10px; }
-  .topbar-logo { color: var(--accent); font-weight: 800; font-size: 15px; }
-  .topbar-sep { color: #444; }
-  .topbar-title { color: rgba(255,255,255,.55); font-size: 13px; }
-  .topbar-back { color: rgba(255,255,255,.4); font-size: 12px; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: color .15s; }
-  .topbar-back:hover { color: var(--accent); }
+
 
   /* page hero */
   .hero { padding: 40px 48px 32px; border-bottom: 1px solid var(--border); background: white; }
@@ -117,26 +110,39 @@
   /* grid */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media(max-width:640px) { .grid2 { grid-template-columns: 1fr; } .hero, .content, .p-chips { padding-left: 20px; padding-right: 20px; } }
+
+/* ── TOPBAR (shared) ── */
+.tb{position:sticky;top:0;z-index:200;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.tb-logo{color:#f97316;font-size:13px;font-weight:800;letter-spacing:-.2px;text-decoration:none;white-space:nowrap}
+.tb-divider{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 16px;flex-shrink:0}
+.tb-nav{display:flex;align-items:center;gap:4px}
+.tb-link{color:rgba(255,255,255,0.45);font-size:12px;text-decoration:none;padding:4px 9px;border-radius:5px;transition:color .15s,background .15s;white-space:nowrap}
+.tb-link:hover{color:white;background:rgba(255,255,255,0.07)}
+.tb-link.active{color:#f97316;background:rgba(249,115,22,0.1)}
+.tb-sep{color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
+
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="topbar-left">
-    <span class="topbar-logo">Toast IQ</span>
-    <span class="topbar-sep">·</span>
-    <span class="topbar-title">Combined Research Summary</span>
+<div class="tb">
+  <a href="index.html" class="tb-logo">Toast IQ</a>
+  <div class="tb-divider"></div>
+  <nav class="tb-nav">
+    <a href="combined.html" class="tb-link active">Combined Summary</a>
+    <span class="tb-sep">·</span>
+    <a href="framework.html" class="tb-link">Framework</a>
+    <span class="tb-sep">·</span>
+    <a href="implementation.html" class="tb-link">Implementation</a>
+    <span class="tb-sep">·</span>
+    <a href="deck.html" class="tb-link">Presentation</a>
+  </nav>
+  <div class="tb-right">
+    <span class="tb-meta">Combined Summary</span>
   </div>
-  <div style="display:flex;gap:12px;align-items:center">
-    <a class="topbar-back" href="index.html">← Back to report</a>
-    <span class="topbar-sep">·</span>
-    <a class="topbar-back" href="framework.html">Framework</a>
-    <span class="topbar-sep">·</span>
-    <a class="topbar-back" href="implementation.html">Implementation</a>
-    <span class="topbar-sep">·</span>
-    <a class="topbar-back" href="deck.html">Presentation</a>
-  </div>
-</header>
+</div>
 
 <div class="hero">
   <h1>Toast IQ Ops Agent — Combined Research Summary</h1>
