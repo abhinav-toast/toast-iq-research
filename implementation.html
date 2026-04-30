@@ -296,6 +296,19 @@ a{color:inherit;text-decoration:none}
 .st-check-dot.missing{background:#fff5f5;color:#c0390b;border:1.5px solid #fde0dc}
 .st-check-name{font-size:12px;font-weight:700;color:#1a1a1a;line-height:1.3}
 .st-check-desc{font-size:11px;color:#888;margin-top:1px;line-height:1.4}
+.st-check-item.selectable{cursor:pointer;user-select:none}
+.st-check-item.selectable:hover{background:rgba(123,93,181,0.04)}
+.st-check-item.deselected{opacity:.4}
+.st-cb{width:15px;height:15px;border-radius:3px;border:1.5px solid #d1c4e9;background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .12s;pointer-events:none}
+.st-cb.checked{background:#7B5DB5;border-color:#7B5DB5}
+.st-cb.checked::after{content:'✓';font-size:9px;color:white;font-weight:900;line-height:1}
+.st-sel-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;margin-top:4px}
+.st-sel-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#888}
+.st-sel-actions{display:flex;align-items:center;gap:5px;font-size:11px;color:#7B5DB5;font-weight:600}
+.st-sel-actions a{cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.st-sel-count{font-size:11px;color:#aaa;margin-right:6px}
+.st-regen-bar{display:flex;align-items:center;gap:10px;margin-top:12px}
+.st-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#b0a090;padding:8px 0 4px}
 
 /* prompt preview */
 .st-prompt-preview{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:18px 20px;margin-top:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -1854,9 +1867,27 @@ skill price_recommendation(item_id):
         <div class="section-title-divider"></div>
       </div>
 
-      <div class="st-checks" id="st-checks-grid" style="margin-top:14px"></div>
+      <!-- selection controls bar -->
+      <div class="st-sel-bar">
+        <div>
+          <span class="st-sel-label">Select requirements to add</span>
+          <span class="st-sel-count" id="st-sel-count"></span>
+        </div>
+        <div class="st-sel-actions">
+          <a onclick="stSelectAll()">Select all missing</a>
+          <span style="color:#d1c4e9">·</span>
+          <a onclick="stSelectNone()">Clear</a>
+        </div>
+      </div>
 
-      <div class="section-title-row" style="margin-top:24px">
+      <div class="st-checks" id="st-checks-grid" style="margin-top:0"></div>
+
+      <div class="st-regen-bar">
+        <button class="st-btn primary" id="st-regen-btn" onclick="stRegenerate()">Regenerate with selection →</button>
+        <span style="font-size:11px;color:#aaa" id="st-regen-hint">Already-present requirements are always included</span>
+      </div>
+
+      <div class="section-title-row" style="margin-top:28px">
         <span class="section-title" style="margin:0">LLM Prompt</span>
         <div class="section-title-divider"></div>
       </div>
@@ -2096,6 +2127,10 @@ function stClear() {
   document.getElementById('st-analysis').style.display = 'none';
   document.getElementById('st-format-badge').textContent = 'Paste to detect format';
   document.getElementById('st-format-badge').style.cssText = '';
+  _selectedIds = new Set();
+  _lastResults = [];
+  _lastRaw = '';
+  _lastFormat = '';
   stOnInput();
 }
 
@@ -2186,25 +2221,132 @@ function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Track which missing IDs are selected for injection
+let _selectedIds = new Set();
+let _lastResults = [];
+let _lastRaw = '';
+let _lastFormat = '';
+
 function stBuildChecksHTML(results) {
   return results.map(r => {
-    let dotClass, dotIcon, descText;
-    if (r.present && r.hasWarn) {
-      dotClass = 'warn'; dotIcon = '⚠';
-      descText = r.desc + ' — problematic language detected, replace with operator-cadence-aware framing';
-    } else if (r.present) {
-      dotClass = 'ok'; dotIcon = '✓'; descText = r.desc;
-    } else {
-      dotClass = 'added'; dotIcon = '+'; descText = r.desc + ' — added by transformer';
+    if (r.present && !r.hasWarn) {
+      // Always included — no checkbox, lock icon
+      return `<div class="st-check-item" title="Already present — always included">
+        <div class="st-check-dot ok">✓</div>
+        <div style="flex:1">
+          <div class="st-check-name">${r.name}</div>
+          <div class="st-check-desc">${r.desc}</div>
+        </div>
+        <span style="font-size:10px;color:#aaa;margin-top:1px">always included</span>
+      </div>`;
     }
-    return `<div class="st-check-item">
-      <div class="st-check-dot ${dotClass}">${dotIcon}</div>
-      <div>
+    if (r.present && r.hasWarn) {
+      // Warning — auto-included, no checkbox
+      return `<div class="st-check-item" title="Problematic language detected — always fixed">
+        <div class="st-check-dot warn">⚠</div>
+        <div style="flex:1">
+          <div class="st-check-name">${r.name}</div>
+          <div class="st-check-desc">${r.desc} — problematic language will be fixed</div>
+        </div>
+        <span style="font-size:10px;color:#b45309;margin-top:1px">auto-fixed</span>
+      </div>`;
+    }
+    // Missing — selectable checkbox
+    const checked = _selectedIds.has(r.id);
+    return `<div class="st-check-item selectable${checked ? '' : ' deselected'}" id="stci-${r.id}" onclick="stToggleCheck('${r.id}')">
+      <div class="st-cb${checked ? ' checked' : ''}"></div>
+      <div style="flex:1">
         <div class="st-check-name">${r.name}</div>
-        <div class="st-check-desc">${descText}</div>
+        <div class="st-check-desc">${r.desc}</div>
       </div>
     </div>`;
   }).join('');
+}
+
+function stToggleCheck(id) {
+  if (_selectedIds.has(id)) {
+    _selectedIds.delete(id);
+  } else {
+    _selectedIds.add(id);
+  }
+  // Re-render checks grid
+  document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
+  stUpdateSelCount();
+}
+
+function stSelectAll() {
+  _lastResults.filter(r => !r.present).forEach(r => _selectedIds.add(r.id));
+  document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
+  stUpdateSelCount();
+}
+
+function stSelectNone() {
+  _lastResults.filter(r => !r.present).forEach(r => _selectedIds.delete(r.id));
+  document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
+  stUpdateSelCount();
+}
+
+function stUpdateSelCount() {
+  const total = _lastResults.filter(r => !r.present).length;
+  const sel = _selectedIds.size;
+  const countEl = document.getElementById('st-sel-count');
+  countEl.textContent = total === 0 ? '— none missing' : `${sel} of ${total} missing selected`;
+}
+
+function stRegenerate() {
+  if (!_lastRaw) return;
+  // Build a filtered results list: present/warned unchanged, missing only if selected
+  const filteredResults = _lastResults.map(r => {
+    if (r.present) return r;
+    // Mark as "present" (skip injection) for items not selected
+    return { ...r, present: !_selectedIds.has(r.id) };
+  });
+
+  const missing = filteredResults.filter(r => !r.present);
+  const warned  = filteredResults.filter(r => r.present && r.hasWarn);
+
+  // Rebuild output
+  let outputText;
+  if (_lastFormat === 'JSON')             outputText = stInjectIntoJSON(_lastRaw, filteredResults);
+  else if (_lastFormat === 'YAML')        outputText = stInjectIntoPseudo(_lastRaw, filteredResults);
+  else if (_lastFormat === 'Natural Language') outputText = stInjectIntoNL(_lastRaw, filteredResults);
+  else                                   outputText = stInjectIntoPseudo(_lastRaw, filteredResults);
+  _currentOutput = outputText;
+  _currentPrompt = LLM_PROMPT_TEMPLATE(_lastRaw, missing, warned, _lastFormat);
+
+  // Render output panel
+  const outEl = document.getElementById('st-output');
+  if (_lastFormat === 'Natural Language') {
+    outEl.className = 'st-output-body';
+    outEl.style.whiteSpace = 'pre-wrap';
+    outEl.style.fontFamily = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+    outEl.style.fontSize = '13px';
+    outEl.style.lineHeight = '1.7';
+  } else {
+    outEl.className = 'st-output-body';
+    outEl.style.whiteSpace = 'pre';
+    outEl.style.fontFamily = "'SF Mono','Fira Mono',Menlo,monospace";
+    outEl.style.fontSize = '12px';
+    outEl.style.lineHeight = '1.8';
+  }
+  outEl.innerHTML = stColorizeOutput(outputText, _lastFormat, filteredResults);
+
+  // Update footer hint
+  document.getElementById('st-output-hint').textContent =
+    `${missing.length} requirement${missing.length !== 1 ? 's' : ''} added · ${filteredResults.filter(r => r.present && !r.hasWarn).length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
+
+  // Prompt preview
+  const previewLines = _currentPrompt.split('\n').slice(0, 28).join('\n');
+  document.getElementById('st-prompt-text').innerHTML =
+    esc(previewLines) + '\n<em>... [' + _currentPrompt.split('\n').length + ' lines total — copy to get the full prompt]</em>';
+
+  // Animate regen button
+  const btn = document.getElementById('st-regen-btn');
+  btn.textContent = 'Regenerated ✓';
+  setTimeout(() => { btn.textContent = 'Regenerate with selection →'; }, 2000);
+
+  // Scroll output into view
+  document.getElementById('st-output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function stTransform() {
@@ -2217,10 +2359,17 @@ function stTransform() {
   const warned  = results.filter(r => r.present && r.hasWarn);
   const present = results.filter(r => r.present && !r.hasWarn);
 
-  // Build output text
+  // Save state for regeneration
+  _lastResults = results;
+  _lastRaw = raw;
+  _lastFormat = format;
+  // Default: all missing are selected
+  _selectedIds = new Set(missing.map(r => r.id));
+
+  // Build output text (all missing injected by default)
   let outputText;
   if (format === 'JSON')             outputText = stInjectIntoJSON(raw, results);
-  else if (format === 'YAML')        outputText = stInjectIntoPseudo(raw, results); // YAML gets same prefix-comment treatment as pseudo
+  else if (format === 'YAML')        outputText = stInjectIntoPseudo(raw, results);
   else if (format === 'Natural Language') outputText = stInjectIntoNL(raw, results);
   else                               outputText = stInjectIntoPseudo(raw, results);
   _currentOutput = outputText;
@@ -2230,7 +2379,6 @@ function stTransform() {
 
   // Render output panel
   const outEl = document.getElementById('st-output');
-  // NL output should wrap like a document, not a code block
   if (format === 'Natural Language') {
     outEl.className = 'st-output-body';
     outEl.style.whiteSpace = 'pre-wrap';
@@ -2259,8 +2407,16 @@ function stTransform() {
   const analysisEl = document.getElementById('st-analysis');
   analysisEl.style.display = 'block';
 
-  // Checks grid
+  // Checks grid + selection count
   document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(results);
+  stUpdateSelCount();
+
+  // Hide regen button if nothing is missing
+  document.getElementById('st-regen-btn').style.display = missing.length ? 'inline-flex' : 'none';
+  document.getElementById('st-regen-hint').style.display = missing.length ? 'inline' : 'none';
+
+  // Show/hide selection bar
+  document.querySelector('.st-sel-bar').style.display = missing.length ? 'flex' : 'none';
 
   // Prompt preview (truncated for display)
   const previewLines = _currentPrompt.split('\n').slice(0, 28).join('\n');
