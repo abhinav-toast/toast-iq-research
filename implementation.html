@@ -1897,77 +1897,107 @@ const ST_CHECKS = [
     name: 'Behavioral mode',
     desc: 'propose → draft → execute decomposition',
     detect: s => /\b(propose|draft|execute|mode)\b/i.test(s),
-    inject_json: `  "mode": "propose",  // ADDED: declare mode. Options: "propose" | "draft" | "execute". Never default to "execute".\n`,
-    inject_pseudo: `// ADDED: declare mode = "propose" | "draft" | "execute"\n// This skill should run in propose mode first. Draft and execute are separate phases.\n`
+    warn_nl: s => /\b(publish|apply|update|chang|modif|set).{0,40}(immediately|directly|right away|now|instantly|automat)/i.test(s),
+    inject_json:   `  "mode": "propose",  // ADDED: declare mode. Options: "propose" | "draft" | "execute". Never default to "execute".\n`,
+    inject_pseudo: `// ADDED: declare mode = "propose" | "draft" | "execute"\n// This skill should run in propose mode first. Draft and execute are separate phases.\n`,
+    inject_nl: `[ADDED: Behavioral Mode]\nThis skill must declare a behavioral mode. Never go directly to action.\n- Mode "propose": return a recommendation with full reasoning. Nothing is changed.\n- Mode "draft": create a named, persistent change package for a reviewer to approve.\n- Mode "execute": apply the change — only reachable after a draft has been approved.\nDefault to "propose" unless the operator has explicitly elevated this skill.\n`
   },
   {
     id: 'provenance',
     name: 'Provenance',
     desc: 'plain-language source attribution for every number',
     detect: s => /\bprovenance\b/i.test(s),
-    inject_json: `  "provenance": "string",  // ADDED: plain-language description of where each data point came from\n`,
-    inject_pseudo: `// ADDED: include provenance = plain-language source for every data-derived value\n`
+    inject_json:   `  "provenance": "string",  // ADDED: plain-language description of where each data point came from\n`,
+    inject_pseudo: `// ADDED: include provenance = plain-language source for every data-derived value\n`,
+    inject_nl: `[ADDED: Provenance]\nEvery number, percentage, or data-derived claim in your response must include a plain-language source attribution. Example: "Based on your Sysco invoice #INV-2024-8812, verified today." Do not present numbers without sourcing them.\n`
   },
   {
     id: 'basis',
     name: 'Projection basis',
     desc: 'the assumption behind any $ or % estimate',
     detect: s => /\bbasis\b/i.test(s),
-    inject_json: `  "basis": "string",  // ADDED: the unit/volume assumption the projection rests on, e.g. "Based on 847 units sold in March"\n`,
-    inject_pseudo: `// ADDED: include basis = the assumption behind any projection (e.g. "based on N units sold")\n`
+    inject_json:   `  "basis": "string",  // ADDED: the unit/volume assumption the projection rests on, e.g. "Based on 847 units sold in March"\n`,
+    inject_pseudo: `// ADDED: include basis = the assumption behind any projection (e.g. "based on N units sold")\n`,
+    inject_nl: `[ADDED: Projection Basis]\nAny dollar or percentage projection must state the assumption it rests on. Example: "This saves approximately $1,200/month, based on your average of 127 chicken sandwiches sold per day over the last 30 days." Never show a projection without its basis.\n`
   },
   {
     id: 'affected_entities',
     name: 'Affected entities',
     desc: 'cascade map of downstream items touched',
     detect: s => /\b(affected|cascade|downstream|entities|modifiers)\b/i.test(s),
-    inject_json: `  "affected_entities": [],  // ADDED: array of downstream items, modifiers, bundles impacted by this change\n`,
-    inject_pseudo: `// ADDED: before recommending, run cascade_mapper(entity_id) to find affected_entities\n`
+    inject_json:   `  "affected_entities": [],  // ADDED: array of downstream items, modifiers, bundles impacted by this change\n`,
+    inject_pseudo: `// ADDED: before recommending, run cascade_mapper(entity_id) to find affected_entities\n`,
+    inject_nl: `[ADDED: Downstream Impact]\nBefore making any recommendation that involves a price or menu change, identify and disclose all downstream entities that will be affected: modifier groups, individual modifiers, substitutions, bundles, and delivery menu items. List them explicitly in your response so the operator can see the full picture before deciding.\n`
   },
   {
     id: 'rollback',
     name: 'Rollback token',
     desc: 'reversibility handle for every state-modifying action',
     detect: s => /\b(rollback|revert|undo|reversib)\b/i.test(s),
-    inject_json: `  "rollback_token": null,  // ADDED: null for read-only skills; return a rollback handle for any state-modifying action\n`,
-    inject_pseudo: `// ADDED: return rollback_token — null if read-only, a handle if this skill modifies state\n`
+    inject_json:   `  "rollback_token": null,  // ADDED: null for read-only skills; return a rollback handle for any state-modifying action\n`,
+    inject_pseudo: `// ADDED: return rollback_token — null if read-only, a handle if this skill modifies state\n`,
+    inject_nl: `[ADDED: Reversibility]\nFor any action that modifies state, always tell the operator whether and how it can be undone. Example: "This change can be reversed at any time from Menu Manager." If the action cannot be undone, say so explicitly before they confirm.\n`
   },
   {
     id: 'data_health',
     name: 'Data health check',
     desc: 'prerequisite validation before surfacing a recommendation',
-    detect: s => /\b(data.health|health.check|stale|prerequisites|data_prereq)\b/i.test(s),
-    inject_json: `  "data_prerequisites": {  // ADDED: run data_health_check before surfacing recommendation\n    "dependencies": [],  // list data deps, e.g. ["recipe_costs", "sales_history"]\n    "on_failure": "show_data_health_card"  // never show recommendation when data is unhealthy\n  },\n`,
-    inject_pseudo: `// ADDED: run data_health_check(dependencies) first\n// If any dependency is stale/missing → return DataHealthCard, not recommendation\n`
+    detect: s => /\b(data.health|health.check|stale|prerequisites|data_prereq|data quality|verify.{0,20}data|check.{0,20}data)\b/i.test(s),
+    inject_json:   `  "data_prerequisites": {  // ADDED: run data_health_check before surfacing recommendation\n    "dependencies": [],  // list data deps, e.g. ["recipe_costs", "sales_history"]\n    "on_failure": "show_data_health_card"  // never show recommendation when data is unhealthy\n  },\n`,
+    inject_pseudo: `// ADDED: run data_health_check(dependencies) first\n// If any dependency is stale/missing → return DataHealthCard, not recommendation\n`,
+    inject_nl: `[ADDED: Data Health Check]\nBefore surfacing any recommendation, silently verify that the underlying data is fresh and complete. If any required data is stale, missing, or unverifiable, tell the operator what is wrong and how to fix it — do not proceed to the recommendation. Example: "I can't give you a reliable estimate right now because your inventory sync is 14 hours old. Once it refreshes, I'll run the analysis."\n`
   },
   {
     id: 'urgency',
     name: 'Urgency timing',
     desc: 'operator-cadence-derived label, not hardcoded "act now"',
-    detect: s => /\brecommendation_timing\b/i.test(s),
-    warn: s => /\b(act now|effective immediately|effective tomorrow|urgent|asap)\b/i.test(s),
-    inject_json: `  "recommendation_timing": {  // ADDED: derive urgency from operator cadence, never hardcode\n    "sensitivity": "high",\n    "operator_cadence": "immediate",  // read from operator config\n    "urgency_label": ""  // generated from sensitivity × cadence — not a static string\n  },\n`,
-    inject_pseudo: `// ADDED: recommendation_timing object — derive urgency_label from sensitivity × operator_cadence\n// Never hardcode "act now" or "effective immediately"\n`
+    detect: s => /\b(recommendation_timing|operator.cadence|cadence)\b/i.test(s),
+    warn: s => /\b(act now|effective immediately|effective tomorrow|asap)\b/i.test(s),
+    warn_nl: s => /\b(act now|effective immediately|effective tomorrow|asap|you (must|should|need to) (act|change|update) (today|now|immediately|right away))\b/i.test(s),
+    inject_json:   `  "recommendation_timing": {  // ADDED: derive urgency from operator cadence, never hardcode\n    "sensitivity": "high",\n    "operator_cadence": "immediate",  // read from operator config\n    "urgency_label": ""  // generated from sensitivity × cadence — not a static string\n  },\n`,
+    inject_pseudo: `// ADDED: recommendation_timing object — derive urgency_label from sensitivity × operator_cadence\n// Never hardcode "act now" or "effective immediately"\n`,
+    inject_nl: `[ADDED: Urgency Framing]\nDo not use hardcoded urgency language like "act now" or "effective immediately." Frame urgency based on how this operator actually operates. For an operator who updates prices quarterly, a high-severity finding should read "Consider including this in your next menu review" — not "act now." Read or infer the operator's cadence from their configuration or behavior.\n`
   },
   {
     id: 'reviewer',
     name: 'Reviewer role',
     desc: 'route draft to a role, not just the initiating user',
-    detect: s => /\b(reviewer|reviewer_role|approver|approval)\b/i.test(s),
-    inject_json: `  "reviewer_role": "owner",  // ADDED: route draft to a role (owner/manager/operator), not just the initiating user\n`,
-    inject_pseudo: `// ADDED: reviewer_role = "owner" | "manager" | "operator"\n// Draft must route to this role — do not auto-resolve to initiating user\n`
+    detect: s => /\b(reviewer|reviewer_role|approver|approval|owner.approv|manager.approv|send.{0,20}(to|for).{0,20}(review|approval))\b/i.test(s),
+    inject_json:   `  "reviewer_role": "owner",  // ADDED: route draft to a role (owner/manager/operator), not just the initiating user\n`,
+    inject_pseudo: `// ADDED: reviewer_role = "owner" | "manager" | "operator"\n// Draft must route to this role — do not auto-resolve to initiating user\n`,
+    inject_nl: `[ADDED: Reviewer Role]\nDo not assume the person who ran this skill is the right person to approve its output. Drafts must be routed to a designated reviewer role — owner, GM, or operations manager — based on the type of change. The draft stays in "pending review" until someone in that role explicitly approves it.\n`
   },
   {
     id: 'disclosure',
     name: 'Summary / detail tiers',
     desc: 'two-tier output structure for progressive disclosure',
-    detect: s => /\b(summary|detail|headline|disclosure|tiers)\b/i.test(s),
-    inject_json: `  "output": {  // ADDED: two-tier structure for progressive disclosure\n    "summary": {\n      "headline": "string",\n      "recommendation": "string",\n      "expected_outcome": "string"\n    },\n    "detail": {\n      "reasoning": "string",\n      "data_sources": [],\n      "alternatives": [],\n      "projection_basis": "string"\n    }\n  },\n`,
-    inject_pseudo: `// ADDED: return two-tier output:\n//   summary: { headline, recommendation, expected_outcome }  — always shown\n//   detail:  { reasoning, data_sources, alternatives, projection_basis }  — shown on expand\n`
+    detect: s => /\b(summary|detail|headline|disclosure|tiers|expand|show more|read more)\b/i.test(s),
+    inject_json:   `  "output": {  // ADDED: two-tier structure for progressive disclosure\n    "summary": {\n      "headline": "string",\n      "recommendation": "string",\n      "expected_outcome": "string"\n    },\n    "detail": {\n      "reasoning": "string",\n      "data_sources": [],\n      "alternatives": [],\n      "projection_basis": "string"\n    }\n  },\n`,
+    inject_pseudo: `// ADDED: return two-tier output:\n//   summary: { headline, recommendation, expected_outcome }  — always shown\n//   detail:  { reasoning, data_sources, alternatives, projection_basis }  — shown on expand\n`,
+    inject_nl: `[ADDED: Two-Tier Output Structure]\nStructure your response in two tiers:\n- Summary (always shown): one headline, the core recommendation, and the expected outcome in plain language.\n- Detail (available on request or expand): full reasoning, data sources with attribution, alternatives considered, and the basis for any projections.\nDo not lead with a wall of reasoning. Lead with the headline, let the operator choose to go deeper.\n`
   }
 ];
 
-const LLM_PROMPT_TEMPLATE = (skillText, missing, warned) => `You are an expert AI systems architect. Your task is to improve an existing agent skill definition based on user research findings about what makes operator-facing AI skills trustworthy and adoptable.
+// ── NL detection helpers ─────────────────────────────────────────────────────
+// A prompt is "Natural Language" if it reads like prose instructions rather than
+// structured data or function-call pseudocode.
+function stIsNaturalLanguage(text) {
+  const t = text.trim();
+  if (t.startsWith('{') || t.startsWith('[')) return false;         // JSON
+  if (/^[a-z_]+:\s/m.test(t) && !t.includes('(')) return false;    // YAML
+  if (/\bdef |function |skill |->|=>|\bif .+:|return\b/.test(t)) return false; // pseudocode
+  // Looks like sentences: has multiple words per line, ends in punctuation, no colons at line start
+  const sentences = t.match(/[A-Z][^.!?]*[.!?]/g) || [];
+  const avgLineLen = t.split('\n').reduce((s, l) => s + l.length, 0) / (t.split('\n').length || 1);
+  return sentences.length >= 1 || avgLineLen > 60;
+}
+
+const LLM_PROMPT_TEMPLATE = (skillText, missing, warned, format) => {
+  const isNL = format === 'Natural Language';
+  const instrFormat = isNL
+    ? 'The skill is written as a plain-language prompt (e.g. from a tool like Langfuse). Rewrite the prompt with the required additions inserted as clearly labeled instruction blocks using the format [ADDED: Topic Name]. Preserve the original wording and structure — only add, never remove.'
+    : 'The skill is written as code or pseudocode. Add missing fields with "// ADDED:" inline comments. Preserve all existing structure.';
+  return `You are an expert AI systems architect. Your task is to improve an existing agent skill definition based on user research findings about what makes operator-facing AI skills trustworthy and adoptable.
 
 ## Research findings summary
 
@@ -1978,29 +2008,31 @@ Operators distrust AI agents that:
 - Use hardcoded urgency language that doesn't match their operating cadence
 - Assume the person who ran the skill is the right person to approve it
 
+## Format note
+
+${instrFormat}
+
 ## Required improvements
 
-Apply ALL of the following changes to the skill. For each change, add an inline comment starting with "// ADDED:" explaining what was changed and why.
-
-${missing.map((c,i) => `${i+1}. **${c.name}**: ${c.desc}`).join('\n')}${warned.length ? `\n\nAlso fix these existing issues:\n${warned.map((c,i) => `${missing.length+i+1}. **${c.name} (WARNING)**: ${c.desc} — detected hardcoded urgency language, replace with a \`recommendation_timing\` object`).join('\n')}` : ''}
+${missing.map((c,i) => `${i+1}. **${c.name}**: ${c.desc}`).join('\n')}${warned.length ? `\n\nAlso fix these existing issues:\n${warned.map((c,i) => `${missing.length+i+1}. **${c.name} (WARNING)**: ${c.desc} — replace hardcoded urgency or direct-action language with operator-cadence-aware framing`).join('\n')}` : ''}
 
 ## Structural rules
 
-- The skill must declare a \`mode\` of "propose", "draft", or "execute". It must NEVER default to "execute".
-- "propose" and "draft" and "execute" are structurally separate phases — not the same skill with a confirmation dialog.
+- The skill must declare a mode of "propose", "draft", or "execute". It must NEVER default to "execute".
+- "propose", "draft", and "execute" are structurally separate phases — not the same skill with a confirmation dialog.
 - Any skill that modifies state must go through draft → reviewer approval → execute. Never one step.
-- \`data_health_check\` runs as a silent prerequisite before any recommendation surface. If it fails, surface a DataHealthCard instead of the recommendation.
-- \`cascade_mapper\` must run before any recommendation that touches a priced entity.
-- Projections must always include \`basis\` (the unit/volume assumption). Never render an unanchored number.
-- Urgency language must be derived from \`recommendation_timing\` (sensitivity × operator_cadence), never hardcoded.
-- The output must be structured in two tiers: \`summary\` (always shown) and \`detail\` (shown on expand).
-- \`rollback_token\` is required for any state-modifying skill. Return null for read-only skills.
-- \`reviewer_role\` routes the draft to a role (owner/manager/operator), not to the initiating user.
+- A data health check must run before any recommendation is surfaced. If it fails, tell the operator what is wrong rather than showing a potentially misleading recommendation.
+- Before recommending any change to a priced entity, identify all downstream items affected (modifiers, bundles, delivery menu items).
+- Projections must always state the assumption they rest on. Never show an unanchored number.
+- Urgency language must be derived from the intersection of issue sensitivity and the operator's actual cadence — never hardcoded.
+- Output must be structured in two tiers: a summary (always shown) and a detail section (shown on expand or request).
+- For any state-modifying action, tell the operator whether and how it can be reversed.
+- Drafts must be routed to a reviewer role, not auto-resolved to the user who initiated the skill.
 
 ## Your task
 
 Return the improved skill with:
-1. All required fields added with "// ADDED:" comments
+1. All required additions clearly marked
 2. Anti-patterns removed or replaced
 3. A brief summary at the top listing what you changed and why
 
@@ -2009,6 +2041,7 @@ Return the improved skill with:
 \`\`\`
 ${skillText}
 \`\`\``;
+};
 
 let _currentPrompt = '';
 let _currentOutput = '';
@@ -2018,26 +2051,39 @@ function stDetectFormat(text) {
   if (!t) return null;
   if (t.startsWith('{') || t.startsWith('[')) return 'JSON';
   if (/^[a-z_]+:\s/m.test(t) && !t.includes('(')) return 'YAML';
+  if (stIsNaturalLanguage(t)) return 'Natural Language';
   return 'Pseudocode';
 }
+
+const FMT_COLORS = {
+  'JSON':             { bg: 'rgba(34,197,94,0.12)',  color: '#4ade80',  border: 'rgba(34,197,94,0.25)' },
+  'YAML':             { bg: 'rgba(99,179,237,0.12)', color: '#93c5fd',  border: 'rgba(99,179,237,0.25)' },
+  'Pseudocode':       { bg: 'rgba(192,132,252,0.12)',color: '#c084fc',  border: 'rgba(192,132,252,0.25)' },
+  'Natural Language': { bg: 'rgba(249,115,22,0.12)', color: '#fb923c',  border: 'rgba(249,115,22,0.25)' },
+};
+
+const FMT_HINTS = {
+  'JSON':             'JSON detected — missing fields will be injected directly',
+  'YAML':             'YAML detected — missing fields will be injected directly',
+  'Pseudocode':       'Pseudocode detected — missing fields will be prepended as annotated comments',
+  'Natural Language': 'Prompt / natural language detected — missing requirements will be appended as labeled instruction blocks',
+};
 
 function stOnInput() {
   const val = document.getElementById('st-input').value.trim();
   const fmt = stDetectFormat(val);
   const badge = document.getElementById('st-format-badge');
-  const hint = document.getElementById('st-input-hint');
+  const hint  = document.getElementById('st-input-hint');
   if (!fmt) {
     badge.textContent = 'Paste to detect format';
-    badge.style.background = 'rgba(249,115,22,0.15)';
-    badge.style.color = '#f97316';
+    badge.style.cssText = '';
   } else {
+    const c = FMT_COLORS[fmt] || FMT_COLORS['Pseudocode'];
     badge.textContent = fmt + ' detected';
-    badge.style.background = fmt === 'JSON' ? 'rgba(34,197,94,0.12)' : 'rgba(99,179,237,0.12)';
-    badge.style.color = fmt === 'JSON' ? '#4ade80' : '#93c5fd';
-    badge.style.borderColor = fmt === 'JSON' ? 'rgba(34,197,94,0.25)' : 'rgba(99,179,237,0.25)';
-    hint.textContent = fmt === 'Pseudocode'
-      ? 'Pseudocode detected — transformer will annotate and generate an LLM prompt'
-      : fmt + ' detected — transformer will inject missing fields directly';
+    badge.style.background   = c.bg;
+    badge.style.color        = c.color;
+    badge.style.borderColor  = c.border;
+    hint.textContent = FMT_HINTS[fmt] || '';
   }
 }
 
@@ -2049,33 +2095,30 @@ function stClear() {
   document.getElementById('st-copy-output-btn').style.display = 'none';
   document.getElementById('st-analysis').style.display = 'none';
   document.getElementById('st-format-badge').textContent = 'Paste to detect format';
+  document.getElementById('st-format-badge').style.cssText = '';
   stOnInput();
 }
 
-function stRunChecks(text) {
+function stRunChecks(text, format) {
   return ST_CHECKS.map(c => {
     const present = c.detect(text);
-    const hasWarn = c.warn ? c.warn(text) : false;
+    // For NL prompts, also check NL-specific warning patterns
+    const hasWarn = (c.warn ? c.warn(text) : false) ||
+                    (format === 'Natural Language' && c.warn_nl ? c.warn_nl(text) : false);
     return { ...c, present, hasWarn };
   });
 }
 
 function stInjectIntoJSON(text, results) {
   let out = text.trim();
-  // Strip outer braces to inject fields
   const hasOuterBrace = out.startsWith('{');
-  if (hasOuterBrace) {
-    out = out.slice(1, out.lastIndexOf('}')).trimEnd();
-  }
-  // Remove trailing comma from last field if present
+  if (hasOuterBrace) out = out.slice(1, out.lastIndexOf('}')).trimEnd();
   out = out.replace(/,(\s*)$/, '$1');
   const injections = results
     .filter(r => !r.present && r.inject_json)
     .map(r => '  ' + r.inject_json.trim())
     .join('\n');
-  if (injections) {
-    out = out.trimEnd() + ',\n\n  // ── ADDED BY TRANSFORMER ──\n' + injections;
-  }
+  if (injections) out = out.trimEnd() + ',\n\n  // ── ADDED BY TRANSFORMER ──\n' + injections;
   if (hasOuterBrace) out = '{\n' + out + '\n}';
   return out;
 }
@@ -2088,32 +2131,47 @@ function stInjectIntoPseudo(text, results) {
   return (header ? header + '\n\n' : '') + text;
 }
 
+function stInjectIntoNL(text, results) {
+  const blocks = results
+    .filter(r => !r.present && r.inject_nl)
+    .map(r => r.inject_nl.trim());
+  if (!blocks.length) return text;
+  const divider = '\n\n────────────────────────────────────────\nADDED BY TRANSFORMER — Research Requirements\n────────────────────────────────────────\n\n';
+  return text.trimEnd() + divider + blocks.join('\n\n');
+}
+
 function stColorizeOutput(text, format, results) {
-  // Simple tokenizer — highlight added comment lines and JSON keys
   const lines = text.split('\n');
+  // Precompute added JSON key names
+  const addedNames = results.filter(r => !r.present).flatMap(r => {
+    const m = r.inject_json?.match(/"(\w+)":/);
+    return m ? [m[1]] : [];
+  });
   return lines.map(line => {
     const trimmed = line.trim();
-    // Added comment lines
+    // NL: highlight [ADDED: ...] block headers
+    if (/^\[ADDED:/.test(trimmed)) {
+      return `<span class="st-added" style="font-weight:800">${esc(line)}</span>`;
+    }
+    // NL: divider line
+    if (/^────/.test(trimmed)) {
+      return `<span class="st-comment">${esc(line)}</span>`;
+    }
+    if (trimmed === 'ADDED BY TRANSFORMER — Research Requirements') {
+      return `<span class="st-added">${esc(line)}</span>`;
+    }
+    // Code: ADDED comment lines
     if (trimmed.startsWith('// ADDED') || trimmed.startsWith('// ──')) {
       return `<span class="st-comment">${esc(line)}</span>`;
     }
     if (trimmed.startsWith('//')) {
       return `<span class="st-comment">${esc(line)}</span>`;
     }
-    // JSON key: value lines — color key orange if it's a newly added field
-    const addedIds = results.filter(r => !r.present).map(r => r.id);
-    const addedNames = addedIds.flatMap(id => {
-      const c = ST_CHECKS.find(x => x.id === id);
-      // Extract the first word from inject_json as the key name
-      const m = c?.inject_json?.match(/"(\w+)":/);
-      return m ? [m[1]] : [];
-    });
-    // Check if line contains an added key
+    // JSON: highlight added keys in orange
     const keyMatch = line.match(/^(\s*)"(\w+)":/);
     if (keyMatch && addedNames.includes(keyMatch[2])) {
       return line.replace(/"(\w+)":/, (_, k) => `<span class="st-added">"${k}":</span>`);
     }
-    // Standard JSON key coloring
     if (format === 'JSON') {
       return line
         .replace(/"(\w+)":/g, (_, k) => `<span class="st-key">"${k}":</span>`)
@@ -2132,11 +2190,12 @@ function stBuildChecksHTML(results) {
   return results.map(r => {
     let dotClass, dotIcon, descText;
     if (r.present && r.hasWarn) {
-      dotClass = 'warn'; dotIcon = '⚠'; descText = r.desc + ' — hardcoded urgency detected, needs fix';
+      dotClass = 'warn'; dotIcon = '⚠';
+      descText = r.desc + ' — problematic language detected, replace with operator-cadence-aware framing';
     } else if (r.present) {
       dotClass = 'ok'; dotIcon = '✓'; descText = r.desc;
     } else {
-      dotClass = 'added'; dotIcon = '+'; descText = r.desc + ' — injected by transformer';
+      dotClass = 'added'; dotIcon = '+'; descText = r.desc + ' — added by transformer';
     }
     return `<div class="st-check-item">
       <div class="st-check-dot ${dotClass}">${dotIcon}</div>
@@ -2152,38 +2211,49 @@ function stTransform() {
   const raw = document.getElementById('st-input').value.trim();
   if (!raw) return;
 
-  const format = stDetectFormat(raw) || 'Pseudocode';
-  const results = stRunChecks(raw);
+  const format = stDetectFormat(raw) || 'Natural Language';
+  const results = stRunChecks(raw, format);
   const missing = results.filter(r => !r.present);
   const warned  = results.filter(r => r.present && r.hasWarn);
   const present = results.filter(r => r.present && !r.hasWarn);
 
   // Build output text
   let outputText;
-  if (format === 'JSON') {
-    outputText = stInjectIntoJSON(raw, results);
-  } else {
-    outputText = stInjectIntoPseudo(raw, results);
-  }
+  if (format === 'JSON')             outputText = stInjectIntoJSON(raw, results);
+  else if (format === 'YAML')        outputText = stInjectIntoPseudo(raw, results); // YAML gets same prefix-comment treatment as pseudo
+  else if (format === 'Natural Language') outputText = stInjectIntoNL(raw, results);
+  else                               outputText = stInjectIntoPseudo(raw, results);
   _currentOutput = outputText;
 
   // Build LLM prompt
-  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, missing, warned);
+  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, missing, warned, format);
 
   // Render output panel
   const outEl = document.getElementById('st-output');
-  outEl.className = 'st-output-body';
+  // NL output should wrap like a document, not a code block
+  if (format === 'Natural Language') {
+    outEl.className = 'st-output-body';
+    outEl.style.whiteSpace = 'pre-wrap';
+    outEl.style.fontFamily = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+    outEl.style.fontSize = '13px';
+    outEl.style.lineHeight = '1.7';
+  } else {
+    outEl.className = 'st-output-body';
+    outEl.style.whiteSpace = 'pre';
+    outEl.style.fontFamily = "'SF Mono','Fira Mono',Menlo,monospace";
+    outEl.style.fontSize = '12px';
+    outEl.style.lineHeight = '1.8';
+  }
   outEl.innerHTML = stColorizeOutput(outputText, format, results);
 
   // Footer
   const footerEl = document.getElementById('st-output-footer');
   footerEl.style.display = 'flex';
   document.getElementById('st-output-hint').textContent =
-    `${missing.length} field${missing.length !== 1 ? 's' : ''} added · ${present.length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
+    `${missing.length} requirement${missing.length !== 1 ? 's' : ''} added · ${present.length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
 
   // Copy output button
-  const copyBtn = document.getElementById('st-copy-output-btn');
-  copyBtn.style.display = 'inline-flex';
+  document.getElementById('st-copy-output-btn').style.display = 'inline-flex';
 
   // Analysis section
   const analysisEl = document.getElementById('st-analysis');
@@ -2195,7 +2265,7 @@ function stTransform() {
   // Prompt preview (truncated for display)
   const previewLines = _currentPrompt.split('\n').slice(0, 28).join('\n');
   document.getElementById('st-prompt-text').innerHTML =
-    esc(previewLines) + '\n<em>... [paste your full skill + all transformation rules — ' + _currentPrompt.split('\n').length + ' lines total]</em>';
+    esc(previewLines) + '\n<em>... [' + _currentPrompt.split('\n').length + ' lines total — copy to get the full prompt]</em>';
 
   // Scroll to analysis
   setTimeout(() => analysisEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
