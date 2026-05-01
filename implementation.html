@@ -2085,11 +2085,59 @@ function stIsNaturalLanguage(text) {
   return sentences.length >= 1 || avgLineLen > 60;
 }
 
-const LLM_PROMPT_TEMPLATE = (skillText, missing, warned, format) => {
+// Per-check structural rules — only emitted when that check is selected or already present
+const ST_STRUCTURAL_RULES = {
+  mode: [
+    'The skill must declare a mode of "propose", "draft", or "execute". It must NEVER default to "execute".',
+    '"propose", "draft", and "execute" are structurally separate phases — not the same skill with a confirmation dialog.',
+    'Any skill that modifies state must go through draft → reviewer approval → execute. Never one step.',
+  ],
+  data_health: [
+    'A data health check must run before any recommendation is surfaced. If it fails, tell the operator what is wrong rather than showing a potentially misleading recommendation.',
+  ],
+  affected_entities: [
+    'Before recommending any change to a priced entity, identify all downstream items affected (modifiers, bundles, delivery menu items).',
+  ],
+  basis: [
+    'Projections must always state the assumption they rest on. Never show an unanchored number.',
+  ],
+  provenance: [
+    'Every data-derived number must cite its source inline in plain language.',
+  ],
+  urgency: [
+    'Urgency language must be derived from the intersection of issue sensitivity and the operator\'s actual cadence — never hardcoded.',
+  ],
+  disclosure: [
+    'Output must be structured in two tiers: a summary (always shown) and a detail section (shown on expand or request).',
+  ],
+  rollback: [
+    'For any state-modifying action, tell the operator whether and how it can be reversed.',
+  ],
+  reviewer: [
+    'Drafts must be routed to a reviewer role, not auto-resolved to the user who initiated the skill.',
+  ],
+};
+
+const LLM_PROMPT_TEMPLATE = (skillText, missing, warned, format, allResults) => {
   const isNL = format === 'Natural Language';
   const instrFormat = isNL
     ? 'The skill is written as a plain-language prompt (e.g. from a tool like Langfuse). Rewrite the prompt with the required additions inserted as clearly labeled instruction blocks using the format [ADDED: Topic Name]. Preserve the original wording and structure — only add, never remove.'
     : 'The skill is written as code or pseudocode. Add missing fields with "// ADDED:" inline comments. Preserve all existing structure.';
+
+  // Only include structural rules for checks that are selected-missing or already present in the skill
+  const relevantIds = new Set([
+    ...missing.map(r => r.id),
+    ...warned.map(r => r.id),
+    ...(allResults || []).filter(r => r.present && !r.hasWarn).map(r => r.id),
+  ]);
+  const structuralRules = Object.entries(ST_STRUCTURAL_RULES)
+    .filter(([id]) => relevantIds.has(id))
+    .flatMap(([, rules]) => rules)
+    .map(r => `- ${r}`)
+    .join('\n');
+  const structuralSection = structuralRules
+    ? structuralRules
+    : '- Only apply the improvements listed in the Required improvements section above.';
   return `You are an expert AI systems architect. Your task is to improve an existing agent skill definition based on user research findings about what makes operator-facing AI skills trustworthy and adoptable.
 
 ## Research findings summary
@@ -2111,16 +2159,7 @@ ${missing.map((c,i) => `${i+1}. **${c.name}**: ${c.desc}`).join('\n')}${warned.l
 
 ## Structural rules
 
-- The skill must declare a mode of "propose", "draft", or "execute". It must NEVER default to "execute".
-- "propose", "draft", and "execute" are structurally separate phases — not the same skill with a confirmation dialog.
-- Any skill that modifies state must go through draft → reviewer approval → execute. Never one step.
-- A data health check must run before any recommendation is surfaced. If it fails, tell the operator what is wrong rather than showing a potentially misleading recommendation.
-- Before recommending any change to a priced entity, identify all downstream items affected (modifiers, bundles, delivery menu items).
-- Projections must always state the assumption they rest on. Never show an unanchored number.
-- Urgency language must be derived from the intersection of issue sensitivity and the operator's actual cadence — never hardcoded.
-- Output must be structured in two tiers: a summary (always shown) and a detail section (shown on expand or request).
-- For any state-modifying action, tell the operator whether and how it can be reversed.
-- Drafts must be routed to a reviewer role, not auto-resolved to the user who initiated the skill.
+${structuralSection}
 
 ## Your task
 
@@ -2386,7 +2425,7 @@ function stRegenerate() {
   else if (_lastFormat === 'Natural Language') outputText = stInjectIntoNL(_lastRaw, filteredResults);
   else                                   outputText = stInjectIntoPseudo(_lastRaw, filteredResults);
   _currentOutput = outputText;
-  _currentPrompt = LLM_PROMPT_TEMPLATE(_lastRaw, missing, warned, _lastFormat);
+  _currentPrompt = LLM_PROMPT_TEMPLATE(_lastRaw, missing, warned, _lastFormat, _lastResults);
 
   // Render output panel
   const outEl = document.getElementById('st-output');
@@ -2453,7 +2492,7 @@ function stTransform() {
   _currentOutput = outputText;
 
   // Build LLM prompt — only includes selected missing requirements
-  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, selectedMissing, warned, format);
+  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, selectedMissing, warned, format, results);
 
   // Render output panel
   const outEl = document.getElementById('st-output');
