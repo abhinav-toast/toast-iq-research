@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs To Be Done · Toast IQ Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:100px}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPBAR (shared) ── */
+.tb{position:sticky;top:0;z-index:200;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.tb-logo{color:#f97316;font-size:13px;font-weight:800;letter-spacing:-.2px;text-decoration:none;white-space:nowrap}
+.tb-divider{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 16px;flex-shrink:0}
+.tb-nav{display:flex;align-items:center;gap:4px}
+.tb-link{color:rgba(255,255,255,0.45);font-size:12px;text-decoration:none;padding:4px 9px;border-radius:5px;transition:color .15s,background .15s;white-space:nowrap}
+.tb-link:hover{color:white;background:rgba(255,255,255,0.07)}
+.tb-link.active{color:#f97316;background:rgba(249,115,22,0.1)}
+.tb-sep{color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
+
+/* ── HERO ── */
+.hero{background:#1e1e1e;padding:48px 40px 40px;max-width:100%}
+.hero-inner{max-width:960px;margin:0 auto}
+.hero-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:12px}
+.hero-title{font-size:32px;font-weight:800;color:white;line-height:1.2;margin-bottom:10px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;max-width:620px;margin-bottom:28px}
+
+/* cluster pill row */
+.cluster-row{display:flex;gap:8px;flex-wrap:wrap}
+.cl-pill{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;transition:opacity .15s;text-decoration:none}
+.cl-pill:hover{opacity:.75}
+.cl1{background:rgba(29,109,181,0.12);border-color:rgba(29,109,181,0.4);color:#60a5fa}
+.cl2{background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.4);color:#a78bfa}
+.cl3{background:rgba(234,88,12,0.12);border-color:rgba(234,88,12,0.4);color:#fb923c}
+.cl4{background:rgba(16,163,74,0.12);border-color:rgba(16,163,74,0.4);color:#4ade80}
+.cl5{background:rgba(234,179,8,0.12);border-color:rgba(234,179,8,0.4);color:#facc15}
+
+/* ── CONTAINER ── */
+.container{max-width:960px;margin:0 auto;padding:0 28px}
+
+/* ── SECTION TITLE ── */
+.section-title-row{display:flex;align-items:baseline;gap:10px;margin:36px 0 16px}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin:0}
+.section-title-divider{flex:1;height:1px;background:#ede8e0}
+
+/* ── TLDR CALLOUT ── */
+.tldr{background:#1e1e1e;border-radius:12px;padding:24px 28px;margin-top:28px}
+.tldr-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:12px}
+.tldr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.tldr-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:14px 16px}
+.tldr-item.highlight{border-color:rgba(249,115,22,0.3);background:rgba(249,115,22,0.06)}
+.tldr-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,0.3);margin-bottom:6px}
+.tldr-item.highlight .tldr-tag{color:#f97316}
+.tldr-text{font-size:12.5px;color:rgba(255,255,255,0.65);line-height:1.65}
+.tldr-item.highlight .tldr-text{color:rgba(255,255,255,0.8)}
+.tldr-bottom{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);font-size:12.5px;color:rgba(255,255,255,0.5);line-height:1.7;font-style:italic}
+.tldr-bottom strong{color:rgba(255,255,255,0.8);font-style:normal}
+
+/* ── CLUSTER SECTION ── */
+.cluster{margin-bottom:10px}
+.cluster-head{display:flex;align-items:center;gap:12px;padding:12px 0 8px}
+.cluster-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;border-radius:4px;white-space:nowrap}
+.cb1{background:#eff6ff;color:#1d6db5;border:1px solid #bfdbfe}
+.cb2{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.cb3{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.cb4{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.cb5{background:#fefce8;color:#a16207;border:1px solid #fde68a}
+.cluster-name{font-size:17px;font-weight:800;color:#1a1a1a}
+
+/* ── JTBD CARD ── */
+.jtbd-card{background:white;border:1px solid #ede8e0;border-radius:10px;margin-bottom:10px;overflow:hidden;transition:border-color .15s}
+.jtbd-card:hover{border-color:#d1c4e9}
+.jtbd-card.open{border-color:#d1c4e9}
+.jtbd-head{padding:16px 20px;display:flex;align-items:flex-start;gap:14px;cursor:pointer}
+.jtbd-id{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.jid1{background:#eff6ff;color:#1d6db5}
+.jid2{background:#f5f3ff;color:#7c3aed}
+.jid3{background:#fff7ed;color:#ea580c}
+.jid4{background:#f0fdf4;color:#16a34a}
+.jid5{background:#fefce8;color:#a16207}
+.jtbd-title-wrap{flex:1;min-width:0}
+.jtbd-title{font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.35;margin-bottom:4px}
+.jtbd-hook{font-size:12px;color:#888;line-height:1.5}
+.jtbd-chevron{font-size:13px;color:#ccc;flex-shrink:0;margin-top:4px;transition:transform .2s}
+.jtbd-card.open .jtbd-chevron{transform:rotate(90deg)}
+
+.jtbd-body{display:none;border-top:1px solid #f5f0ea}
+.jtbd-card.open .jtbd-body{display:block}
+
+.jtbd-statement{margin:16px 20px 0;padding:12px 16px;border-radius:7px;border-left:3px solid;background:#faf8f5;font-size:13px;color:#333;line-height:1.7;font-style:italic}
+.js1{border-color:#1d6db5;background:#f0f7ff}
+.js2{border-color:#7c3aed;background:#f8f5ff}
+.js3{border-color:#ea580c;background:#fff7f0}
+.js4{border-color:#16a34a;background:#f0fdf4}
+.js5{border-color:#a16207;background:#fffbeb}
+
+.jtbd-sections{padding:16px 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.jtbd-section{background:#faf8f5;border:1px solid #ede8e0;border-radius:7px;padding:12px 14px}
+.jtbd-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#aaa;margin-bottom:6px}
+.jtbd-section-text{font-size:12px;color:#444;line-height:1.65}
+.jtbd-section.hired{border-color:#d1fae5;background:#f0fdf4}
+.jtbd-section.hired .jtbd-section-label{color:#16a34a}
+.jtbd-section.pain{border-color:#ede8e0;background:#faf8f5}
+
+/* priority badge */
+.jtbd-priority{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;margin:0 20px 16px}
+.prio-precond{background:#fff0f0;color:#c0390b;border:1px solid #fde0dc}
+.prio-diff{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe}
+.prio-org{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.prio-exec{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.prio-icon{font-size:9px}
+
+/* ── UNDERLYING PATTERN ── */
+.pattern-block{background:#1e1e1e;border-radius:12px;padding:28px 32px;margin-top:4px}
+.pattern-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:14px}
+.pattern-text{font-size:15px;color:rgba(255,255,255,0.82);line-height:1.8;margin-bottom:18px}
+.pattern-text strong{color:white}
+.pattern-implications{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.07)}
+.pi-item{background:rgba(255,255,255,0.04);border-radius:7px;padding:12px 14px;border:1px solid rgba(255,255,255,0.06)}
+.pi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#f97316;margin-bottom:5px}
+.pi-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6}
+
+@media(max-width:700px){
+  .hero{padding:32px 20px 28px}
+  .tldr-grid{grid-template-columns:1fr}
+  .jtbd-sections{grid-template-columns:1fr}
+  .pattern-implications{grid-template-columns:1fr}
+  .container{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <a href="index.html" class="tb-logo">Toast IQ</a>
+  <div class="tb-divider"></div>
+  <nav class="tb-nav">
+    <a href="combined.html" class="tb-link">Combined Summary</a>
+    <span class="tb-sep">·</span>
+    <a href="framework.html" class="tb-link">Framework</a>
+    <span class="tb-sep">·</span>
+    <a href="jtbd.html" class="tb-link active">JTBD</a>
+    <span class="tb-sep">·</span>
+    <a href="implementation.html" class="tb-link">Implementation</a>
+    <span class="tb-sep">·</span>
+    <a href="deck.html" class="tb-link">Presentation</a>
+    <span class="tb-sep">·</span>
+    <a href="chat-vision.html" class="tb-link">Chat Vision</a>
+  </nav>
+  <div class="tb-right">
+    <span class="tb-meta">JTBD</span>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Jobs To Be Done</div>
+    <div class="hero-title">What operators are actually trying to do</div>
+    <div class="hero-sub">A feature request tells you what someone asked for. A JTBD tells you why they'd hire a product in the first place. Every job below is inferred from a real moment in the research — not from what participants said they wanted.</div>
+
+    <div class="cluster-row">
+      <a href="#cluster1" class="cl-pill cl1">1 · Margin Protection</a>
+      <a href="#cluster2" class="cl-pill cl2">2 · Confident Decisions</a>
+      <a href="#cluster3" class="cl-pill cl3">3 · Org Alignment</a>
+      <a href="#cluster4" class="cl-pill cl4">4 · Operational Execution</a>
+      <a href="#cluster5" class="cl-pill cl5">5 · Situational Awareness</a>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TLDR -->
+  <div class="tldr">
+    <div class="tldr-label">Prioritization TL;DR</div>
+    <div class="tldr-grid">
+      <div class="tldr-item highlight">
+        <div class="tldr-tag">Start here — preconditions</div>
+        <div class="tldr-text">JTBDs 2.1, 2.2, and 2.3 must be solved first. If operators can't trust the numbers, none of the other jobs can be completed — regardless of how well the rest of the product works.</div>
+      </div>
+      <div class="tldr-item highlight">
+        <div class="tldr-tag">Highest differentiation</div>
+        <div class="tldr-text">JTBD 1.1 is the only job that reframes what the product is — from a pricing tool to a margin protection tool. Every other JTBD improves the current product; this one expands its identity.</div>
+      </div>
+      <div class="tldr-item">
+        <div class="tldr-tag">Structurally different</div>
+        <div class="tldr-text">JTBD 3.1 can't be solved with better UI. It requires a different state model — persistent drafts with role-based routing. It's about fitting into an organizational process the product currently ignores.</div>
+      </div>
+      <div class="tldr-item">
+        <div class="tldr-tag">The design constraint</div>
+        <div class="tldr-text">Operators will hire this agent as a research assistant and work-product preparer, never as a decision-maker. Every design decision that pushes toward autonomous action works against the grain.</div>
+      </div>
+    </div>
+    <div class="tldr-bottom">The underlying pattern: operators aren't trying to delegate decisions to an agent — they're trying to <strong>make better decisions faster.</strong> The JTBD is never "have the AI decide for me." It's always: give me the right information, at the right moment, in a form I can verify and act on within my organizational process.</div>
+  </div>
+
+  <!-- ── CLUSTER 1 ── -->
+  <div id="cluster1" class="cluster">
+    <div class="section-title-row">
+      <span class="section-title" style="margin:0">Cluster 1</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="cluster-head">
+      <span class="cluster-badge cb1">Margin Protection</span>
+      <span class="cluster-name">Protect the business when costs change</span>
+    </div>
+
+    <!-- 1.1 -->
+    <div class="jtbd-card" id="jc1-1">
+      <div class="jtbd-head" onclick="toggleJTBD('jc1-1')">
+        <span class="jtbd-id jid1">1.1</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Reactive Pricing Job</div>
+          <div class="jtbd-hook">When costs spike, I need all the paths — not just "raise the price"</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js1">"When ingredient costs spike and I need to protect my margins, I want to understand all the paths available to me — not just 'raise your price' — so I can choose the response that does the least damage to my guests and my business."</div>
+        <span class="jtbd-priority prio-diff"><span class="prio-icon">◆</span> Highest differentiation opportunity</span>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P01 is doing pricing math on a notepad. The agent as currently designed gives her one answer (raise the price). But her actual job is margin protection — raising prices is just one of several ways to do that. The pain isn't that she lacks a recommendation; it's that she lacks options.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">An agent that responds to a cost spike with a set of paths — raise price / find alternative supplier / reduce portion / bundle differently — with projected margin impact per path. The operator chooses the response; the agent quantifies the tradeoff.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.2 -->
+    <div class="jtbd-card" id="jc1-2">
+      <div class="jtbd-head" onclick="toggleJTBD('jc1-2')">
+        <span class="jtbd-id jid1">1.2</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Silent Risk Job</div>
+          <div class="jtbd-hook">Show me everything a price change touches before I publish it</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js1">"When I change a price on any menu item, I want to see every other part of my menu that will be affected before I publish, so I can avoid creating pricing errors that cost me revenue."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P04 had a live incident — a base price change created modifier arbitrage that customers exploited. His current process is now entirely manual: before any price change, he traces modifier dependencies by hand. The agent treats pricing as item-level when it's actually graph-level.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">An agent that automatically maps the modifier graph before surfacing any pricing recommendation, and surfaces arbitrage risks before the confirm step — not after publish.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLUSTER 2 ── -->
+  <div id="cluster2" class="cluster">
+    <div class="section-title-row">
+      <span class="section-title" style="margin:0">Cluster 2</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="cluster-head">
+      <span class="cluster-badge cb2">Confident Decision-Making</span>
+      <span class="cluster-name">Be able to verify what the agent tells you</span>
+    </div>
+
+    <!-- 2.1 -->
+    <div class="jtbd-card" id="jc2-1">
+      <div class="jtbd-head" onclick="toggleJTBD('jc2-1')">
+        <span class="jtbd-id jid2">2.1</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Verification Job</div>
+          <div class="jtbd-hook">Show me the assumption so I can check the math myself</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js2">"When I see an AI-generated projection, I want to understand the assumption it rests on so I can verify the math against what I actually know, so I can decide whether to trust it or reject it."</div>
+        <span class="jtbd-priority prio-precond"><span class="prio-icon">▲</span> Precondition — solve before anything else</span>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P03 saw "$847 monthly recovery" and immediately became skeptical — not because the number was necessarily wrong, but because he had no way to check it. He's been in the restaurant business since 1990. The pain is that the agent gave him a conclusion without the inputs, which made it feel fabricated rather than credible.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">Every projection tied to a verifiable unit assumption: "Based on 847 units sold in March, a $1 increase recovers $847/month." He can open his POS, check March's units, and confirm or dispute the basis. The agent passes the falsifiability test.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.2 -->
+    <div class="jtbd-card" id="jc2-2">
+      <div class="jtbd-head" onclick="toggleJTBD('jc2-2')">
+        <span class="jtbd-id jid2">2.2</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Data Integrity Job</div>
+          <div class="jtbd-hook">Tell me if the data you're using actually reflects my operation today</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js2">"When I'm about to act on an AI recommendation, I want to know whether the data the agent is working from actually reflects my operation today, so I don't make decisions based on stale or wrong inputs."</div>
+        <span class="jtbd-priority prio-precond"><span class="prio-icon">▲</span> Precondition — solve before anything else</span>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P01's recipes evolved after she originally entered them in Toast. The cost data the agent uses is months out of date. She has high trust in Toast as a platform, but she can't fully trust recommendations because she doesn't trust the inputs — which puts verification work back on her.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">An agent that runs its own data health check before surfacing recommendations, and leads with a data quality signal ("your chicken sandwich recipe was last updated 8 months ago") rather than surfacing a recommendation built on potentially stale data.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3 -->
+    <div class="jtbd-card" id="jc2-3">
+      <div class="jtbd-head" onclick="toggleJTBD('jc2-3')">
+        <span class="jtbd-id jid2">2.3</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Provenance Job</div>
+          <div class="jtbd-hook">Where does your market data come from, and are those restaurants actually like mine?</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js2">"When an agent tells me I'm underpriced compared to my local market, I want to understand where that market data comes from and how comparable those restaurants actually are to mine, so I can decide whether the benchmark is meaningful for my operation."</div>
+        <span class="jtbd-priority prio-precond"><span class="prio-icon">▲</span> Precondition — solve before anything else</span>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P03 operates two concepts at different price tiers in the same market. A geographic benchmark that averages across all nearby restaurants will systematically tell his upscale concept it's "overpriced." Without knowing the data source and composition, he can't tell whether the recommendation is brilliant or irrelevant.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">Benchmarks surfaced with explicit composition ("compared to 28 full-service restaurants within 5 miles, average check $35–55") so he can evaluate whether the peer group is actually comparable. Multi-concept operators need concept-tier-aware benchmarking, not geographic averaging.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLUSTER 3 ── -->
+  <div id="cluster3" class="cluster">
+    <div class="section-title-row">
+      <span class="section-title" style="margin:0">Cluster 3</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="cluster-head">
+      <span class="cluster-badge cb3">Organizational Alignment</span>
+      <span class="cluster-name">Fit into the real approval process</span>
+    </div>
+
+    <!-- 3.1 -->
+    <div class="jtbd-card" id="jc3-1">
+      <div class="jtbd-head" onclick="toggleJTBD('jc3-1')">
+        <span class="jtbd-id jid3">3.1</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Stakeholder Alignment Job</div>
+          <div class="jtbd-hook">Help me get everyone aligned before I publish — the agent currently ignores this step entirely</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js3">"When a pricing decision needs to be made, I want to present a fully-formed case to the decision-makers in my organization so we can decide together, so I can publish with confidence that everyone who needs to be aligned is aligned."</div>
+        <span class="jtbd-priority prio-org"><span class="prio-icon">■</span> Can't be solved with better UI — requires a different state model</span>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P04's pricing decisions require sitting down with the owners. P02 needs organizational sign-off. P03, even as the owner himself, requires deliberate personal review before acting. The current design assumes the interacting user and the approving user are the same person — they almost never are.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">A persistent draft state that captures the full recommendation package and routes it to the right approver. The GM runs the agent, the agent produces a draft, the owner reviews and approves. The draft doesn't expire overnight — it waits until the organizational process completes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 -->
+    <div class="jtbd-card" id="jc3-2">
+      <div class="jtbd-head" onclick="toggleJTBD('jc3-2')">
+        <span class="jtbd-id jid3">3.2</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Post-Change Coordination Job</div>
+          <div class="jtbd-hook">After I publish, I shouldn't have to carry the follow-up checklist in my head</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js3">"When I publish a price change, I want every system and every person that needs to know to be updated, so I'm not managing a cascade of manual follow-up tasks from memory."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P01 and P04 both described carrying the post-publish checklist in their heads: reprint menus, update the website, tell the staff, post on social. The pain isn't that it's hard — it's that it's invisible. The agent celebrates the publish moment without acknowledging that the operator's work isn't done.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">A post-publish coordination package built into the draft — not as an afterthought, but as a required step in the approval workflow. Staff notification drafted. Website update prompted. Social post suggested. Each item either deep-linked to the relevant tool or acknowledged as manual.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLUSTER 4 ── -->
+  <div id="cluster4" class="cluster">
+    <div class="section-title-row">
+      <span class="section-title" style="margin:0">Cluster 4</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="cluster-head">
+      <span class="cluster-badge cb4">Operational Execution</span>
+      <span class="cluster-name">Run the decision at scale, on the right cadence</span>
+    </div>
+
+    <!-- 4.1 -->
+    <div class="jtbd-card" id="jc4-1">
+      <div class="jtbd-head" onclick="toggleJTBD('jc4-1')">
+        <span class="jtbd-id jid4">4.1</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Multi-Location Consistency Job</div>
+          <div class="jtbd-hook">Change it once, have it propagate correctly everywhere</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js4">"When I make a pricing decision that applies to all my locations, I want to make the change once and have it propagate correctly everywhere, so I'm not doing the same work four times or risking inconsistency between locations."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P02's most direct statement: "we don't want to have to go through it four times." Without Menu Masters integration, the agent requires per-location execution. That's not a minor inconvenience — it makes the agent net-negative for multi-location operators with shared menus.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">Scope-aware execution. The operator declares scope at draft creation (this location / all locations / select). The agent propagates accordingly. For operators using Menu Masters or equivalent sync tools, the publish step triggers the integration — not manual repetition.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 -->
+    <div class="jtbd-card" id="jc4-2">
+      <div class="jtbd-head" onclick="toggleJTBD('jc4-2')">
+        <span class="jtbd-id jid4">4.2</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Cadence-Aligned Action Job</div>
+          <div class="jtbd-hook">"Effective tomorrow" framing doesn't match how my business actually works</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js4">"When a recommendation is ready, I want to act on it at the right moment in my operational cycle, not in response to urgency framing that doesn't match how my business actually works."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P02 changes prices quarterly because customer perception of frequent changes is negative. The prototype's "effective tomorrow" framing felt not just irrelevant but slightly alarming — as if the agent didn't understand how his operation works. An agent that misreads cadence feels miscalibrated, which makes operators question what else it's getting wrong.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">Recommendation timing derived from the operator's actual cadence, not from a universal urgency template. A high-sensitivity issue for a quarterly-cadence operator gets framed as "consider for your next menu review" not "act now." The agent that knows when <em>not</em> to push earns more trust than one that's always urgent.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLUSTER 5 ── -->
+  <div id="cluster5" class="cluster">
+    <div class="section-title-row">
+      <span class="section-title" style="margin:0">Cluster 5</span>
+      <div class="section-title-divider"></div>
+    </div>
+    <div class="cluster-head">
+      <span class="cluster-badge cb5">Situational Awareness</span>
+      <span class="cluster-name">Know what's happening without digging for it</span>
+    </div>
+
+    <!-- 5.1 -->
+    <div class="jtbd-card" id="jc5-1">
+      <div class="jtbd-head" onclick="toggleJTBD('jc5-1')">
+        <span class="jtbd-id jid5">5.1</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Daily Orientation Job</div>
+          <div class="jtbd-hook">Give me the picture in under 60 seconds — I shouldn't have to go find it</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js5">"When I start my day, I want to quickly understand what needs my attention across my business, so I can prioritize and get to work without digging through multiple tools."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P04's "morning news brief" framing was entirely unprompted. He articulated a specific mental model: one card, forecasts + recommendations + alerts, dismissable. Situational awareness currently requires active navigation across multiple reports. The operator has to go find the picture; the picture doesn't come to them.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">A single daily briefing card that bundles what's changed, what needs review, and what the agent recommends — structured to be readable in under 60 seconds and dismissable if nothing urgent is present.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.2 -->
+    <div class="jtbd-card" id="jc5-2">
+      <div class="jtbd-head" onclick="toggleJTBD('jc5-2')">
+        <span class="jtbd-id jid5">5.2</span>
+        <div class="jtbd-title-wrap">
+          <div class="jtbd-title">The Competitive Awareness Job</div>
+          <div class="jtbd-hook">Stop making me manually scout what comparable restaurants near me are charging</div>
+        </div>
+        <span class="jtbd-chevron">›</span>
+      </div>
+      <div class="jtbd-body">
+        <div class="jtbd-statement js5">"When I'm planning promotions or reviewing my pricing, I want to know what comparable restaurants near me are doing, so I can position my offer without having to manually scout the competition."</div>
+        <div class="jtbd-sections">
+          <div class="jtbd-section pain">
+            <div class="jtbd-section-label">Pain behind it</div>
+            <div class="jtbd-section-text">P02 and P03 both do this manually today. P03 physically researches what nearby restaurants charge for comparable dishes. Neither framed it as a product gap — they described it as a regular operational task. The pain is time spent on a low-value information-gathering activity that an agent with market data access could trivially automate.</div>
+          </div>
+          <div class="jtbd-section hired">
+            <div class="jtbd-section-label">What a hired solution looks like</div>
+            <div class="jtbd-section-text">Competitive context surfaced alongside menu items and pricing recommendations — not as a separate dashboard, but as ambient intelligence woven into the existing workflow.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UNDERLYING PATTERN ── -->
+  <div class="section-title-row">
+    <span class="section-title" style="margin:0">The Underlying Pattern</span>
+    <div class="section-title-divider"></div>
+  </div>
+
+  <div class="pattern-block">
+    <div class="pattern-label">The design constraint that runs through everything</div>
+    <div class="pattern-text">Across all five clusters, the same structural tension surfaces: <strong>operators are not trying to delegate decisions to an agent — they're trying to make better decisions faster.</strong> The JTBD is never "have the AI decide for me." It's always some form of: give me the right information, at the right moment, in a form I can verify and act on within my organizational process.</div>
+    <div class="pattern-text" style="font-size:13px">The implication for design: the agent is hired as a <strong>research assistant</strong> and a <strong>work-product preparer</strong>, not as a decision-maker. Every JTBD above is satisfiable within that constraint — and none of them require autonomous action to deliver real value.</div>
+    <div class="pattern-implications">
+      <div class="pi-item">
+        <div class="pi-label">What this means for the agent</div>
+        <div class="pi-text">Every feature that pushes toward autonomous action is working against the grain. propose → draft → execute decomposition isn't a UX pattern — it's a direct response to how operators actually want to hire this product.</div>
+      </div>
+      <div class="pi-item">
+        <div class="pi-label">What this means for prioritization</div>
+        <div class="pi-text">Solve the trust infrastructure first (Cluster 2). Without it, operators won't let the agent reach the point where Clusters 3, 4, and 5 even matter. The preconditions gate everything else.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleJTBD(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+</script>
+</body>
+</html>
