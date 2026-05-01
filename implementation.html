@@ -2121,7 +2121,7 @@ const ST_STRUCTURAL_RULES = {
 const LLM_PROMPT_TEMPLATE = (skillText, missing, warned, format, allResults) => {
   const isNL = format === 'Natural Language';
   const instrFormat = isNL
-    ? 'The skill is written as a plain-language prompt (e.g. from a tool like Langfuse). Rewrite the prompt with the required additions inserted as clearly labeled instruction blocks using the format [ADDED: Topic Name]. Preserve the original wording and structure — only add, never remove.'
+    ? 'The skill is written as a plain-language prompt (e.g. from a tool like Langfuse). Rewrite it as a single clean prompt with the required additions integrated naturally into the prose — no markers, no "[ADDED:]" labels, no headers. The output must be ready to paste directly into Langfuse as a live prompt. Preserve all original wording and intent; only add the missing requirements, seamlessly woven in.'
     : 'The skill is written as code or pseudocode. Add missing fields with "// ADDED:" inline comments. Preserve all existing structure.';
 
   // Only include structural rules for checks that are selected-missing or already present in the skill
@@ -2443,6 +2443,7 @@ function stRegenerate() {
     outEl.style.lineHeight = '1.8';
   }
   outEl.innerHTML = stColorizeOutput(outputText, _lastFormat, filteredResults);
+  stUpdateOutputLabels(_lastFormat);
 
   // Update footer hint
   document.getElementById('st-output-hint').textContent =
@@ -2460,6 +2461,31 @@ function stRegenerate() {
 
   // Scroll output into view
   document.getElementById('st-output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function stUpdateOutputLabels(format) {
+  const isNL = format === 'Natural Language';
+  // Output panel title
+  document.querySelector('#tab-transformer .st-panel:last-child .st-panel-title').textContent =
+    isNL ? 'Addition preview' : 'Transformed Output';
+  // Copy skill button label
+  const copyBtn = document.getElementById('st-copy-output-btn');
+  copyBtn.textContent = isNL ? 'Copy preview' : 'Copy skill';
+  // How to use callout
+  const calloutText = document.querySelector('#st-analysis .callout.blue .callout-text');
+  if (calloutText) {
+    calloutText.textContent = isNL
+      ? 'Your skill is a plain-language prompt (e.g. Langfuse). The preview above shows what will be added, but it still contains [ADDED:] markers — not clean for Langfuse. Use Copy LLM Prompt instead: paste it into any model and it will return a clean, marker-free rewrite ready to drop straight into Langfuse.'
+      : 'Copy the prompt below and paste it into any LLM (Claude, GPT-4, Gemini). It contains your original skill, the full transformation spec from the research, and precise instructions for what to change. The model will return the improved skill with annotations.';
+  }
+  // Bottom copy button label
+  const copyBtn2 = document.getElementById('st-copy-prompt-btn-2');
+  if (copyBtn2) copyBtn2.textContent = isNL ? 'Copy LLM Prompt → get clean Langfuse-ready rewrite' : 'Copy LLM Prompt';
+  // Bottom hint text
+  const hint = copyBtn2 ? copyBtn2.nextElementSibling : null;
+  if (hint) hint.textContent = isNL
+    ? 'The model will return a clean prompt with no [ADDED:] markers — paste directly into Langfuse'
+    : 'Paste into any model to get back the fully improved skill';
 }
 
 function stTransform() {
@@ -2510,6 +2536,7 @@ function stTransform() {
     outEl.style.lineHeight = '1.8';
   }
   outEl.innerHTML = stColorizeOutput(outputText, format, selectedResults);
+  stUpdateOutputLabels(format);
 
   // Footer
   const footerEl = document.getElementById('st-output-footer');
