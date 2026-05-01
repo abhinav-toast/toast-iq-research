@@ -2440,16 +2440,20 @@ function stTransform() {
   // Default: all missing are selected
   _selectedIds = new Set(missing.map(r => r.id));
 
-  // Build output text (all missing injected by default)
+  // Build output and prompt using only selected requirements
+  // (on first transform all are selected, so this matches the default)
+  const selectedResults = results.map(r => r.present ? r : { ...r, present: !_selectedIds.has(r.id) });
+  const selectedMissing = selectedResults.filter(r => !r.present);
+
   let outputText;
-  if (format === 'JSON')             outputText = stInjectIntoJSON(raw, results);
-  else if (format === 'YAML')        outputText = stInjectIntoPseudo(raw, results);
-  else if (format === 'Natural Language') outputText = stInjectIntoNL(raw, results);
-  else                               outputText = stInjectIntoPseudo(raw, results);
+  if (format === 'JSON')             outputText = stInjectIntoJSON(raw, selectedResults);
+  else if (format === 'YAML')        outputText = stInjectIntoPseudo(raw, selectedResults);
+  else if (format === 'Natural Language') outputText = stInjectIntoNL(raw, selectedResults);
+  else                               outputText = stInjectIntoPseudo(raw, selectedResults);
   _currentOutput = outputText;
 
-  // Build LLM prompt
-  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, missing, warned, format);
+  // Build LLM prompt — only includes selected missing requirements
+  _currentPrompt = LLM_PROMPT_TEMPLATE(raw, selectedMissing, warned, format);
 
   // Render output panel
   const outEl = document.getElementById('st-output');
@@ -2466,13 +2470,13 @@ function stTransform() {
     outEl.style.fontSize = '12px';
     outEl.style.lineHeight = '1.8';
   }
-  outEl.innerHTML = stColorizeOutput(outputText, format, results);
+  outEl.innerHTML = stColorizeOutput(outputText, format, selectedResults);
 
   // Footer
   const footerEl = document.getElementById('st-output-footer');
   footerEl.style.display = 'flex';
   document.getElementById('st-output-hint').textContent =
-    `${missing.length} requirement${missing.length !== 1 ? 's' : ''} added · ${present.length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
+    `${selectedMissing.length} requirement${selectedMissing.length !== 1 ? 's' : ''} added · ${present.length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
 
   // Copy output button
   document.getElementById('st-copy-output-btn').style.display = 'inline-flex';
