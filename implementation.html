@@ -2078,11 +2078,15 @@ function stIsNaturalLanguage(text) {
   const t = text.trim();
   if (t.startsWith('{') || t.startsWith('[')) return false;         // JSON
   if (/^[a-z_]+:\s/m.test(t) && !t.includes('(')) return false;    // YAML
-  if (/\bdef |function |skill |->|=>|\bif .+:|return\b/.test(t)) return false; // pseudocode
-  // Looks like sentences: has multiple words per line, ends in punctuation, no colons at line start
+  // Pseudocode: lines that start with keywords or use -> => syntax
+  // Exclude word "skill" when it appears mid-sentence (e.g. "use the X skill to do Y")
+  const pseudoLines = t.split('\n').filter(l => /^\s*(def |function |skill [a-z_]+\(|->|=>)/.test(l) || /\bif .+:$/.test(l.trim()) || /^return\b/.test(l.trim()));
+  if (pseudoLines.length >= 2) return false;
+  // Looks like sentences or bullet instructions
   const sentences = t.match(/[A-Z][^.!?]*[.!?]/g) || [];
+  const bullets = t.split('\n').filter(l => /^\s*[-–*]/.test(l));
   const avgLineLen = t.split('\n').reduce((s, l) => s + l.length, 0) / (t.split('\n').length || 1);
-  return sentences.length >= 1 || avgLineLen > 60;
+  return sentences.length >= 1 || bullets.length >= 2 || avgLineLen > 60;
 }
 
 // Per-check structural rules — only emitted when that check is selected or already present
@@ -2382,21 +2386,48 @@ function stToggleCheck(id) {
   } else {
     _selectedIds.add(id);
   }
-  // Re-render checks grid
   document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
   stUpdateSelCount();
+  stSyncPrompt();
 }
 
 function stSelectAll() {
   _lastResults.filter(r => !r.present).forEach(r => _selectedIds.add(r.id));
   document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
   stUpdateSelCount();
+  stSyncPrompt();
 }
 
 function stSelectNone() {
   _lastResults.filter(r => !r.present).forEach(r => _selectedIds.delete(r.id));
   document.getElementById('st-checks-grid').innerHTML = stBuildChecksHTML(_lastResults);
   stUpdateSelCount();
+  stSyncPrompt();
+}
+
+function stSyncPrompt() {
+  if (!_lastRaw) return;
+  const filteredResults = _lastResults.map(r => r.present ? r : { ...r, present: !_selectedIds.has(r.id) });
+  const missing = filteredResults.filter(r => !r.present);
+  const warned  = filteredResults.filter(r => r.present && r.hasWarn);
+
+  let outputText;
+  if (_lastFormat === 'JSON')                  outputText = stInjectIntoJSON(_lastRaw, filteredResults);
+  else if (_lastFormat === 'YAML')             outputText = stInjectIntoPseudo(_lastRaw, filteredResults);
+  else if (_lastFormat === 'Natural Language') outputText = stInjectIntoNL(_lastRaw, filteredResults);
+  else                                         outputText = stInjectIntoPseudo(_lastRaw, filteredResults);
+  _currentOutput = outputText;
+  _currentPrompt = LLM_PROMPT_TEMPLATE(_lastRaw, missing, warned, _lastFormat, _lastResults);
+
+  const outEl = document.getElementById('st-output');
+  outEl.innerHTML = stColorizeOutput(outputText, _lastFormat, filteredResults);
+
+  document.getElementById('st-output-hint').textContent =
+    `${missing.length} requirement${missing.length !== 1 ? 's' : ''} added · ${filteredResults.filter(r => r.present && !r.hasWarn).length} already present${warned.length ? ` · ${warned.length} warning${warned.length !== 1 ? 's' : ''}` : ''}`;
+
+  const previewLines = _currentPrompt.split('\n').slice(0, 28).join('\n');
+  document.getElementById('st-prompt-text').innerHTML =
+    esc(previewLines) + '\n<em>... [' + _currentPrompt.split('\n').length + ' lines total — copy to get the full prompt]</em>';
 }
 
 function stUpdateSelCount() {
