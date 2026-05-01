@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journey Map · Toast IQ Research</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf8f5;color:#2d2d2d;padding-bottom:120px}
+a{color:inherit;text-decoration:none}
+
+/* ── TOPBAR ── */
+.tb{position:sticky;top:0;z-index:200;background:#1e1e1e;height:44px;display:flex;align-items:center;padding:0 24px;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.tb-logo{color:#f97316;font-size:13px;font-weight:800;letter-spacing:-.2px;text-decoration:none;white-space:nowrap}
+.tb-divider{width:1px;height:16px;background:rgba(255,255,255,0.12);margin:0 16px;flex-shrink:0}
+.tb-nav{display:flex;align-items:center;gap:4px}
+.tb-link{color:rgba(255,255,255,0.45);font-size:12px;text-decoration:none;padding:4px 9px;border-radius:5px;transition:color .15s,background .15s;white-space:nowrap}
+.tb-link:hover{color:white;background:rgba(255,255,255,0.07)}
+.tb-link.active{color:#f97316;background:rgba(249,115,22,0.1)}
+.tb-sep{color:rgba(255,255,255,0.12);font-size:11px;padding:0 2px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
+
+/* ── HERO ── */
+.hero{background:#1e1e1e;padding:48px 40px 40px}
+.hero-inner{max-width:1200px;margin:0 auto}
+.hero-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#f97316;margin-bottom:12px}
+.hero-title{font-size:32px;font-weight:800;color:white;line-height:1.2;margin-bottom:10px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;max-width:640px;margin-bottom:28px}
+.hero-meta{display:flex;gap:20px;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,0.35)}
+.hero-meta-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── LEGEND ── */
+.legend{max-width:1200px;margin:20px auto 0;padding:0 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#888}
+.legend-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.ls-pain{background:#ef4444}
+.ls-opp{background:#7B5DB5}
+.ls-quote{background:#f97316}
+.ls-ok{background:#22c55e}
+
+/* ── JOURNEY CANVAS ── */
+.canvas{max-width:1200px;margin:24px auto 0;padding:0 28px}
+
+/* stage header row */
+.stage-rail{display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative;margin-bottom:0}
+.stage-cell{padding:12px 14px 10px;text-align:center;position:relative}
+.stage-cell::after{content:'›';position:absolute;right:-6px;top:50%;transform:translateY(-50%);font-size:16px;color:rgba(255,255,255,0.2);z-index:2}
+.stage-cell:last-child::after{display:none}
+.stage-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stage-name{font-size:13px;font-weight:800;color:white;line-height:1.2}
+.stage-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4}
+
+/* stage colors */
+.s1{background:#1a2a3a}
+.s2{background:#1a2635}
+.s3{background:#1e2030}
+.s4{background:#221e2c}
+.s5{background:#271a27}
+.s6{background:#1a241f}
+.s1 .stage-num{color:#60a5fa}
+.s2 .stage-num{color:#818cf8}
+.s3 .stage-num{color:#a78bfa}
+.s4 .stage-num{color:#c084fc}
+.s5 .stage-num{color:#f97316}
+.s6 .stage-num{color:#34d399}
+
+/* ── ROW SYSTEM ── */
+.row-label-col{width:140px;flex-shrink:0;padding:12px 14px 12px 0;display:flex;align-items:flex-start}
+.row-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;line-height:1.4}
+
+.map-row{display:flex;border-top:1px solid #ede8e0;min-height:80px}
+.map-row:last-child{border-bottom:1px solid #ede8e0}
+.row-cells{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:0}
+.cell{padding:12px 13px;border-left:1px solid #ede8e0;font-size:12px;color:#444;line-height:1.55;position:relative;vertical-align:top}
+.cell:last-child{border-right:1px solid #ede8e0}
+.cell.empty{background:#fdfcfb}
+
+/* row-specific backgrounds */
+.row-goal .cell{background:#fafeff}
+.row-action .cell{background:white}
+.row-touchpoint .cell{background:#faf8ff}
+.row-emotion .cell{background:#fffcf8}
+.row-pain .cell{background:#fff8f8}
+.row-opp .cell{background:#faf8ff}
+
+/* ── CELL CONTENT COMPONENTS ── */
+.cell-title{font-size:11px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.cell-text{font-size:11px;color:#555;line-height:1.55}
+.cell-text + .cell-text{margin-top:5px}
+
+/* action chips */
+.action-chip{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;margin:2px 2px 2px 0;background:#f5f0ea;color:#555;border:1px solid #ede8e0}
+
+/* touchpoint badges */
+.tp{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;margin:2px 2px 2px 0;border:1px solid}
+.tp-toast{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.tp-manual{background:#f5f3ff;color:#7c3aed;border-color:#ddd6fe}
+.tp-email{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+.tp-none{background:#f9f9f9;color:#999;border-color:#e5e5e5}
+
+/* emotion bar */
+.emo-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
+.emo-bar{flex:1;height:6px;border-radius:3px;background:#f0ece6;overflow:hidden;position:relative}
+.emo-fill{height:100%;border-radius:3px;transition:width .3s}
+.emo-pos{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.emo-neu{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.emo-neg{background:linear-gradient(90deg,#f97316,#ef4444)}
+.emo-label{font-size:10px;font-weight:700;white-space:nowrap}
+.emo-pos-label{color:#16a34a}
+.emo-neu-label{color:#d97706}
+.emo-neg-label{color:#dc2626}
+.emo-note{font-size:10.5px;color:#777;margin-top:5px;line-height:1.5}
+
+/* pain tags */
+.pain-tag{display:block;font-size:11px;padding:6px 9px;border-radius:5px;margin-bottom:5px;line-height:1.45;border-left:3px solid #ef4444;background:#fff5f5;color:#7f1d1d}
+.pain-tag:last-child{margin-bottom:0}
+.pain-tag strong{color:#dc2626;font-weight:700}
+.pain-tag .who{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#f87171;display:block;margin-bottom:2px}
+
+/* opp tags */
+.opp-tag{display:block;font-size:11px;padding:6px 9px;border-radius:5px;margin-bottom:5px;line-height:1.45;border-left:3px solid #7B5DB5;background:#f5f3ff;color:#3b0764}
+.opp-tag:last-child{margin-bottom:0}
+.opp-tag strong{color:#7B5DB5;font-weight:700}
+.opp-tag .label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#a78bfa;display:block;margin-bottom:2px}
+
+/* quote callout */
+.quote-cell{font-size:11px;color:#333;font-style:italic;border-left:2px solid #f97316;padding-left:8px;line-height:1.55;margin-top:4px}
+.quote-who{font-size:10px;font-weight:700;color:#f97316;font-style:normal;display:block;margin-top:3px}
+
+/* ── EXPERIENCE CURVE ── */
+.curve-section{max-width:1200px;margin:36px auto 0;padding:0 28px}
+.curve-canvas{background:white;border:1px solid #ede8e0;border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.curve-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:16px}
+.curve-svg{width:100%;height:140px}
+
+/* ── SUMMARY GRID ── */
+.summary-section{max-width:1200px;margin:32px auto 0;padding:0 28px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
+.sum-card{border-radius:10px;padding:18px 20px}
+.sum-card.red{background:#fff5f5;border:1px solid #fde0dc}
+.sum-card.purple{background:#f5f3ff;border:1px solid #ddd6fe}
+.sum-card.green{background:#f0fdf4;border:1px solid #bbf7d0}
+.sum-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.sum-card.red .sum-label{color:#ef4444}
+.sum-card.purple .sum-label{color:#7B5DB5}
+.sum-card.green .sum-label{color:#16a34a}
+.sum-item{font-size:12px;color:#333;line-height:1.55;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
+.sum-item:last-child{border-bottom:none}
+.sum-item strong{font-weight:700}
+
+/* ── KEY INSIGHT STRIP ── */
+.insight-strip{max-width:1200px;margin:28px auto 0;padding:0 28px}
+.insight-block{background:#1e1e1e;border-radius:12px;padding:24px 28px}
+.insight-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#f97316;margin-bottom:14px}
+.insight-text{font-size:15px;color:rgba(255,255,255,0.82);line-height:1.8}
+.insight-text strong{color:white}
+
+/* ── SECTION TITLE ── */
+.section-title-row{display:flex;align-items:baseline;gap:10px;margin:32px 0 14px}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#aaa;margin:0}
+.section-title-divider{flex:1;height:1px;background:#ede8e0}
+
+/* scrollable map wrapper */
+.map-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.map-inner{min-width:960px}
+
+.row-bg-goal{background:#f7feff}
+.row-bg-action{background:white}
+.row-bg-touch{background:#faf8ff}
+.row-bg-emotion{background:#fffcf8}
+.row-bg-pain{background:#fff8f8}
+.row-bg-opp{background:#faf7ff}
+
+@media(max-width:700px){
+  .hero{padding:32px 20px 28px}
+  .canvas,.curve-section,.summary-section,.insight-strip,.legend{padding:0 16px}
+  .summary-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <a href="index.html" class="tb-logo">Toast IQ</a>
+  <div class="tb-divider"></div>
+  <nav class="tb-nav">
+    <a href="combined.html" class="tb-link">Combined Summary</a>
+    <span class="tb-sep">·</span>
+    <a href="framework.html" class="tb-link">Framework</a>
+    <span class="tb-sep">·</span>
+    <a href="jtbd.html" class="tb-link">JTBD</a>
+    <span class="tb-sep">·</span>
+    <a href="implementation.html" class="tb-link">Implementation</a>
+    <span class="tb-sep">·</span>
+    <a href="deck.html" class="tb-link">Presentation</a>
+    <span class="tb-sep">·</span>
+    <a href="chat-vision.html" class="tb-link">Chat Vision</a>
+    <span class="tb-sep">·</span>
+    <a href="journey.html" class="tb-link active">Journey Map</a>
+  </nav>
+  <div class="tb-right">
+    <span class="tb-meta">Journey Map</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">UX Research · Journey Map</div>
+    <div class="hero-title">Menu Ops Agent — End to End</div>
+    <div class="hero-sub">How operators move from noticing a cost problem to publishing a price change — and where the current agent design breaks down. Grounded in 4 participant sessions (P01–P04) across single and multi-location FSR and QSR operators.</div>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><div class="hero-meta-dot" style="background:#ef4444"></div>Pain point observed in research</div>
+      <div class="hero-meta-item"><div class="hero-meta-dot" style="background:#7B5DB5"></div>Design opportunity</div>
+      <div class="hero-meta-item"><div class="hero-meta-dot" style="background:#f97316"></div>Direct participant quote</div>
+      <div class="hero-meta-item"><div class="hero-meta-dot" style="background:#22c55e"></div>Working well</div>
+    </div>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <!-- STAGE HEADERS -->
+  <div class="map-scroll">
+  <div class="map-inner">
+
+  <div class="stage-rail" style="margin-bottom:0">
+    <div class="stage-cell s1">
+      <div class="stage-num">Stage 1</div>
+      <div class="stage-name">Trigger &amp; Discovery</div>
+      <div class="stage-sub">Operator notices a problem or signal</div>
+    </div>
+    <div class="stage-cell s2">
+      <div class="stage-num">Stage 2</div>
+      <div class="stage-name">Agent Interaction</div>
+      <div class="stage-sub">Opens IQ, reads the recommendation</div>
+    </div>
+    <div class="stage-cell s3">
+      <div class="stage-num">Stage 3</div>
+      <div class="stage-name">Evaluation &amp; Trust</div>
+      <div class="stage-sub">Interrogates data, verifies numbers</div>
+    </div>
+    <div class="stage-cell s4">
+      <div class="stage-num">Stage 4</div>
+      <div class="stage-name">Decision &amp; Drafting</div>
+      <div class="stage-sub">Builds case, routes for approval</div>
+    </div>
+    <div class="stage-cell s5">
+      <div class="stage-num">Stage 5</div>
+      <div class="stage-name">Approve &amp; Publish</div>
+      <div class="stage-sub">Decision-maker confirms and applies</div>
+    </div>
+    <div class="stage-cell s6">
+      <div class="stage-num">Stage 6</div>
+      <div class="stage-name">Post-Publish</div>
+      <div class="stage-sub">Follow-up coordination &amp; review</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: OPERATOR GOAL -->
+  <div class="map-row row-bg-goal">
+    <div class="row-label-col"><div class="row-label">Operator<br>Goal</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <div class="cell-title">Understand the problem</div>
+        <div class="cell-text">Protect margins when costs spike. Identify whether to raise prices, find alternatives, or do nothing yet.</div>
+      </div>
+      <div class="cell">
+        <div class="cell-title">Get a credible recommendation</div>
+        <div class="cell-text">See a clear, well-evidenced suggestion that gives me enough to evaluate — not just a conclusion.</div>
+      </div>
+      <div class="cell">
+        <div class="cell-title">Verify the numbers</div>
+        <div class="cell-text">Confirm the data behind the recommendation is accurate and timely before committing to anything.</div>
+      </div>
+      <div class="cell">
+        <div class="cell-title">Get org sign-off</div>
+        <div class="cell-text">Build and route a fully-formed case to whoever needs to approve — owner, GM, or myself.</div>
+      </div>
+      <div class="cell">
+        <div class="cell-title">Publish the right change</div>
+        <div class="cell-text">Apply the change across the right locations, confident nothing downstream breaks.</div>
+      </div>
+      <div class="cell">
+        <div class="cell-title">Close the loop</div>
+        <div class="cell-text">Make sure staff, website, delivery menus, and socials are all updated. Know if it worked.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: ACTIONS -->
+  <div class="map-row row-bg-action">
+    <div class="row-label-col"><div class="row-label">What the operator does</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <span class="action-chip">Checks invoices / POS</span>
+        <span class="action-chip">Runs mental math</span>
+        <span class="action-chip">Checks Toast IQ for signals</span>
+        <div class="cell-text" style="margin-top:7px">P01 does this on a notepad. P03 catches it during quarterly menu review.</div>
+      </div>
+      <div class="cell">
+        <span class="action-chip">Opens IQ recommendation</span>
+        <span class="action-chip">Reads headline + projected saving</span>
+        <span class="action-chip">Scans data sources shown</span>
+        <div class="cell-text" style="margin-top:7px">P02: immediately cross-checks against own mental model before proceeding.</div>
+      </div>
+      <div class="cell">
+        <span class="action-chip">Asks "where did this come from?"</span>
+        <span class="action-chip">Opens POS to verify units sold</span>
+        <span class="action-chip">Questions benchmark peer group</span>
+        <div class="cell-text" style="margin-top:7px">P03 asked data provenance questions 4× in one session.</div>
+      </div>
+      <div class="cell">
+        <span class="action-chip">Screenshots or exports</span>
+        <span class="action-chip">Sits down with owner/GM</span>
+        <span class="action-chip">Discusses tradeoffs manually</span>
+        <div class="cell-text" style="margin-top:7px">P04 and P02 always involve a second person. No draft state exists today.</div>
+      </div>
+      <div class="cell">
+        <span class="action-chip">Owner reviews in person</span>
+        <span class="action-chip">Selects price in UI</span>
+        <span class="action-chip">Checks modifier list</span>
+        <span class="action-chip">Confirms + publishes</span>
+      </div>
+      <div class="cell">
+        <span class="action-chip">Tells staff manually</span>
+        <span class="action-chip">Updates website</span>
+        <span class="action-chip">Posts on social (sometimes)</span>
+        <span class="action-chip">Reprints menus</span>
+        <div class="cell-text" style="margin-top:7px">All carried in the operator's head. Agent currently treats Publish as the final step.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: TOUCHPOINTS -->
+  <div class="map-row row-bg-touch">
+    <div class="row-label-col"><div class="row-label">Touchpoints</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <span class="tp tp-toast">Toast IQ alert</span>
+        <span class="tp tp-manual">Invoices / manual</span>
+        <span class="tp tp-email">Email digest</span>
+        <div class="cell-text" style="margin-top:6px">Trigger is inconsistent — operators discover problems via multiple channels, not a unified feed.</div>
+      </div>
+      <div class="cell">
+        <span class="tp tp-toast">IQ Recommendation card</span>
+        <span class="tp tp-toast">Menus page surface</span>
+        <div class="cell-text" style="margin-top:6px">P01 prefers contextual surfacing on the Menus page. P04 wants a morning news brief in Toast Now.</div>
+      </div>
+      <div class="cell">
+        <span class="tp tp-toast">IQ data breakdown</span>
+        <span class="tp tp-manual">External POS cross-check</span>
+        <span class="tp tp-manual">Mental model / experience</span>
+        <div class="cell-text" style="margin-top:6px">Verification often leaves the Toast surface entirely.</div>
+      </div>
+      <div class="cell">
+        <span class="tp tp-manual">In-person meeting</span>
+        <span class="tp tp-manual">Screenshot / export</span>
+        <span class="tp tp-none">No draft state in product</span>
+        <div class="cell-text" style="margin-top:6px">The approval loop happens entirely outside Toast. No persistence, no routing, no record.</div>
+      </div>
+      <div class="cell">
+        <span class="tp tp-toast">IQ confirm screen</span>
+        <span class="tp tp-toast">Toast POS publish</span>
+        <span class="tp tp-manual">Menu Masters (P02/P04)</span>
+        <div class="cell-text" style="margin-top:6px">Multi-location operators must repeat per store without Menu Masters integration.</div>
+      </div>
+      <div class="cell">
+        <span class="tp tp-manual">Staff verbal comms</span>
+        <span class="tp tp-manual">Restaurant website</span>
+        <span class="tp tp-manual">Social media (manual)</span>
+        <span class="tp tp-manual">Menu reprinting</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: EMOTION -->
+  <div class="map-row row-bg-emotion">
+    <div class="row-label-col"><div class="row-label">Emotional experience</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-neg" style="width:55%"></div></div>
+          <span class="emo-label emo-neg-label">Anxious</span>
+        </div>
+        <div class="emo-note">Margin pressure is stressful. Manual math feels inadequate. P01: "I do it longhand on a notepad."</div>
+      </div>
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-pos" style="width:75%"></div></div>
+          <span class="emo-label emo-pos-label">Curious + hopeful</span>
+        </div>
+        <div class="emo-note">Agent surfacing a recommendation feels like a genuine upgrade over current process. P02: "That would be nice."</div>
+      </div>
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-neg" style="width:70%"></div></div>
+          <span class="emo-label emo-neg-label">Skeptical</span>
+        </div>
+        <div class="emo-note">Unanchored numbers trigger distrust. P03 became suspicious of $847 projection without a unit basis. Can't verify = can't trust.</div>
+      </div>
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-neg" style="width:60%"></div></div>
+          <span class="emo-label emo-neg-label">Frustrated</span>
+        </div>
+        <div class="emo-note">No tool support for the approval process. Operators are on their own to present the case. P04: "Myself and the owners sitting down..."</div>
+      </div>
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-neu" style="width:65%"></div></div>
+          <span class="emo-label emo-neu-label">Cautious</span>
+        </div>
+        <div class="emo-note">Willing to approve but not auto-apply. Credits model triggers friction right at moment of highest intent. P04: "Right off the bat, don't like it."</div>
+      </div>
+      <div class="cell">
+        <div class="emo-wrap">
+          <div class="emo-bar"><div class="emo-fill emo-pos" style="width:60%"></div></div>
+          <span class="emo-label emo-pos-label">Relieved, but incomplete</span>
+        </div>
+        <div class="emo-note">Publishing feels good but the work isn't done. Operators carry the follow-up checklist in their heads. Agent treats this as the finish line.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5: PAIN POINTS -->
+  <div class="map-row row-bg-pain">
+    <div class="row-label-col"><div class="row-label">Pain points</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P01 · P03</span>
+          <strong>Reactive, not proactive.</strong> Operators discover cost problems through manual invoice review or POS dips — no unified alert surface.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P03</span>
+          <strong>Quarterly batch constraint.</strong> Printed menus mean changes can only happen at review cycles — urgency framing from the agent is irrelevant.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P01 · P02 · P03 · P04</span>
+          <strong>One answer, not options.</strong> Agent recommends "raise the price." Operators want a set of paths — alternative supplier, portion reduction, bundling — with tradeoffs.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P02</span>
+          <strong>Urgency misalignment.</strong> "Effective tomorrow" framing conflicts with quarterly-cadence operators. Erodes trust in the recommendation engine.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P03</span>
+          <strong>Unanchored projections.</strong> "$847 monthly recovery" with no unit basis. Operators can't verify the math → they don't trust the number.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P01</span>
+          <strong>Stale data.</strong> Recipes in Toast not updated after dish evolution. Operator knows the data may be wrong but has no way to flag it before trusting recommendations.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P03</span>
+          <strong>Benchmark blindness.</strong> Geographic averaging doesn't account for concept tier. P03's upscale concept gets told it's "overpriced" vs. nearby fast casual.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P02 · P03 · P04</span>
+          <strong>No draft state.</strong> Every operator needs to involve a second person before publishing. There's no way to save, share, or route a recommendation package within Toast.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P04</span>
+          <strong>Silent cascade risk.</strong> Base price changes can silently break modifier arbitrage. P04 had a live incident. Agent currently treats pricing as item-level.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P02 · P04</span>
+          <strong>Multi-location repetition.</strong> Without Menu Masters integration, approving = doing it 4 times. Makes the workflow net-negative for chains.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P02 · P04</span>
+          <strong>Credits friction at peak intent.</strong> Gate appears exactly when operator is ready to act. P04 would abandon workflow and investigate manually rather than pay.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P03</span>
+          <strong>Delivery menu gap.</strong> Approved change does not cascade to DoorDash/Uber Eats pricing tiers.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="pain-tag">
+          <span class="who">P01 · P02 · P04</span>
+          <strong>Invisible follow-up.</strong> Staff notification, menu reprinting, website update, social post — all happen in the operator's head. Agent treats Publish as done.
+        </span>
+        <span class="pain-tag">
+          <span class="who">P01</span>
+          <strong>No before/after visibility.</strong> Post-publish, operators can't easily see what changed vs. what it was, or whether margin improved.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 6: OPPORTUNITIES -->
+  <div class="map-row row-bg-opp">
+    <div class="row-label-col"><div class="row-label">Design opportunities</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Daily brief</span>
+          <strong>Morning digest card.</strong> Bundle cost spikes, performance alerts, and pending recommendations into one dismissible daily card — delivered before the day starts, not mid-service.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Proactive surface</span>
+          <strong>Contextual menus-page trigger.</strong> Surface the recommendation in context (on the item, not in a separate tool) with a "projected update" deeplink.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Multiple paths</span>
+          <strong>Options, not answers.</strong> Respond to cost spikes with 3–4 paths (raise price / alternative supplier / reduce portion / bundle) with projected margin impact per option. Operator decides.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Cadence-aware</span>
+          <strong>Operator-derived urgency.</strong> Frame urgency based on how this operator actually works — "for your next quarterly review" vs. "effective tomorrow."
+        </span>
+      </div>
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Provenance</span>
+          <strong>Show the math.</strong> Every projection anchored to a verifiable unit assumption: "Based on 847 units in March." Operator can open POS and check.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Data health</span>
+          <strong>Verify before recommending.</strong> Run data health check first. If stale: show a DataHealthCard ("your recipe was last updated 8 months ago") instead of a potentially wrong recommendation.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Concept-aware benchmarks</span>
+          <strong>Tier-aware peer groups.</strong> Benchmark by concept tier, not just geography. Surface peer group composition ("28 full-service, avg check $35–55") so operators can evaluate the comparison.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Persistent draft</span>
+          <strong>Draft state + role routing.</strong> A named, persistent change package that routes to the right approver role (owner/GM) and waits — does not expire overnight.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Cascade map</span>
+          <strong>Show the downstream graph.</strong> Before any recommendation, run cascade mapper. Surface affected modifiers, bundles, and delivery items upfront — before the confirm step.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Scope selector</span>
+          <strong>Publish once, propagate everywhere.</strong> Declare scope (this location / all / select) at draft creation. Integrate with Menu Masters for chains.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Rollback</span>
+          <strong>Show the exit.</strong> Tell the operator whether and how the change can be reversed before they approve. Reversibility unlocks willingness to act.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Credits</span>
+          <strong>Move the gate earlier.</strong> Translate credits to dollar value at the point of recommendation, not the confirm step. Let operators see ROI before intent peaks.
+        </span>
+      </div>
+      <div class="cell">
+        <span class="opp-tag">
+          <span class="label">Downstream checklist</span>
+          <strong>Post-publish coordination package.</strong> Staff notification (drafted), website prompt, social suggestion — built into the draft as a required step, not an afterthought.
+        </span>
+        <span class="opp-tag">
+          <span class="label">Before/after summary</span>
+          <strong>Close the loop.</strong> Show a before/after price table with total delta. P01: "right to all the important information."
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 7: PARTICIPANT QUOTES -->
+  <div class="map-row row-bg-goal" style="border-bottom:1px solid #ede8e0">
+    <div class="row-label-col"><div class="row-label">Research quotes</div></div>
+    <div class="row-cells">
+      <div class="cell">
+        <div class="quote-cell">"I do it longhand on a notepad — it's very inexact."
+          <span class="quote-who">P01 · Owner/Operator · FSR</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="quote-cell">"You're asking it to do something for you instead of just asking a question — and that would be nice."
+          <span class="quote-who">P02 · Menu &amp; Ops Manager · QSR</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="quote-cell">"If you sold 100 items this month, this is what your increase would be — give me something I can check."
+          <span class="quote-who">P03 · Multi-Location Owner · FSR</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="quote-cell">"Anything pricing or menu — myself and the owners sitting down and discussing. And then making a decision."
+          <span class="quote-who">P04 · Multi-Location Operator · FSR</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="quote-cell">"Right off the bat, don't like it [credits]. I definitely wouldn't purchase it — I'd just investigate it myself."
+          <span class="quote-who">P04 · Multi-Location Operator · FSR</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="quote-cell">"Sometimes I'm like, oh, I forgot to do that — the reminder is enough, honestly."
+          <span class="quote-who">P02 · Menu &amp; Ops Manager · QSR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /map-inner -->
+  </div><!-- /map-scroll -->
+
+</div><!-- /canvas -->
+
+<!-- EXPERIENCE CURVE -->
+<div class="curve-section">
+  <div class="section-title-row">
+    <span class="section-title" style="margin:0">Experience Curve</span>
+    <div class="section-title-divider"></div>
+  </div>
+  <div class="curve-canvas">
+    <div class="curve-title">Operator sentiment across the journey — composite across P01–P04</div>
+    <svg class="curve-svg" viewBox="0 0 1100 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Grid lines -->
+      <line x1="0" y1="35" x2="1100" y2="35" stroke="#f5f0ea" stroke-width="1"/>
+      <line x1="0" y1="70" x2="1100" y2="70" stroke="#f5f0ea" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="0" y1="105" x2="1100" y2="105" stroke="#f5f0ea" stroke-width="1"/>
+      <!-- Axis labels -->
+      <text x="4" y="31" font-size="9" fill="#bbb" font-family="system-ui">Positive</text>
+      <text x="4" y="73" font-size="9" fill="#bbb" font-family="system-ui">Neutral</text>
+      <text x="4" y="108" font-size="9" fill="#bbb" font-family="system-ui">Negative</text>
+      <!-- Stage dividers -->
+      <line x1="183" y1="0" x2="183" y2="140" stroke="#ede8e0" stroke-width="1"/>
+      <line x1="366" y1="0" x2="366" y2="140" stroke="#ede8e0" stroke-width="1"/>
+      <line x1="549" y1="0" x2="549" y2="140" stroke="#ede8e0" stroke-width="1"/>
+      <line x1="732" y1="0" x2="732" y2="140" stroke="#ede8e0" stroke-width="1"/>
+      <line x1="915" y1="0" x2="915" y2="140" stroke="#ede8e0" stroke-width="1"/>
+      <!-- Stage labels -->
+      <text x="91"  y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Trigger</text>
+      <text x="274" y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Interaction</text>
+      <text x="457" y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Evaluation</text>
+      <text x="640" y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Decision</text>
+      <text x="823" y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Publish</text>
+      <text x="1007" y="133" font-size="9" fill="#bbb" font-family="system-ui" text-anchor="middle">Post-Publish</text>
+      <!-- Experience curve — current state (red/orange) -->
+      <!-- Points: S1=anxious(95), S2=hopeful(30), S3=skeptical(100), S4=frustrated(95), S5=cautious(70), S6=incomplete(60) -->
+      <polyline
+        points="91,95 274,32 457,100 640,95 823,70 1007,62"
+        fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linejoin="round"/>
+      <!-- Dots -->
+      <circle cx="91"  cy="95" r="5" fill="#ef4444"/>
+      <circle cx="274" cy="32" r="5" fill="#22c55e"/>
+      <circle cx="457" cy="100" r="5" fill="#ef4444"/>
+      <circle cx="640" cy="95" r="5" fill="#ef4444"/>
+      <circle cx="823" cy="70" r="5" fill="#f59e0b"/>
+      <circle cx="1007" cy="62" r="5" fill="#f59e0b"/>
+      <!-- Annotations -->
+      <text x="274" y="24" font-size="9" fill="#16a34a" font-family="system-ui" text-anchor="middle">Hope peak</text>
+      <text x="457" y="118" font-size="9" fill="#dc2626" font-family="system-ui" text-anchor="middle">Trust trough</text>
+      <text x="640" y="113" font-size="9" fill="#dc2626" font-family="system-ui" text-anchor="middle">Process gap</text>
+    </svg>
+    <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#888"><div style="width:14px;height:3px;background:#ef4444;border-radius:2px"></div>Current experience</div>
+      <div style="font-size:11px;color:#aaa">Two critical drops: Stage 3 (trust trough — unverifiable data) and Stage 4 (process gap — no draft state). The hope peak at Stage 2 is real and fragile — it depends entirely on what comes next.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY GRID -->
+<div class="summary-section">
+  <div class="section-title-row">
+    <span class="section-title" style="margin:0">Summary</span>
+    <div class="section-title-divider"></div>
+  </div>
+  <div class="summary-grid">
+    <div class="sum-card red">
+      <div class="sum-label">Critical pain points</div>
+      <div class="sum-item"><strong>No draft/review state.</strong> Approval loop happens entirely outside Toast — no persistence, no routing, no record.</div>
+      <div class="sum-item"><strong>Unanchored projections.</strong> Numbers without a verifiable basis feel fabricated. Stage 3 trust trough collapses early interest.</div>
+      <div class="sum-item"><strong>Silent cascade risk.</strong> Agent treats pricing as item-level. Modifier arbitrage is a real, documented incident (P04).</div>
+      <div class="sum-item"><strong>Agent treats Publish as the end.</strong> Post-publish coordination is invisible — operators carry it in their heads.</div>
+      <div class="sum-item"><strong>Credits gate at peak intent.</strong> Friction appears exactly when the operator is most ready to act.</div>
+    </div>
+    <div class="sum-card purple">
+      <div class="sum-label">Highest-leverage opportunities</div>
+      <div class="sum-item"><strong>Persistent draft + role routing.</strong> The biggest structural gap. No other improvement matters if approval can't happen inside Toast.</div>
+      <div class="sum-item"><strong>Provenance + projection basis.</strong> Attach a verifiable unit assumption to every number. Lets operators check the math themselves — the minimum bar for trust.</div>
+      <div class="sum-item"><strong>Options, not answers.</strong> Alternative supplier path reframes the product from "pricing tool" to "margin protection tool." Highest differentiation.</div>
+      <div class="sum-item"><strong>Downstream coordination package.</strong> Built into the draft as a required step — not a post-publish afterthought.</div>
+      <div class="sum-item"><strong>Cascade map before confirm.</strong> Surface affected modifiers/bundles before the approve step, not after publish.</div>
+    </div>
+    <div class="sum-card green">
+      <div class="sum-label">What's working</div>
+      <div class="sum-item"><strong>Concept recognition.</strong> Every participant understood the agent model immediately. No orientation confusion — the shift from Q&amp;A to action-taking landed positively.</div>
+      <div class="sum-item"><strong>Confidence scores + reasoning.</strong> P02 appreciated explicit reasoning in the UI as a trust-building signal.</div>
+      <div class="sum-item"><strong>Downstream checklist.</strong> Even a static reminder was appreciated by P02. P03 accepted it naturally.</div>
+      <div class="sum-item"><strong>Menus-page surfacing.</strong> P01 and P03 found the IQ bar in context natural and well-placed — don't move it to a separate tool.</div>
+      <div class="sum-item"><strong>Before/after summary.</strong> Post-publish table described by P01 as "right to all the important information."</div>
+    </div>
+  </div>
+</div>
+
+<!-- KEY INSIGHT -->
+<div class="insight-strip">
+  <div class="insight-block">
+    <div class="insight-label">The design constraint that runs through every stage</div>
+    <div class="insight-text">Operators are not trying to delegate decisions to the agent. They are trying to <strong>make better decisions faster</strong> — within their own organizational process, with their own sign-off authority, on their own cadence. Every stage where the agent assumes otherwise creates a trust breakdown. The agent is hired as a <strong>research assistant and work-product preparer</strong>. Design accordingly.</div>
+  </div>
+</div>
+
+</body>
+</html>
