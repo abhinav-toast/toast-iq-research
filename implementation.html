@@ -242,15 +242,15 @@ a{color:inherit;text-decoration:none}
 
 
 /* ── SKILL TRANSFORMER ── */
-.st-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;align-items:start}
-.st-panel{display:flex;flex-direction:column;gap:0}
-.st-panel-head{background:#1e1e1e;border-radius:10px 10px 0 0;padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333}
-.st-panel-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.5px;flex:1}
-.st-panel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.25)}
-.st-textarea{width:100%;min-height:320px;resize:vertical;background:#1a1a1a;border:1px solid #333;border-top:none;border-radius:0 0 0 0;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;outline:none;transition:border-color .15s;box-sizing:border-box}
+.st-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;align-items:stretch;grid-auto-rows:1fr}
+.st-panel{display:flex;flex-direction:column;gap:0;min-width:0;min-height:420px;max-height:clamp(420px,55vh,680px)}
+.st-panel-head{background:#1e1e1e;border-radius:10px 10px 0 0;padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #333;flex-shrink:0}
+.st-panel-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-panel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.25);flex-shrink:0}
+.st-textarea{width:100%;flex:1;resize:none;background:#1a1a1a;border:1px solid #333;border-top:none;border-radius:0;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;outline:none;transition:border-color .15s;box-sizing:border-box;min-height:0}
 .st-textarea:focus{border-color:#f97316}
 .st-textarea::placeholder{color:#555}
-.st-input-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px}
+.st-input-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .st-btn{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
 .st-btn.primary{background:#f97316;color:white}
 .st-btn.primary:hover{background:#ea6a0a}
@@ -262,9 +262,9 @@ a{color:inherit;text-decoration:none}
 .st-hint{font-size:11px;color:#555;flex:1}
 
 /* output panel */
-.st-output-body{background:#1a1a1a;border:1px solid #333;border-top:none;min-height:320px;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;overflow-x:auto;white-space:pre;border-radius:0}
-.st-output-body.empty{display:flex;align-items:center;justify-content:center;color:#444;font-family:inherit;white-space:normal;text-align:center;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.st-output-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.st-output-body{background:#1a1a1a;border:1px solid #333;border-top:none;flex:1;padding:16px;font-family:'SF Mono','Fira Mono',Menlo,monospace;font-size:12px;line-height:1.8;color:#d4d4d4;overflow:auto;white-space:pre;border-radius:0;min-height:0}
+.st-output-body.empty{display:flex;align-items:center;justify-content:center;color:#444;white-space:normal;text-align:center;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.st-output-footer{background:#1a1a1a;border:1px solid #333;border-top:1px solid #222;border-radius:0 0 10px 10px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
 
 /* annotation pills */
 .st-annotations{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
@@ -326,17 +326,17 @@ a{color:inherit;text-decoration:none}
 .st-tooltip-anchor:hover .st-tooltip{display:block}
 
 /* ── DIFF VIEW ── */
-.st-diff-wrap{display:none;background:#1a1a1a;border:1px solid #333;border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
+.st-diff-wrap{display:none;background:#1a1a1a;border:1px solid #333;border-top:none;border-radius:0 0 10px 10px;overflow:hidden;flex:1;min-height:0}
 .st-diff-wrap.active{display:flex}
-.st-diff-col{flex:1;min-width:0;overflow:hidden}
+.st-diff-col{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
 .st-diff-col+.st-diff-col{border-left:1px solid #2a2a2a}
-.st-diff-col-head{padding:6px 12px;background:#161616;border-bottom:1px solid #2a2a2a;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:6px}
+.st-diff-col-head{padding:6px 12px;background:#161616;border-bottom:1px solid #2a2a2a;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:6px;flex-shrink:0}
 .st-diff-col-head.left{color:#f87171}
 .st-diff-col-head.right{color:#4ade80}
 .st-diff-col-head span{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
 .st-diff-col-head.left span{background:#f87171}
 .st-diff-col-head.right span{background:#4ade80}
-.st-diff-lines{overflow-y:auto;max-height:480px;overflow-x:auto}
+.st-diff-lines{overflow:auto;flex:1;min-height:0}
 .st-diff-line{display:flex;min-height:22px;font-size:11.5px;font-family:'SF Mono','Fira Mono',Menlo,monospace;line-height:1.7}
 .st-diff-line.unchanged{}
 .st-diff-line.removed{background:rgba(239,68,68,0.1)}
