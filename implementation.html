@@ -2029,7 +2029,7 @@ const ST_CHECKS = [
   {
     id: 'mode',
     name: 'Behavioral mode',
-    desc: 'propose → draft → execute decomposition',
+    desc: 'does it ask before acting, or just do it?',
     tooltip: {
       title: 'Why behavioral mode matters',
       body: 'Operators in our research said the #1 reason they distrust AI agents is that actions happen without a review step. This requirement forces the skill to declare whether it is proposing (showing a recommendation), drafting (creating a change package for approval), or executing (applying the change). These must be structurally separate — not a single skill with a confirmation dialog.\n\nWithout this, agents act on behalf of operators without their explicit sign-off. A price change pushed directly to Toast POS cannot be undone without additional steps, and operators described this as a trust-breaking moment.',
@@ -2044,7 +2044,7 @@ const ST_CHECKS = [
   {
     id: 'provenance',
     name: 'Provenance',
-    desc: 'plain-language source attribution for every number',
+    desc: 'every figure traces back to a named source',
     tooltip: {
       title: 'Why provenance matters',
       body: 'When an agent says "your food cost is 34%," operators immediately ask: where did that number come from? Is it from yesterday\'s POS data or last month\'s invoice? Is it theoretical recipe cost or actual waste-adjusted cost?\n\nProvenance answers that question inline. Every data-derived number must be accompanied by a plain-language attribution — the data source, its timestamp, and how it was computed. This is what allows operators to trust a number enough to act on it.\n\nWithout provenance, operators either blindly trust numbers (risky) or spend time verifying them elsewhere (slow).',
@@ -2058,7 +2058,7 @@ const ST_CHECKS = [
   {
     id: 'basis',
     name: 'Projection basis',
-    desc: 'the assumption behind any $ or % estimate',
+    desc: 'states the assumption behind any forecast or estimate',
     tooltip: {
       title: 'Why projection basis matters',
       body: 'Projections like "this will save you $1,200/month" are only meaningful if the operator knows what assumption they rest on. Is that based on current volume? Last month\'s average? A seasonal peak?\n\nOperators in our research rejected projections that felt like "made-up numbers." The projection basis makes the math visible: "Based on 127 sandwiches/day over the last 30 days, at a $0.32 margin improvement per unit." Now the operator can evaluate whether that assumption holds for their situation.\n\nThis also protects against over-reliance on projections when the underlying assumption is outdated.',
@@ -2072,7 +2072,7 @@ const ST_CHECKS = [
   {
     id: 'affected_entities',
     name: 'Affected entities',
-    desc: 'cascade map of downstream items touched',
+    desc: 'lists everything else that gets changed downstream',
     tooltip: {
       title: 'Why affected entities matter',
       body: 'A menu item is not an island. Changing the price of a burger can affect the combo meal, the modifier group, the delivery menu pricing, and any active promotions that reference it. Operators learned this the hard way — and in our research, they described discovering surprise downstream effects as the most common reason they lost confidence in the agent.\n\nThis requirement forces the skill to run a cascade map before any recommendation and surface the full list of affected entities upfront. The operator sees the complete picture before deciding — not after.\n\nWithout this, operators either over-correct by doing extra manual checks, or worse, unknowingly approve changes with cascading side effects.',
@@ -2086,7 +2086,7 @@ const ST_CHECKS = [
   {
     id: 'rollback',
     name: 'Rollback token',
-    desc: 'reversibility handle for every state-modifying action',
+    desc: 'every change has a way to reverse it',
     tooltip: {
       title: 'Why rollback tokens matter',
       body: 'Operators are far more willing to try an AI-suggested change if they know they can undo it. Our research found that reversibility is a primary factor in whether an operator escalates trust — they described it as "having an exit."\n\nA rollback token is a handle the skill returns alongside any state-modifying action. It tells the operator: (1) whether the action can be reversed, (2) how to reverse it, and (3) for how long the rollback window is open.\n\nFor read-only skills the token is null. For any skill that writes to POS, inventory, or scheduling, the token must be present. Without it, operators treat every change as permanent — and become more cautious, not less.',
@@ -2100,7 +2100,7 @@ const ST_CHECKS = [
   {
     id: 'data_health',
     name: 'Data health check',
-    desc: 'prerequisite validation before surfacing a recommendation',
+    desc: 'validates inputs are clean before making any recommendation',
     tooltip: {
       title: 'Why data health checks matter',
       body: 'A recommendation is only as good as the data behind it. If the recipe costs are from 3 weeks ago, or the inventory sync failed last night, the agent should not surface a recommendation — it should tell the operator what is wrong and how to fix it.\n\nIn our research, operators described receiving confident-sounding recommendations based on stale data as a category of harm worse than receiving no recommendation at all. It erodes trust faster because the agent appears to not know its own limitations.\n\nThis check runs silently before every recommendation. On failure, it surfaces a DataHealthCard instead — naming the data gap, why it matters for this recommendation, and a direct action to resolve it.',
@@ -2114,7 +2114,7 @@ const ST_CHECKS = [
   {
     id: 'urgency',
     name: 'Urgency timing',
-    desc: 'operator-cadence-derived label, not hardcoded "act now"',
+    desc: 'urgency comes from real signals, not a hardcoded "act now"',
     tooltip: {
       title: 'Why urgency framing matters',
       body: 'Hardcoded urgency language like "act now" or "effective immediately" is calibrated to no one. An operator who reviews prices quarterly finds it alarming and ignores it. An operator who updates menus daily finds it redundant. Either way, it trains operators to distrust urgency signals — the AI cried wolf too many times.\n\nThis requirement makes urgency a derived value: the product of how serious the issue is (sensitivity) and how often this operator actually makes changes (cadence). A high-severity finding for a quarterly-cadence operator reads "Consider including this in your next menu review." The same finding for a daily-cadence operator reads "Worth addressing before tomorrow\'s service."\n\nThe warning flag triggers when your skill contains hardcoded urgency phrases that will need to be replaced.',
@@ -2130,7 +2130,7 @@ const ST_CHECKS = [
   {
     id: 'reviewer',
     name: 'Reviewer role',
-    desc: 'route draft to a role, not just the initiating user',
+    desc: 'routes the draft to an approver before it goes live',
     tooltip: {
       title: 'Why reviewer routing matters',
       body: 'Ops agents are often run by staff who are not the decision-makers. A server who asks "what should we 86?" is not necessarily the person who should approve pulling an item. A line cook who triggers a cost alert is not the one who approves the menu change.\n\nWithout explicit reviewer routing, drafts either auto-approve (dangerous) or get stuck with the initiating user (wrong person, wrong authority). This requirement forces every draft to declare the role it needs approval from — owner, GM, ops manager — and route accordingly.\n\nIn our research, operators described "someone changed something without anyone knowing" as a real incident pattern. Reviewer routing creates an auditable approval chain.',
@@ -2144,7 +2144,7 @@ const ST_CHECKS = [
   {
     id: 'disclosure',
     name: 'Summary / detail tiers',
-    desc: 'two-tier output structure for progressive disclosure',
+    desc: 'gives a one-liner first, full detail available on request',
     tooltip: {
       title: 'Why two-tier output matters',
       body: 'Operators are mid-service, in motion, under time pressure. They need to grasp a recommendation in 5 seconds. But they also need the full reasoning available when they want to evaluate it or explain it to their team.\n\nA single flat output cannot serve both needs. A wall of reasoning is skimmed and dismissed. A one-line summary without reasoning is acted on blindly.\n\nThe two-tier structure gives operators the headline first — what to do, in one sentence — and the full analysis on expand. Operators in our research described this as the difference between a tool that respects their time and one that feels like it was designed for a developer, not a GM.\n\nSummary tier: headline, recommendation, expected outcome. Detail tier: reasoning, data sources, alternatives, projection basis.',
