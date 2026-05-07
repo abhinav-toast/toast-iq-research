@@ -241,6 +241,14 @@ a{color:inherit;text-decoration:none}
 .tb-meta{color:rgba(255,255,255,0.2);font-size:11px;white-space:nowrap}
 
 
+/* ── SKILL TRANSFORMER CONTEXT BAR ── */
+.st-ctx-bar{display:flex;align-items:center;gap:12px;margin-top:16px;padding:10px 14px;background:rgba(123,93,181,0.07);border:1px solid rgba(123,93,181,0.18);border-radius:8px}
+.st-ctx-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#7B5DB5;flex-shrink:0}
+.st-ctx-tabs{display:flex;gap:2px;background:rgba(0,0,0,0.06);border-radius:6px;padding:2px}
+.st-ctx-tab{padding:5px 14px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:#888;transition:all .15s}
+.st-ctx-tab.active{background:white;color:#7B5DB5;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+.st-ctx-hint{font-size:11px;color:#999;flex:1}
+
 /* ── SKILL TRANSFORMER ── */
 .st-full-bleed{margin-left:calc(-50vw + 50%);margin-right:calc(-50vw + 50%);padding-left:24px;padding-right:24px}
 .st-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;align-items:stretch;grid-auto-rows:1fr}
@@ -1870,6 +1878,15 @@ a{color:inherit;text-decoration:none}
       <div class="callout-text">Paste your existing skill definition below — JSON, YAML, or pseudocode. The transformer detects which of the 9 research-derived requirements are present, adds missing fields with inline annotations, and generates a ready-to-copy LLM prompt you can feed to any model to get back the full improved skill.</div>
     </div>
 
+    <div class="st-ctx-bar">
+      <span class="st-ctx-label">Skill context</span>
+      <div class="st-ctx-tabs">
+        <button class="st-ctx-tab active" id="st-ctx-toastiq" onclick="stSetContext('toastiq',this)">Toast IQ</button>
+        <button class="st-ctx-tab" id="st-ctx-generic" onclick="stSetContext('generic',this)">Generic agent</button>
+      </div>
+      <span class="st-ctx-hint" id="st-ctx-hint">Injections reference real Toast IQ tools from the MCP catalog</span>
+    </div>
+
     <div class="st-full-bleed">
     <div class="st-layout">
 
@@ -2041,6 +2058,32 @@ function stStartResize(e, panel) {
 
 /* ── SKILL TRANSFORMER LOGIC ── */
 
+/* ── SKILL CONTEXT STATE ── */
+let _stContext = 'toastiq'; // 'toastiq' | 'generic'
+
+function stSetContext(ctx, el) {
+  _stContext = ctx;
+  document.querySelectorAll('.st-ctx-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('st-ctx-hint').textContent = ctx === 'toastiq'
+    ? 'Injections reference real Toast IQ tools from the MCP catalog'
+    : 'Injections use generic language suitable for any AI agent';
+  // Re-run transform if we already have output
+  if (_lastRaw) stTransform();
+}
+
+/* ── INJECTION HELPERS ── */
+// Returns context-appropriate injection text for a given check and format.
+// Tools marked NOT_FULLY_ROLLED_OUT are hedged; ALWAYS_ON / FULLY_ROLLED_OUT are named directly.
+function stInj(check, fmt) {
+  const ctx = _stContext;
+  const k = fmt === 'JSON' ? 'inject_json' : fmt === 'Natural Language' ? 'inject_nl' : 'inject_pseudo';
+  if (ctx === 'generic') return check[k] || '';
+  // Toast IQ context — use tool-aware version where defined
+  const tiqKey = k + '_toastiq';
+  return check[tiqKey] || check[k] || '';
+}
+
 const ST_CHECKS = [
   {
     id: 'mode',
@@ -2051,11 +2094,18 @@ const ST_CHECKS = [
       body: 'Operators in our research said the #1 reason they distrust AI agents is that actions happen without a review step. This requirement forces the skill to declare whether it is proposing (showing a recommendation), drafting (creating a change package for approval), or executing (applying the change). These must be structurally separate — not a single skill with a confirmation dialog.\n\nWithout this, agents act on behalf of operators without their explicit sign-off. A price change pushed directly to Toast POS cannot be undone without additional steps, and operators described this as a trust-breaking moment.',
       quote: '"I need to be the one who hits publish. Not the AI." — Ops manager, P02'
     },
-    detect: s => /\b(propose|draft|execute|mode)\b/i.test(s),
-    warn_nl: s => /\b(publish|apply|update|chang|modif|set).{0,40}(immediately|directly|right away|now|instantly|automat)/i.test(s),
+    detect: s => /\b(propose|draft|execute|mode)\b/i.test(s)
+              || /get_unpublished_config_diff|publish_configuration_changes/i.test(s)
+              || /review.{0,30}before.{0,30}(publish|apply|execut)/i.test(s)
+              || /confirm.{0,30}before.{0,30}(apply|chang|modif)/i.test(s),
+    warn_nl: s => /\b(publish|apply|update|chang|modif|set).{0,40}(immediately|directly|right away|now|instantly|automat)/i.test(s)
+               || /(update_menu_item|publish_configuration_changes|edit_menu_items_stock).{0,200}(?!diff|review|confirm)/i.test(s),
     inject_json:   `  "mode": "propose",  // ADDED: declare mode. Options: "propose" | "draft" | "execute". Never default to "execute".\n`,
     inject_pseudo: `// ADDED: declare mode = "propose" | "draft" | "execute"\n// This skill should run in propose mode first. Draft and execute are separate phases.\n`,
-    inject_nl: `[ADDED: Behavioral Mode]\nThis skill must declare a behavioral mode. Never go directly to action.\n- Mode "propose": return a recommendation with full reasoning. Nothing is changed.\n- Mode "draft": create a named, persistent change package for a reviewer to approve.\n- Mode "execute": apply the change — only reachable after a draft has been approved.\nDefault to "propose" unless the operator has explicitly elevated this skill.\n`
+    inject_nl: `[ADDED: Behavioral Mode]\nThis skill must declare a behavioral mode. Never go directly to action.\n- Mode "propose": return a recommendation with full reasoning. Nothing is changed.\n- Mode "draft": create a named, persistent change package for a reviewer to approve.\n- Mode "execute": apply the change — only reachable after a draft has been approved.\nDefault to "propose" unless the operator has explicitly elevated this skill.\n`,
+    inject_json_toastiq:   `  "mode": "propose",  // ADDED: declare mode. Before calling publish_configuration_changes, always call get_unpublished_config_diff_v2 so the operator can review what will change. Never skip the diff step.\n`,
+    inject_pseudo_toastiq: `// ADDED: behavioral mode gate\n// 1. Call get_unpublished_config_diff_v2 — show the operator what will change\n// 2. Only call publish_configuration_changes after explicit operator confirmation\n// Never proceed directly to publish without the diff review step.\n`,
+    inject_nl_toastiq: `[ADDED: Behavioral Mode]\nBefore calling publish_configuration_changes (or any update tool), always first call get_unpublished_config_diff_v2 and show the operator exactly what will change. Never skip the diff step.\n- Review step (propose): run get_unpublished_config_diff_v2, present the diff, wait for confirmation.\n- Draft step: changes sit in staging until the operator explicitly approves.\n- Execute step: only call publish_configuration_changes after the operator has confirmed the diff.\nDefault to the review step unless the operator has explicitly requested direct execution.\n`
   },
   {
     id: 'provenance',
@@ -2066,10 +2116,16 @@ const ST_CHECKS = [
       body: 'When an agent says "your food cost is 34%," operators immediately ask: where did that number come from? Is it from yesterday\'s POS data or last month\'s invoice? Is it theoretical recipe cost or actual waste-adjusted cost?\n\nProvenance answers that question inline. Every data-derived number must be accompanied by a plain-language attribution — the data source, its timestamp, and how it was computed. This is what allows operators to trust a number enough to act on it.\n\nWithout provenance, operators either blindly trust numbers (risky) or spend time verifying them elsewhere (slow).',
       quote: '"Show me where you got that number and I\'ll believe it." — GM, P01'
     },
-    detect: s => /\bprovenance\b/i.test(s),
+    detect: s => /\bprovenance\b/i.test(s)
+              || /math_operations/i.test(s)
+              || /\b(source|based on).{0,30}(tool|result|data|metric)/i.test(s)
+              || /cite.{0,20}(source|tool|data)/i.test(s),
     inject_json:   `  "provenance": "string",  // ADDED: plain-language description of where each data point came from\n`,
     inject_pseudo: `// ADDED: include provenance = plain-language source for every data-derived value\n`,
-    inject_nl: `[ADDED: Provenance]\nEvery number, percentage, or data-derived claim in your response must include a plain-language source attribution. Example: "Based on your Sysco invoice #INV-2024-8812, verified today." Do not present numbers without sourcing them.\n`
+    inject_nl: `[ADDED: Provenance]\nEvery number, percentage, or data-derived claim in your response must include a plain-language source attribution. Example: "Based on your POS data from the last 30 days." Do not present numbers without sourcing them.\n`,
+    inject_json_toastiq:   `  "provenance": "string",  // ADDED: route all calculations through math_operations. For every number, name the source tool (e.g. get_restaurant_metrics) and the date range it came from.\n`,
+    inject_pseudo_toastiq: `// ADDED: provenance requirement\n// Route all calculations through math_operations (always available)\n// For every number in the response, state: source tool + date range used\n// Numbers not directly from a tool result must state their derivation explicitly\n`,
+    inject_nl_toastiq: `[ADDED: Provenance]\nRoute all calculations through math_operations (always available). For every number or percentage in your response, name the source tool and the date range it came from. Example: "Based on get_restaurant_metrics data for the last 28 days." Numbers not directly copy-pasted from a tool result must state how they were derived.\n`
   },
   {
     id: 'basis',
@@ -2080,10 +2136,17 @@ const ST_CHECKS = [
       body: 'Projections like "this will save you $1,200/month" are only meaningful if the operator knows what assumption they rest on. Is that based on current volume? Last month\'s average? A seasonal peak?\n\nOperators in our research rejected projections that felt like "made-up numbers." The projection basis makes the math visible: "Based on 127 sandwiches/day over the last 30 days, at a $0.32 margin improvement per unit." Now the operator can evaluate whether that assumption holds for their situation.\n\nThis also protects against over-reliance on projections when the underlying assumption is outdated.',
       quote: '"If you can\'t tell me what you assumed, I can\'t trust the estimate." — Owner, P03'
     },
-    detect: s => /\bbasis\b/i.test(s),
+    detect: s => /\bbasis\b/i.test(s)
+              || /net_sales_forecast/i.test(s)
+              || /last\s+\d+\s+(days|weeks)/i.test(s)
+              || /based on.{0,30}(average|volume|units|sales)/i.test(s)
+              || /date.{0,10}range.{0,20}(assumption|window)/i.test(s),
     inject_json:   `  "basis": "string",  // ADDED: the unit/volume assumption the projection rests on, e.g. "Based on 847 units sold in March"\n`,
     inject_pseudo: `// ADDED: include basis = the assumption behind any projection (e.g. "based on N units sold")\n`,
-    inject_nl: `[ADDED: Projection Basis]\nAny dollar or percentage projection must state the assumption it rests on. Example: "This saves approximately $1,200/month, based on your average of 127 chicken sandwiches sold per day over the last 30 days." Never show a projection without its basis.\n`
+    inject_nl: `[ADDED: Projection Basis]\nAny dollar or percentage projection must state the assumption it rests on. Example: "This saves approximately $1,200/month, based on your average of 127 items sold per day over the last 30 days." Never show a projection without its basis.\n`,
+    inject_json_toastiq:   `  "basis": "string",  // ADDED: state the date window from net_sales_forecast or get_restaurant_metrics as the basis for any projection. Never show an unanchored number.\n`,
+    inject_pseudo_toastiq: `// ADDED: projection basis requirement\n// Use net_sales_forecast or get_restaurant_metrics as the data source for projections\n// Always state: which tool, what date window, what was held constant\n// Example: "Based on net_sales_forecast over the last 28 days, assuming flat demand"\n`,
+    inject_nl_toastiq: `[ADDED: Projection Basis]\nAny forecast or percentage estimate must name its basis: the tool used (net_sales_forecast or get_restaurant_metrics), the date window, and what was held constant. Example: "This projects approximately $1,200/month in savings, based on net_sales_forecast over the last 28 days, assuming current volume holds." Never show an unanchored number.\n`
   },
   {
     id: 'affected_entities',
@@ -2094,10 +2157,18 @@ const ST_CHECKS = [
       body: 'A menu item is not an island. Changing the price of a burger can affect the combo meal, the modifier group, the delivery menu pricing, and any active promotions that reference it. Operators learned this the hard way — and in our research, they described discovering surprise downstream effects as the most common reason they lost confidence in the agent.\n\nThis requirement forces the skill to run a cascade map before any recommendation and surface the full list of affected entities upfront. The operator sees the complete picture before deciding — not after.\n\nWithout this, operators either over-correct by doing extra manual checks, or worse, unknowingly approve changes with cascading side effects.',
       quote: '"I said yes to the price change and then my combo meal was wrong for a week." — Owner, P04'
     },
-    detect: s => /\b(affected|cascade|downstream|entities|modifiers)\b/i.test(s),
+    detect: s => /\b(affected|cascade|downstream|entities|modifiers)\b/i.test(s)
+              || /detect_relevant_entities/i.test(s)
+              || /lookup_menu_upsell/i.test(s)
+              || /filterEntitiesWithin/i.test(s)
+              || /found.{0,10}in.{0,10}(group|menu|modifier)/i.test(s),
+    warn_nl: s => /(update_menu_item|update_modifier|update_menu_group|edit_menu_items_stock).{0,300}(?!detect_relevant_entities|lookup_menu_upsell|affected|downstream|cascade)/i.test(s),
     inject_json:   `  "affected_entities": [],  // ADDED: array of downstream items, modifiers, bundles impacted by this change\n`,
-    inject_pseudo: `// ADDED: before recommending, run cascade_mapper(entity_id) to find affected_entities\n`,
-    inject_nl: `[ADDED: Downstream Impact]\nBefore making any recommendation that involves a price or menu change, identify and disclose all downstream entities that will be affected: modifier groups, individual modifiers, substitutions, bundles, and delivery menu items. List them explicitly in your response so the operator can see the full picture before deciding.\n`
+    inject_pseudo: `// ADDED: before recommending, identify affected_entities (modifiers, bundles, delivery items)\n`,
+    inject_nl: `[ADDED: Downstream Impact]\nBefore making any recommendation that involves a price or menu change, identify and disclose all downstream entities that will be affected: modifier groups, individual modifiers, substitutions, bundles, and delivery menu items. List them explicitly in your response so the operator can see the full picture before deciding.\n`,
+    inject_json_toastiq:   `  "affected_entities": [],  // ADDED: call detect_relevant_entities (always available) before any price/availability change, then call lookup_menu_upsell_configs to catch upsell references. List all affected entities before asking for confirmation.\n`,
+    inject_pseudo_toastiq: `// ADDED: affected entities gate\n// 1. Call detect_relevant_entities — always available, returns all related entities\n// 2. Call lookup_menu_upsell_configs — catches upsell configs referencing this item\n// 3. List all affected entities in the response BEFORE asking for confirmation\n// Never recommend a price/availability change without running this cascade check first\n`,
+    inject_nl_toastiq: `[ADDED: Downstream Impact]\nBefore recommending any price or availability change, call detect_relevant_entities (always available) to find all related menu entities, then call lookup_menu_upsell_configs to catch any upsell configurations that reference this item. List every affected entity — modifier groups, modifiers, bundles, upsell configs — in your response so the operator sees the full picture before confirming. Never skip this step.\n`
   },
   {
     id: 'rollback',
@@ -2108,10 +2179,18 @@ const ST_CHECKS = [
       body: 'Operators are far more willing to try an AI-suggested change if they know they can undo it. Our research found that reversibility is a primary factor in whether an operator escalates trust — they described it as "having an exit."\n\nA rollback token is a handle the skill returns alongside any state-modifying action. It tells the operator: (1) whether the action can be reversed, (2) how to reverse it, and (3) for how long the rollback window is open.\n\nFor read-only skills the token is null. For any skill that writes to POS, inventory, or scheduling, the token must be present. Without it, operators treat every change as permanent — and become more cautious, not less.',
       quote: '"If I can\'t undo it easily, I\'m not going to try it." — GM, P02'
     },
-    detect: s => /\b(rollback|revert|undo|reversib)\b/i.test(s),
+    detect: s => /\b(rollback|revert|undo|reversib)\b/i.test(s)
+              || /get_published_config_diff/i.test(s)
+              || /get_unpublished_config_diff/i.test(s)
+              || /prior.{0,20}(value|state|config)/i.test(s)
+              || /restore.{0,20}previous/i.test(s),
+    warn_nl: s => /(update_menu_item|publish_configuration_changes|edit_menu_items_stock|update_modifier|update_menu_group).{0,300}(?!rollback|revert|undo|prior|restore|get_published_config_diff)/i.test(s),
     inject_json:   `  "rollback_token": null,  // ADDED: null for read-only skills; return a rollback handle for any state-modifying action\n`,
     inject_pseudo: `// ADDED: return rollback_token — null if read-only, a handle if this skill modifies state\n`,
-    inject_nl: `[ADDED: Reversibility]\nFor any action that modifies state, always tell the operator whether and how it can be undone. Example: "This change can be reversed at any time from Menu Manager." If the action cannot be undone, say so explicitly before they confirm.\n`
+    inject_nl: `[ADDED: Reversibility]\nFor any action that modifies state, always tell the operator whether and how it can be undone. If the action cannot be undone automatically, say so explicitly before they confirm.\n`,
+    inject_json_toastiq:   `  "rollback_reference": null,  // ADDED: before executing any change, call get_published_config_diff_v2 to capture the prior state. Include the result as the restore reference — there is no automatic undo, so the prior value must be visible to the operator.\n`,
+    inject_pseudo_toastiq: `// ADDED: rollback reference\n// Before any state-modifying tool call:\n//   Call get_published_config_diff_v2 — captures the current published state\n//   Store result as rollback_reference and include in response\n// There is no automatic undo in Toast — make the prior value visible so the operator\n// can manually restore it if needed. State this explicitly before confirmation.\n`,
+    inject_nl_toastiq: `[ADDED: Reversibility]\nBefore executing any change, call get_published_config_diff_v2 to capture the current published state as a restore reference. Include it in your response so the operator knows what to restore if needed. There is no automatic undo in Toast — make this explicit before asking for confirmation. Example: "Before I apply this change, here's the current state you can restore to: [prior value from get_published_config_diff_v2]."\n`
   },
   {
     id: 'data_health',
@@ -2122,10 +2201,18 @@ const ST_CHECKS = [
       body: 'A recommendation is only as good as the data behind it. If the recipe costs are from 3 weeks ago, or the inventory sync failed last night, the agent should not surface a recommendation — it should tell the operator what is wrong and how to fix it.\n\nIn our research, operators described receiving confident-sounding recommendations based on stale data as a category of harm worse than receiving no recommendation at all. It erodes trust faster because the agent appears to not know its own limitations.\n\nThis check runs silently before every recommendation. On failure, it surfaces a DataHealthCard instead — naming the data gap, why it matters for this recommendation, and a direct action to resolve it.',
       quote: '"It told me to cut the dish, but the sales data was from before we changed the menu. I almost pulled a bestseller." — Owner, P01'
     },
-    detect: s => /\b(data.health|health.check|stale|prerequisites|data_prereq|data quality|verify.{0,20}data|check.{0,20}data)\b/i.test(s),
+    detect: s => /\b(data.health|health.check|stale|prerequisites|data_prereq|data quality)\b/i.test(s)
+              || /verify.{0,20}(data|fresh|stock)/i.test(s)
+              || /check.{0,20}(data|fresh|stock).{0,20}before/i.test(s)
+              || /lookup_item_stock_status/i.test(s)
+              || /get_restaurant_metrics.{0,100}before/i.test(s),
+    warn_nl: s => /(recommend|suggest|advise).{0,200}(?!data.health|health.check|stale|fresh|verify|check.*data|get_restaurant_metrics)/i.test(s),
     inject_json:   `  "data_prerequisites": {  // ADDED: run data_health_check before surfacing recommendation\n    "dependencies": [],  // list data deps, e.g. ["recipe_costs", "sales_history"]\n    "on_failure": "show_data_health_card"  // never show recommendation when data is unhealthy\n  },\n`,
     inject_pseudo: `// ADDED: run data_health_check(dependencies) first\n// If any dependency is stale/missing → return DataHealthCard, not recommendation\n`,
-    inject_nl: `[ADDED: Data Health Check]\nBefore surfacing any recommendation, silently verify that the underlying data is fresh and complete. If any required data is stale, missing, or unverifiable, tell the operator what is wrong and how to fix it — do not proceed to the recommendation. Example: "I can't give you a reliable estimate right now because your inventory sync is 14 hours old. Once it refreshes, I'll run the analysis."\n`
+    inject_nl: `[ADDED: Data Health Check]\nBefore surfacing any recommendation, silently verify that the underlying data is fresh and complete. If any required data is stale, missing, or unverifiable, tell the operator what is wrong and how to fix it — do not proceed to the recommendation.\n`,
+    inject_json_toastiq:   `  "data_prerequisites": {  // ADDED: call get_restaurant_metrics (always available) before recommending. Verify the data window has sufficient signal — if the range is too short or has gaps, flag it instead of proceeding.\n    "tool": "get_restaurant_metrics",\n    "min_days": 7,\n    "on_failure": "show_data_health_card"\n  },\n`,
+    inject_pseudo_toastiq: `// ADDED: data health gate\n// 1. Call get_restaurant_metrics (always available) — verify data window ≥ 7 days\n// 2. If data is insufficient or stale → return DataHealthCard explaining the gap\n// 3. Only proceed to recommendation if data passes the health check\n// Never surface a recommendation when data quality is unknown\n`,
+    inject_nl_toastiq: `[ADDED: Data Health Check]\nBefore surfacing any recommendation, call get_restaurant_metrics (always available) to verify the data window has sufficient signal. If the date range is too short, has gaps, or the last sync is more than 24 hours old, stop and tell the operator what is wrong before proceeding. Example: "I can't give you a reliable estimate right now because the available data only covers 2 days. I need at least 7 days of sales data to make a meaningful recommendation."\n`
   },
   {
     id: 'urgency',
@@ -2136,12 +2223,18 @@ const ST_CHECKS = [
       body: 'Hardcoded urgency language like "act now" or "effective immediately" is calibrated to no one. An operator who reviews prices quarterly finds it alarming and ignores it. An operator who updates menus daily finds it redundant. Either way, it trains operators to distrust urgency signals — the AI cried wolf too many times.\n\nThis requirement makes urgency a derived value: the product of how serious the issue is (sensitivity) and how often this operator actually makes changes (cadence). A high-severity finding for a quarterly-cadence operator reads "Consider including this in your next menu review." The same finding for a daily-cadence operator reads "Worth addressing before tomorrow\'s service."\n\nThe warning flag triggers when your skill contains hardcoded urgency phrases that will need to be replaced.',
       quote: '"It says \'act now\' on everything. I stopped reading it." — GM, P03'
     },
-    detect: s => /\b(recommendation_timing|operator.cadence|cadence)\b/i.test(s),
+    detect: s => /\b(recommendation_timing|operator.cadence|cadence)\b/i.test(s)
+              || /get_restaurant_metrics.{0,100}(urgency|timing|cadence|frequen)/i.test(s)
+              || /net_sales_forecast.{0,100}(urgency|timing)/i.test(s)
+              || /operator.{0,20}(frequency|change.rate|update.rate)/i.test(s),
     warn: s => /\b(act now|effective immediately|effective tomorrow|asap)\b/i.test(s),
     warn_nl: s => /\b(act now|effective immediately|effective tomorrow|asap|you (must|should|need to) (act|change|update) (today|now|immediately|right away))\b/i.test(s),
     inject_json:   `  "recommendation_timing": {  // ADDED: derive urgency from operator cadence, never hardcode\n    "sensitivity": "high",\n    "operator_cadence": "immediate",  // read from operator config\n    "urgency_label": ""  // generated from sensitivity × cadence — not a static string\n  },\n`,
     inject_pseudo: `// ADDED: recommendation_timing object — derive urgency_label from sensitivity × operator_cadence\n// Never hardcode "act now" or "effective immediately"\n`,
-    inject_nl: `[ADDED: Urgency Framing]\nDo not use hardcoded urgency language like "act now" or "effective immediately." Frame urgency based on how this operator actually operates. For an operator who updates prices quarterly, a high-severity finding should read "Consider including this in your next menu review" — not "act now." Read or infer the operator's cadence from their configuration or behavior.\n`
+    inject_nl: `[ADDED: Urgency Framing]\nDo not use hardcoded urgency language like "act now" or "effective immediately." Frame urgency based on how this operator actually operates. For an operator who updates prices quarterly, a high-severity finding should read "Consider including this in your next menu review" — not "act now."\n`,
+    inject_json_toastiq:   `  "recommendation_timing": {  // ADDED: use get_restaurant_metrics to understand this operator's actual change cadence. Use search_local_events and get_local_weather for external context. Never hardcode urgency labels.\n    "cadence_source": "get_restaurant_metrics",\n    "external_context": ["search_local_events", "get_local_weather"],\n    "urgency_label": ""  // derived from cadence × sensitivity — never a static string\n  },\n`,
+    inject_pseudo_toastiq: `// ADDED: urgency derived from operator data — never hardcoded\n// 1. Call get_restaurant_metrics to understand this operator's change cadence\n// 2. Optionally call search_local_events + get_local_weather for external context\n// 3. Derive urgency_label from cadence × issue sensitivity\n// Never output "act now", "effective immediately", or any hardcoded urgency string\n`,
+    inject_nl_toastiq: `[ADDED: Urgency Framing]\nDo not use hardcoded urgency language. Instead, use get_restaurant_metrics to understand how often this operator makes changes, and optionally call search_local_events and get_local_weather for relevant external context. Derive your urgency framing from those signals. Example: for an operator who changes prices quarterly, a high-severity finding reads "Consider including this in your next menu review cycle" — not "act now." For a daily-cadence operator it reads "Worth addressing before tomorrow's service."\n`
   },
   {
     id: 'reviewer',
@@ -2152,10 +2245,18 @@ const ST_CHECKS = [
       body: 'Ops agents are often run by staff who are not the decision-makers. A server who asks "what should we 86?" is not necessarily the person who should approve pulling an item. A line cook who triggers a cost alert is not the one who approves the menu change.\n\nWithout explicit reviewer routing, drafts either auto-approve (dangerous) or get stuck with the initiating user (wrong person, wrong authority). This requirement forces every draft to declare the role it needs approval from — owner, GM, ops manager — and route accordingly.\n\nIn our research, operators described "someone changed something without anyone knowing" as a real incident pattern. Reviewer routing creates an auditable approval chain.',
       quote: '"My staff shouldn\'t be able to approve price changes. That\'s my call." — Owner, P04'
     },
-    detect: s => /\b(reviewer|reviewer_role|approver|approval|owner.approv|manager.approv|send.{0,20}(to|for).{0,20}(review|approval))\b/i.test(s),
+    detect: s => /\b(reviewer|reviewer_role|approver|approval)\b/i.test(s)
+              || /create_toast_iq_task/i.test(s)
+              || /add_recipients_to_toast_iq_task/i.test(s)
+              || /route.{0,20}(to|for).{0,20}(manager|owner|gm|review)/i.test(s)
+              || /send.{0,20}(to|for).{0,20}(review|approval)/i.test(s),
+    warn_nl: s => /(publish_configuration_changes|update_menu_item|update_modifier).{0,300}(?!create_toast_iq_task|add_recipients|review|approv|owner|manager)/i.test(s),
     inject_json:   `  "reviewer_role": "owner",  // ADDED: route draft to a role (owner/manager/operator), not just the initiating user\n`,
     inject_pseudo: `// ADDED: reviewer_role = "owner" | "manager" | "operator"\n// Draft must route to this role — do not auto-resolve to initiating user\n`,
-    inject_nl: `[ADDED: Reviewer Role]\nDo not assume the person who ran this skill is the right person to approve its output. Drafts must be routed to a designated reviewer role — owner, GM, or operations manager — based on the type of change. The draft stays in "pending review" until someone in that role explicitly approves it.\n`
+    inject_nl: `[ADDED: Reviewer Role]\nDo not assume the person who ran this skill is the right person to approve its output. Drafts must be routed to a designated reviewer role — owner, GM, or operations manager. The draft stays in "pending review" until someone in that role explicitly approves it.\n`,
+    inject_json_toastiq:   `  "reviewer_role": "owner",  // ADDED: call create_toast_iq_task then add_recipients_to_toast_iq_task to route the draft to the right role before executing. Do not auto-approve on behalf of the initiating user.\n`,
+    inject_pseudo_toastiq: `// ADDED: reviewer routing via Toast IQ Tasks\n// For any state-modifying action:\n//   1. Call create_toast_iq_task to create a pending review task\n//   2. Call add_recipients_to_toast_iq_task to route to owner/manager/GM role\n//   3. Only call the execute tool after the task is approved\n// Do not auto-approve or resolve on behalf of the person who initiated the skill\n`,
+    inject_nl_toastiq: `[ADDED: Reviewer Role]\nFor any change that modifies menu data or configuration, do not proceed directly to execution. Instead: call create_toast_iq_task to create a pending review task, then call add_recipients_to_toast_iq_task to route it to the appropriate role (owner, GM, or operations manager). Only call the execute tool after that task has been approved. Never auto-approve on behalf of the person who triggered the skill.\n`
   },
   {
     id: 'disclosure',
@@ -2166,10 +2267,16 @@ const ST_CHECKS = [
       body: 'Operators are mid-service, in motion, under time pressure. They need to grasp a recommendation in 5 seconds. But they also need the full reasoning available when they want to evaluate it or explain it to their team.\n\nA single flat output cannot serve both needs. A wall of reasoning is skimmed and dismissed. A one-line summary without reasoning is acted on blindly.\n\nThe two-tier structure gives operators the headline first — what to do, in one sentence — and the full analysis on expand. Operators in our research described this as the difference between a tool that respects their time and one that feels like it was designed for a developer, not a GM.\n\nSummary tier: headline, recommendation, expected outcome. Detail tier: reasoning, data sources, alternatives, projection basis.',
       quote: '"I don\'t want to read an essay. Give me the punchline. I\'ll dig in if I need to." — GM, P01'
     },
-    detect: s => /\b(summary|detail|headline|disclosure|tiers|expand|show more|read more)\b/i.test(s),
+    detect: s => /\b(summary|detail|headline|disclosure|tiers|expand|show more|read more)\b/i.test(s)
+              || /lead.{0,20}with.{0,20}(summary|headline|one.liner)/i.test(s)
+              || /summary.{0,30}then.{0,30}detail/i.test(s)
+              || /\bone.?liner\b/i.test(s),
     inject_json:   `  "output": {  // ADDED: two-tier structure for progressive disclosure\n    "summary": {\n      "headline": "string",\n      "recommendation": "string",\n      "expected_outcome": "string"\n    },\n    "detail": {\n      "reasoning": "string",\n      "data_sources": [],\n      "alternatives": [],\n      "projection_basis": "string"\n    }\n  },\n`,
     inject_pseudo: `// ADDED: return two-tier output:\n//   summary: { headline, recommendation, expected_outcome }  — always shown\n//   detail:  { reasoning, data_sources, alternatives, projection_basis }  — shown on expand\n`,
-    inject_nl: `[ADDED: Two-Tier Output Structure]\nStructure your response in two tiers:\n- Summary (always shown): one headline, the core recommendation, and the expected outcome in plain language.\n- Detail (available on request or expand): full reasoning, data sources with attribution, alternatives considered, and the basis for any projections.\nDo not lead with a wall of reasoning. Lead with the headline, let the operator choose to go deeper.\n`
+    inject_nl: `[ADDED: Two-Tier Output Structure]\nStructure your response in two tiers:\n- Summary (always shown): one headline, the core recommendation, and the expected outcome in plain language.\n- Detail (available on request or expand): full reasoning, data sources with attribution, alternatives considered, and the basis for any projections.\nDo not lead with a wall of reasoning. Lead with the headline.\n`,
+    inject_json_toastiq:   `  "output": {  // ADDED: two-tier structure — lead with a plain-language summary (≤2 sentences: what will change, where) before any detail, table, or breakdown\n    "summary": {\n      "headline": "string",\n      "recommendation": "string",\n      "expected_outcome": "string"\n    },\n    "detail": {\n      "reasoning": "string",\n      "data_sources": [],\n      "alternatives": [],\n      "projection_basis": "string"\n    }\n  },\n`,
+    inject_pseudo_toastiq: `// ADDED: two-tier output structure\n// Summary tier (always show first):\n//   headline — what will change, in one sentence\n//   recommendation — the specific action to take\n//   expected_outcome — what the operator can expect\n// Detail tier (on expand or request):\n//   reasoning, data_sources (with tool names + date ranges), alternatives, projection_basis\n// Never lead with a wall of reasoning. Lead with the headline.\n`,
+    inject_nl_toastiq: `[ADDED: Two-Tier Output Structure]\nLead every action response with a plain-language summary of ≤2 sentences: what will change and where. Full reasoning, data sources (with tool names and date ranges), alternatives considered, and projection basis go below. Do not lead with a wall of text. Operators are mid-service — give them the headline first, and let them choose to read the detail.\n`
   }
 ];
 
@@ -2261,7 +2368,15 @@ ${instrFormat}
 
 ## Required improvements
 
-${missing.map((c,i) => `${i+1}. **${c.name}**: ${c.desc}`).join('\n')}${warned.length ? `\n\nAlso fix these existing issues:\n${warned.map((c,i) => `${missing.length+i+1}. **${c.name} (WARNING)**: ${c.desc} — replace hardcoded urgency or direct-action language with operator-cadence-aware framing`).join('\n')}` : ''}
+${missing.map((c,i) => {
+    const inj = stInj(c, format).trim().replace(/^\/\/ ADDED[:\s]*/,'').replace(/^\[ADDED:[^\]]*\]\n?/,'').split('\n')[0];
+    const detail = inj && inj !== c.desc ? ` — ${inj}` : '';
+    return `${i+1}. **${c.name}**: ${c.desc}${detail}`;
+  }).join('\n')}${warned.length ? `\n\nAlso fix these existing issues:\n${warned.map((c,i) => {
+    const inj = stInj(c, format).trim().replace(/^\/\/ ADDED[:\s]*/,'').replace(/^\[ADDED:[^\]]*\]\n?/,'').split('\n')[0];
+    const detail = inj && inj !== c.desc ? ` — ${inj}` : '';
+    return `${missing.length+i+1}. **${c.name} (WARNING)**: ${c.desc}${detail} — replace hardcoded urgency or direct-action language with operator-cadence-aware framing`;
+  }).join('\n')}` : ''}
 
 ## Structural rules
 
@@ -2361,8 +2476,8 @@ function stInjectIntoJSON(text, results) {
   if (hasOuterBrace) out = out.slice(1, out.lastIndexOf('}')).trimEnd();
   out = out.replace(/,(\s*)$/, '$1');
   const injections = results
-    .filter(r => !r.present && r.inject_json)
-    .map(r => '  ' + r.inject_json.trim())
+    .filter(r => !r.present && (r.inject_json || r.inject_json_toastiq))
+    .map(r => '  ' + stInj(r, 'JSON').trim())
     .join('\n');
   if (injections) out = out.trimEnd() + ',\n\n  // ── ADDED BY TRANSFORMER ──\n' + injections;
   if (hasOuterBrace) out = '{\n' + out + '\n}';
@@ -2371,16 +2486,16 @@ function stInjectIntoJSON(text, results) {
 
 function stInjectIntoPseudo(text, results) {
   const header = results
-    .filter(r => !r.present && r.inject_pseudo)
-    .map(r => r.inject_pseudo.trim())
+    .filter(r => !r.present && (r.inject_pseudo || r.inject_pseudo_toastiq))
+    .map(r => stInj(r, 'Pseudocode').trim())
     .join('\n');
   return (header ? header + '\n\n' : '') + text;
 }
 
 function stInjectIntoNL(text, results) {
   const blocks = results
-    .filter(r => !r.present && r.inject_nl)
-    .map(r => r.inject_nl.trim());
+    .filter(r => !r.present && (r.inject_nl || r.inject_nl_toastiq))
+    .map(r => stInj(r, 'Natural Language').trim());
   if (!blocks.length) return text;
   const divider = '\n\n────────────────────────────────────────\nADDED BY TRANSFORMER — Research Requirements\n────────────────────────────────────────\n\n';
   return text.trimEnd() + divider + blocks.join('\n\n');
